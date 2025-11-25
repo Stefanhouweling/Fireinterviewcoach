@@ -887,6 +887,22 @@
   </main>
 </div>
 
+<!-- Onscreen Console (Debug) -->
+<div id="debugConsole" style="position: fixed; bottom: 20px; right: 20px; width: 400px; max-height: 300px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 12px; z-index: 9999; display: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); font-family: 'Courier New', monospace; font-size: 11px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(239, 68, 68, 0.2);">
+    <h4 style="margin: 0; color: #fbbf24; font-size: 12px; font-weight: 600;">🐛 Debug Console</h4>
+    <div>
+      <button id="clearConsoleBtn" style="padding: 4px 8px; margin-right: 4px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 10px;">Clear</button>
+      <button id="toggleConsoleBtn" style="padding: 4px 8px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 10px;">Hide</button>
+    </div>
+  </div>
+  <div id="consoleContent" style="max-height: 240px; overflow-y: auto; color: #cbd5e1; line-height: 1.4;">
+    <!-- Console messages will appear here -->
+  </div>
+</div>
+
+<button id="showConsoleBtn" style="position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; color: #fff; font-size: 20px; cursor: pointer; z-index: 9998; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center;">🐛</button>
+
 <!-- AI Feedback Modal -->
 <div id="aiModalOverlay" class="ai-modal-overlay">
   <div class="ai-modal">
@@ -901,6 +917,84 @@
 </div>
 
 <script>
+  // ========== ONScreen CONSOLE ==========
+  const debugConsole = document.getElementById("debugConsole");
+  const consoleContent = document.getElementById("consoleContent");
+  const showConsoleBtn = document.getElementById("showConsoleBtn");
+  const toggleConsoleBtn = document.getElementById("toggleConsoleBtn");
+  const clearConsoleBtn = document.getElementById("clearConsoleBtn");
+  
+  function logToConsole(message, type = "info") {
+    if (!consoleContent) return;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    const colors = {
+      info: "#93c5fd",
+      error: "#fca5a5",
+      warn: "#fbbf24",
+      success: "#86efac"
+    };
+    const color = colors[type] || colors.info;
+    
+    const logEntry = document.createElement("div");
+    logEntry.style.cssText = `margin-bottom: 4px; color: ${color}; word-break: break-word;`;
+    logEntry.textContent = `[${timestamp}] ${message}`;
+    
+    consoleContent.appendChild(logEntry);
+    consoleContent.scrollTop = consoleContent.scrollHeight;
+    
+    // Also log to browser console
+    if (type === "error") console.error(message);
+    else if (type === "warn") console.warn(message);
+    else console.log(message);
+  }
+  
+  if (showConsoleBtn) {
+    showConsoleBtn.addEventListener("click", () => {
+      if (debugConsole) {
+        debugConsole.style.display = "block";
+        showConsoleBtn.style.display = "none";
+      }
+    });
+  }
+  
+  if (toggleConsoleBtn) {
+    toggleConsoleBtn.addEventListener("click", () => {
+      if (debugConsole) {
+        debugConsole.style.display = "none";
+        if (showConsoleBtn) showConsoleBtn.style.display = "flex";
+      }
+    });
+  }
+  
+  if (clearConsoleBtn) {
+    clearConsoleBtn.addEventListener("click", () => {
+      if (consoleContent) {
+        consoleContent.innerHTML = "";
+      }
+    });
+  }
+  
+  // Override console methods to also log to onscreen console
+  const originalLog = console.log;
+  const originalError = console.error;
+  const originalWarn = console.warn;
+  
+  console.log = function(...args) {
+    originalLog.apply(console, args);
+    logToConsole(args.join(" "), "info");
+  };
+  
+  console.error = function(...args) {
+    originalError.apply(console, args);
+    logToConsole(args.join(" "), "error");
+  };
+  
+  console.warn = function(...args) {
+    originalWarn.apply(console, args);
+    logToConsole(args.join(" "), "warn");
+  };
+
   // ========== API KEY HANDLING (per-session only) ==========
   let OPENAI_KEY = null;
   let ELEVENLABS_KEY = null;
@@ -1879,23 +1973,24 @@ Return ONLY the category and question.`
     
     recognition.onresult = (event) => {
       let interim = "";
-      let final = lastAnswerTranscript;
+      let newFinal = "";
       
-      // Process ALL results, not just new ones
-      for (let i = 0; i < event.results.length; i++) {
+      // Only process NEW results (starting from resultIndex)
+      // This prevents duplicating text when recognition restarts
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const res = event.results[i];
         if (res.isFinal) {
-          final += res[0].transcript + " ";
+          newFinal += res[0].transcript + " ";
         } else {
           interim += res[0].transcript + " ";
         }
       }
       
-      liveTranscriptText = (final + interim).trim();
-      transcriptBox.textContent = liveTranscriptText;
+      // Accumulate: existing final transcript + new final results + interim
+      lastAnswerTranscript = (lastAnswerTranscript + " " + newFinal).trim();
+      liveTranscriptText = (lastAnswerTranscript + " " + interim).trim();
       
-      // Update lastAnswerTranscript with all final results
-      lastAnswerTranscript = final.trim();
+      transcriptBox.textContent = liveTranscriptText;
     };
 
     transcriptBox.contentEditable = "true";
@@ -1907,10 +2002,18 @@ Return ONLY the category and question.`
       return;
     }
     if (recognizing) return;
+    
+    // Reset transcript tracking
     lastAnswerTranscript = "";
     liveTranscriptText = "";
     transcriptBox.textContent = "";
     motionSamples = [];
+    
+    // Reset recognition results
+    if (recognition.abort) {
+      recognition.abort();
+    }
+    
     recognition.start();
     startAnswerBtn.disabled = true;
     stopAnswerBtn.disabled = false;

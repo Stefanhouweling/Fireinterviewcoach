@@ -5,10 +5,24 @@
   <title>Fire Interview Coach</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
     :root {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #050608;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0a0a0f;
       color: #f9fafb;
+      --fire-red: #ef4444;
+      --fire-orange: #f97316;
+      --fire-yellow: #fbbf24;
+      --fire-dark: #7f1d1d;
+      --fire-darker: #450a0a;
+      --dark-bg: #0f172a;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(239, 68, 68, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
@@ -17,69 +31,142 @@
       display: flex;
       align-items: stretch;
       justify-content: center;
-      background: radial-gradient(circle at top, #111827, #020617);
+      background: 
+        radial-gradient(circle at 20% 10%, rgba(239, 68, 68, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 90%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, #0a0a0f 0%, #1a0a0f 50%, #0a0a0f 100%);
+      background-attachment: fixed;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(239, 68, 68, 0.03) 2px, rgba(239, 68, 68, 0.03) 4px);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .app {
-      max-width: 1200px;
+      max-width: 1400px;
       width: 100%;
-      margin: 16px;
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(15, 23, 42, 0.9);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      margin: 20px;
+      padding: 24px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+      box-shadow: 
+        0 0 0 1px rgba(239, 68, 68, 0.1),
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 80px rgba(239, 68, 68, 0.1);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(10px);
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
+      padding: 8px 0;
+      border-bottom: 2px solid rgba(239, 68, 68, 0.2);
+      margin-bottom: 8px;
     }
 
     .title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .badge {
       font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 2px 8px;
+      letter-spacing: 0.15em;
+      padding: 4px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(249, 115, 22, 0.15) 100%);
       color: #fecaca;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
     }
 
     h1 {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1.8rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #fecaca 50%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
     }
 
     h1 span.logo {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: radial-gradient(circle at 30% -20%, #f97316, #b91c1c);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f97316 0%, #ef4444 50%, #dc2626 100%);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      transform: rotate(-10deg);
+      font-size: 24px;
+      transform: rotate(-8deg);
+      box-shadow: 
+        0 4px 12px rgba(239, 68, 68, 0.4),
+        0 0 20px rgba(249, 115, 22, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      animation: fire-flicker 3s ease-in-out infinite;
+      position: relative;
+    }
+
+    h1 span.logo::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(135deg, #f97316, #ef4444, #f97316);
+      border-radius: 12px;
+      z-index: -1;
+      opacity: 0.5;
+      filter: blur(8px);
+      animation: fire-flicker 3s ease-in-out infinite;
+    }
+
+    @keyframes fire-flicker {
+      0%, 100% { transform: rotate(-8deg) scale(1); }
+      25% { transform: rotate(-6deg) scale(1.05); }
+      50% { transform: rotate(-10deg) scale(0.98); }
+      75% { transform: rotate(-7deg) scale(1.02); }
     }
 
     .subtitle {
-      margin: 0;
-      font-size: 0.8rem;
-      color: #9ca3af;
+      margin: 4px 0 0 0;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      font-weight: 400;
+      letter-spacing: 0.02em;
     }
 
     .layout {
@@ -95,13 +182,46 @@
     }
 
     .card {
-      background: rgba(15, 23, 42, 0.95);
-      border-radius: 16px;
-      padding: 12px 14px;
-      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid rgba(239, 68, 68, 0.15);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(239, 68, 68, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.5), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(239, 68, 68, 0.2),
+        0 0 30px rgba(239, 68, 68, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .card:hover::before {
+      opacity: 1;
     }
 
     .card-header {
@@ -113,17 +233,20 @@
     }
 
     .card-title {
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      color: #f9fafb;
+      letter-spacing: 0.01em;
     }
 
     .card-title small {
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       font-weight: 400;
-      color: #9ca3af;
+      color: #cbd5e1;
+      opacity: 0.8;
     }
 
     .left, .right {
@@ -170,49 +293,107 @@
 
     .tag {
       font-size: 0.7rem;
-      padding: 2px 6px;
+      padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(55, 65, 81, 0.8);
-      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(249, 115, 22, 0.15) 100%);
+      color: #fecaca;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .tag:hover {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(249, 115, 22, 0.25) 100%);
+      border-color: rgba(239, 68, 68, 0.5);
+      transform: scale(1.05);
     }
 
     button {
-      border-radius: 999px;
+      border-radius: 12px;
       border: none;
-      padding: 8px 14px;
-      font-size: 0.8rem;
-      font-weight: 500;
+      padding: 12px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: #ef4444;
-      color: #fef2f2;
-      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.1s ease;
+      gap: 8px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        0 4px 12px rgba(239, 68, 68, 0.3),
+        0 0 0 0 rgba(239, 68, 68, 0.5);
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.02em;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+      transform: translateY(-2px);
+      box-shadow: 
+        0 8px 20px rgba(239, 68, 68, 0.5),
+        0 0 30px rgba(249, 115, 22, 0.4),
+        0 0 0 2px rgba(239, 68, 68, 0.3);
     }
 
     button.secondary {
-      background: transparent;
+      background: linear-gradient(135deg, rgba(55, 65, 81, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
       color: #e5e7eb;
-      border: 1px solid rgba(148, 163, 184, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    button.secondary:hover {
+      background: linear-gradient(135deg, rgba(75, 85, 99, 0.95) 0%, rgba(55, 65, 81, 0.95) 100%);
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(239, 68, 68, 0.1);
     }
 
     button.ghost {
       background: transparent;
-      color: #9ca3af;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: none;
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    button.ghost:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fecaca;
     }
 
     button:active {
-      transform: translateY(1px);
-      box-shadow: none;
+      transform: translateY(0);
+      box-shadow: 
+        0 2px 8px rgba(239, 68, 68, 0.4),
+        0 0 0 1px rgba(239, 68, 68, 0.3);
     }
 
     button[disabled] {
       opacity: 0.5;
       cursor: not-allowed;
+      transform: none;
     }
 
     .question-text {
@@ -283,22 +464,31 @@
     }
 
     .feedback-block {
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: 10px;
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      padding: 6px 8px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+      border-radius: 12px;
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      padding: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .feedback-block:hover {
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
     }
 
     .feedback-block h4 {
-      margin: 0 0 4px 0;
-      font-size: 0.75rem;
-      color: #e5e7eb;
+      margin: 0 0 8px 0;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #f9fafb;
+      letter-spacing: 0.01em;
     }
 
     .feedback-block p {
       margin: 0;
-      color: #9ca3af;
-      line-height: 1.4;
+      color: #cbd5e1;
+      line-height: 1.5;
+      font-size: 0.8rem;
     }
 
     .score-pill {
@@ -386,6 +576,107 @@
       font-size: 0.7rem;
       color: #6b7280;
     }
+
+    /* AI Feedback Modal */
+    .ai-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .ai-modal-overlay.active {
+      display: flex;
+    }
+
+    .ai-modal {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 1000px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      position: relative;
+    }
+
+    .ai-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .ai-modal-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ai-modal-close {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .ai-modal-close:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .ai-modal-content {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #e5e7eb;
+    }
+
+    .ai-modal-content h4 {
+      margin: 20px 0 12px 0;
+      color: #fbbf24;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .ai-modal-content div {
+      margin-bottom: 12px;
+    }
+
+    .ai-modal-content .bullet-point {
+      margin-left: 20px;
+      margin-bottom: 8px;
+      color: #e5e7eb;
+    }
+
+    .ai-modal-content .score-highlight {
+      color: #fbbf24;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
   </style>
   <!-- PDF.js for PDF text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -393,7 +684,7 @@
 <body>
 
 <!-- API KEY BOX (per-session only, not stored) -->
-<div id="apiKeyBox" style="background:#020617;padding:16px;border-radius:12px;margin:16px;color:#fff;max-width:1200px;width:100%;">
+<div id="apiKeyBox" style="background:linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);padding:20px;border-radius:16px;margin:16px;color:#fff;max-width:1200px;width:100%;border:1px solid rgba(239, 68, 68, 0.2);box-shadow:0 4px 16px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(239, 68, 68, 0.1);">
   <h3 style="margin:0 0 8px;">🔐 OpenAI API Key (Local Only)</h3>
   <p style="margin:0 0 6px;font-size:0.8rem;color:#9ca3af;">
     Enter your API key. It is only used in this tab and cleared when you close or refresh. Don’t share this file with your key inside it.
@@ -523,8 +814,11 @@
           <div class="feedback-block">
             <h4>Fire-Specific Tips / AI Coach</h4>
             <p id="fireTips">
-              We’ll highlight if you’re hitting key themes: safety, teamwork, accountability, medical care, community, and learning from mistakes.
+              We'll highlight if you're hitting key themes: safety, teamwork, accountability, medical care, community, and learning from mistakes.
             </p>
+            <button id="viewAIFeedbackBtn" type="button" style="margin-top: 8px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); color: #fca5a5; cursor: pointer; font-size: 0.85rem; display: none;">
+              📖 View Detailed AI Feedback
+            </button>
           </div>
         </div>
       </div>
@@ -578,6 +872,19 @@
       </div>
     </section>
   </main>
+</div>
+
+<!-- AI Feedback Modal -->
+<div id="aiModalOverlay" class="ai-modal-overlay">
+  <div class="ai-modal">
+    <div class="ai-modal-header">
+      <h3>🤖 AI Interview Coach Feedback</h3>
+      <button class="ai-modal-close" id="closeAIModal" type="button">×</button>
+    </div>
+    <div class="ai-modal-content" id="aiModalContent">
+      <!-- AI feedback will be inserted here -->
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1523,11 +1830,13 @@ Return ONLY the category and question.`
             {
               role: "system",
               content:
-                "You are an expert firefighter interview panel member providing detailed, constructive feedback. Be specific, honest, and actionable. Focus on what firefighter panels actually look for."
+                "You are an expert firefighter interview coach teaching candidates to use the STAR method (Situation-Task-Action-Result). Your goal is to help them develop better answers. Be encouraging, specific, and actionable. Focus on teaching STAR method while providing constructive feedback on what firefighter panels actually look for."
             },
             {
               role: "user",
               content: `
+You are an expert firefighter interview coach teaching candidates to use the STAR method (Situation-Task-Action-Result). Your goal is to help them develop better answers.
+
 Interview Question: ${currentQuestion ? currentQuestion.template : "Unknown"}
 Question Category: ${currentQuestion ? currentQuestion.category : "Unknown"}
 
@@ -1537,33 +1846,38 @@ Candidate's Answer:
 Body Language Score (higher = more movement/fidgeting): ${motionScoreForAnswer ?? "unknown"}
 ${resumeContext}
 
-First, provide a brief 2-3 sentence summary of their answer. Then provide structured feedback:
+Analyze this answer and provide coaching feedback focused on teaching STAR method. Structure your response as follows:
 
 ## Answer Summary
-[2-3 sentence summary of what they said]
+[2-3 sentence summary of what they said - be specific about what they covered]
+
+## STAR Method Analysis
+Break down their answer:
+- **Situation**: Did they set the scene? [What they did/didn't do]
+- **Task**: Did they explain what needed to be done? [What they did/didn't do]
+- **Action**: Did they describe their specific actions? [What they did/didn't do]
+- **Result**: Did they explain the outcome? [What they did/didn't do]
+
+## How to Improve Using STAR
+Provide a concrete example showing how they could restructure their answer using STAR. Give them a template or example they can follow.
 
 ## Strengths
-- [Specific point 1]
+- [Specific point 1 - what they did well]
 - [Specific point 2]
 - [Specific point 3]
 
 ## Areas for Improvement
-- [Specific point 1]
+- [Specific point 1 - what needs work, with STAR guidance]
 - [Specific point 2]
 - [Specific point 3]
 
-## STAR Format Assessment
-[Did they use Situation-Task-Action-Result? What was missing?]
-
 ## Panel-Ready Score: [X]/10
-[Brief explanation of the score]
+[Brief explanation of the score and what would make it a 10/10 using STAR]
 
-## Next Steps
-- [Action 1]
-- [Action 2]
-- [Action 3]
+## Practice Exercise
+Give them a specific practice task: "Try answering this question again, but this time start with 'The situation was...' and make sure to include the result at the end."
 
-Use clear markdown formatting with ## for main sections and - for bullet points.
+Use clear markdown formatting with ## for main sections and - for bullet points. Be encouraging but specific.
               `.trim()
             }
           ]
@@ -1576,8 +1890,15 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
         : null;
 
       if (aiFeedback) {
-        // Format the AI feedback with proper HTML structure
-        formatAIFeedback(fireTipsEl, aiFeedback);
+        // Format the AI feedback for both the small preview and modal
+        formatAIFeedback(fireTipsEl, aiFeedback, true); // true = show preview
+        formatAIFeedbackForModal(aiFeedback);
+        
+        // Show the "View Detailed Feedback" button
+        const viewBtn = document.getElementById("viewAIFeedbackBtn");
+        if (viewBtn) {
+          viewBtn.style.display = "block";
+        }
         
         // Add followup button near the question area (more visible)
         addFollowupButton();
@@ -1593,13 +1914,28 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
     }
   });
 
-  // Format AI feedback with proper HTML structure
-  function formatAIFeedback(container, text) {
+  // Format AI feedback with proper HTML structure (for small preview)
+  function formatAIFeedback(container, text, showPreview = false) {
     container.innerHTML = ""; // Clear existing content
+    
+    if (showPreview) {
+      // Show just a brief preview in the small box
+      const preview = text.split("\n").slice(0, 3).join(" ").slice(0, 150) + "...";
+      container.textContent = preview;
+      container.style.cssText = "font-size: 0.75rem; color: #9ca3af; margin: 0;";
+    } else {
+      // Full formatting for modal
+      formatAIFeedbackForModal(text);
+    }
+  }
+  
+  // Format AI feedback for the modal (wide, readable format)
+  function formatAIFeedbackForModal(text) {
+    const modalContent = document.getElementById("aiModalContent");
+    if (!modalContent) return;
     
     // Parse markdown-style formatting
     const lines = text.split("\n");
-    let currentSection = null;
     let html = "";
     
     lines.forEach(line => {
@@ -1607,23 +1943,21 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
       
       // Main sections (##)
       if (trimmed.startsWith("## ")) {
-        if (currentSection) html += "</div>";
         const sectionTitle = trimmed.substring(3);
-        html += `<div style="margin-bottom: 16px;"><h4 style="margin: 0 0 8px 0; color: #fbbf24; font-size: 1rem; font-weight: 600;">${sectionTitle}</h4>`;
-        currentSection = sectionTitle;
+        html += `<h4>${sectionTitle}</h4>`;
       }
       // Bullet points
       else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         const content = trimmed.substring(2);
-        html += `<div style="margin-left: 16px; margin-bottom: 6px; color: #e5e7eb;">• ${content}</div>`;
+        html += `<div class="bullet-point">• ${content}</div>`;
       }
       // Regular paragraphs
       else if (trimmed.length > 0) {
         // Check if it's a score line
         if (trimmed.match(/^\d+\/10/)) {
-          html += `<div style="margin-bottom: 8px; color: #fbbf24; font-weight: 600;">${trimmed}</div>`;
+          html += `<div class="score-highlight">${trimmed}</div>`;
         } else {
-          html += `<div style="margin-bottom: 8px; color: #e5e7eb; line-height: 1.5;">${trimmed}</div>`;
+          html += `<div>${trimmed}</div>`;
         }
       }
       // Empty lines
@@ -1632,11 +1966,51 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
       }
     });
     
-    if (currentSection) html += "</div>";
-    
-    container.innerHTML = html;
-    container.style.cssText = "font-size: 0.875rem; line-height: 1.6; color: #e5e7eb; max-height: 500px; overflow-y: auto; padding: 12px; background: rgba(15, 23, 42, 0.5); border-radius: 8px;";
+    modalContent.innerHTML = html;
   }
+  
+  // Modal functionality
+  const aiModalOverlay = document.getElementById("aiModalOverlay");
+  const closeAIModalBtn = document.getElementById("closeAIModal");
+  const viewAIFeedbackBtn = document.getElementById("viewAIFeedbackBtn");
+  
+  function openAIModal() {
+    if (aiModalOverlay) {
+      aiModalOverlay.classList.add("active");
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
+    }
+  }
+  
+  function closeAIModal() {
+    if (aiModalOverlay) {
+      aiModalOverlay.classList.remove("active");
+      document.body.style.overflow = ""; // Restore scrolling
+    }
+  }
+  
+  if (closeAIModalBtn) {
+    closeAIModalBtn.addEventListener("click", closeAIModal);
+  }
+  
+  if (viewAIFeedbackBtn) {
+    viewAIFeedbackBtn.addEventListener("click", openAIModal);
+  }
+  
+  // Close modal when clicking outside
+  if (aiModalOverlay) {
+    aiModalOverlay.addEventListener("click", (e) => {
+      if (e.target === aiModalOverlay) {
+        closeAIModal();
+      }
+    });
+  }
+  
+  // Close modal with Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && aiModalOverlay && aiModalOverlay.classList.contains("active")) {
+      closeAIModal();
+    }
+  });
   
   // Add followup button near question area
   function addFollowupButton() {

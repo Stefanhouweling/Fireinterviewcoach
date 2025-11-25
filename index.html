@@ -387,6 +387,8 @@
       color: #6b7280;
     }
   </style>
+  <!-- PDF.js for PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -774,28 +776,83 @@
     const file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      resumeText = String(e.target.result || "").replace(/\s+/g, " ").trim();
-      if (!resumeText) {
+    resumeSummaryEl.textContent = "Reading resume file...";
+
+    // Check if it's a PDF
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      try {
+        // Check if PDF.js is loaded
+        if (typeof pdfjsLib === "undefined") {
+          resumeSummaryEl.textContent = "PDF.js library is loading... Please wait a moment and try again.";
+          // Wait a bit and retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          if (typeof pdfjsLib === "undefined") {
+            resumeSummaryEl.textContent = "PDF.js failed to load. Please refresh the page or convert your PDF to .txt format.";
+            return;
+          }
+        }
+        
+        // Use PDF.js to extract text from PDF
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        
+        let fullText = "";
+        // Extract text from all pages
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(" ");
+          fullText += pageText + " ";
+        }
+        
+        resumeText = fullText.replace(/\s+/g, " ").trim();
+        
+        if (!resumeText || resumeText.length < 10) {
+          resumeSummaryEl.textContent =
+            "Could not extract text from PDF. The PDF might be image-based or corrupted. Try exporting as .txt or .docx.";
+          return;
+        }
+        
         resumeSummaryEl.textContent =
-          "Could not read text from this file. Try exporting your resume as .txt.";
-        return;
+          resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
+        resumeKeywords = extractResumeKeywords(resumeText);
+        renderResumeTags();
+        
+        // AI-powered resume analysis
+        if (OPENAI_KEY) {
+          resumeSummaryEl.textContent = "Analyzing resume with AI...";
+          await parseResumeWithAI(resumeText);
+        }
+      } catch (err) {
+        console.error("PDF parsing error:", err);
+        resumeSummaryEl.textContent =
+          "Error reading PDF. Try converting to .txt or .docx format, or ensure the PDF contains selectable text (not just images).";
       }
+    } else {
+      // Handle text files (txt, doc, etc.)
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        resumeText = String(e.target.result || "").replace(/\s+/g, " ").trim();
+        if (!resumeText) {
+          resumeSummaryEl.textContent =
+            "Could not read text from this file. Try exporting your resume as .txt or .pdf.";
+          return;
+        }
 
-      resumeSummaryEl.textContent =
-        resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
-      resumeKeywords = extractResumeKeywords(resumeText);
-      renderResumeTags();
-      
-      // AI-powered resume analysis
-      if (OPENAI_KEY) {
-        resumeSummaryEl.textContent = "Analyzing resume with AI...";
-        await parseResumeWithAI(resumeText);
-      }
-    };
+        resumeSummaryEl.textContent =
+          resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
+        resumeKeywords = extractResumeKeywords(resumeText);
+        renderResumeTags();
+        
+        // AI-powered resume analysis
+        if (OPENAI_KEY) {
+          resumeSummaryEl.textContent = "Analyzing resume with AI...";
+          await parseResumeWithAI(resumeText);
+        }
+      };
 
-    reader.readAsText(file);
+      reader.readAsText(file);
+    }
   }
   
   async function parseResumeWithAI(text) {
@@ -845,15 +902,39 @@ Return a JSON object with this structure:
       
       const data = await response.json();
       if (data.choices && data.choices[0] && data.choices[0].message) {
-        resumeAnalysis = JSON.parse(data.choices[0].message.content);
-        resumeSummaryEl.textContent = 
-          `AI Analysis: ${resumeAnalysis.experience || "Unknown"} experience. ` +
-          `Certifications: ${(resumeAnalysis.certifications || []).join(", ") || "None listed"}. ` +
-          `Focus areas: ${(resumeAnalysis.interviewFocus || []).slice(0, 3).join(", ") || "General"}`;
+        try {
+          const content = data.choices[0].message.content;
+          resumeAnalysis = typeof content === "string" ? JSON.parse(content) : content;
+          
+          // Validate and format the response
+          if (resumeAnalysis) {
+            const experience = resumeAnalysis.experience || resumeAnalysis.yearsOfExperience || "N/A";
+            const certifications = resumeAnalysis.certifications || [];
+            const focusAreas = resumeAnalysis.interviewFocus || resumeAnalysis.focusAreas || [];
+            
+            resumeSummaryEl.textContent = 
+              `AI Analysis: ${experience} experience. ` +
+              `Certifications: ${certifications.length > 0 ? certifications.join(", ") : "None listed"}. ` +
+              `Focus areas: ${focusAreas.length > 0 ? focusAreas.slice(0, 3).join(", ") : "General"}`;
+          } else {
+            throw new Error("Empty analysis result");
+          }
+        } catch (parseErr) {
+          console.error("Error parsing AI response:", parseErr, data);
+          // Fallback: show raw text preview
+          resumeSummaryEl.textContent = 
+            `Resume loaded (${resumeText.length} chars). AI analysis had formatting issues. ` +
+            `Resume preview: ${resumeText.slice(0, 200)}...`;
+        }
+      } else {
+        throw new Error("No response from AI");
       }
     } catch (err) {
       console.error("AI resume parsing error:", err);
-      resumeSummaryEl.textContent = resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
+      // Show more helpful error message with resume preview
+      resumeSummaryEl.textContent = 
+        `Resume loaded (${resumeText.length} chars) but AI analysis failed. ` +
+        `Error: ${err.message}. Resume preview: ${resumeText.slice(0, 300)}...`;
     }
   }
 

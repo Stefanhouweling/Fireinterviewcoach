@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fire Interview Coach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050608;
+      color: #f9fafb;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background: radial-gradient(circle at top, #111827, #020617);
+    }
+
+    .app {
+      max-width: 1200px;
+      width: 100%;
+      margin: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fecaca;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 span.logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: radial-gradient(circle at 30% -20%, #f97316, #b91c1c);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transform: rotate(-10deg);
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-title small {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: #9ca3af;
+    }
+
+    .pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.25);
+      color: #99f6e4;
+      font-size: 0.7rem;
+    }
+
+    .left, .right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    label.file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px dashed rgba(148, 163, 184, 0.5);
+      font-size: 0.8rem;
+      color: #e5e7eb;
+    }
+
+    label.file-label span.icon {
+      font-size: 1rem;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .resume-summary {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      max-height: 90px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .resume-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(55, 65, 81, 0.8);
+      color: #e5e7eb;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ef4444;
+      color: #fef2f2;
+      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.1s ease;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    button.ghost {
+      background: transparent;
+      color: #9ca3af;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: none;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .question-text {
+      min-height: 40px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: #e5e7eb;
+    }
+
+    .question-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+
+    .question-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #16a34a;
+    }
+
+    .status-dot.off {
+      background: #991b1b;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .transcript {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      padding: 6px 8px;
+      min-height: 52px;
+      font-size: 0.75rem;
+      color: #e5e7eb;
+      overflow-y: auto;
+      max-height: 110px;
+    }
+
+    .feedback-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      font-size: 0.75rem;
+    }
+
+    @media (max-width: 600px) {
+      .feedback-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .feedback-block {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      padding: 6px 8px;
+    }
+
+    .feedback-block h4 {
+      margin: 0 0 4px 0;
+      font-size: 0.75rem;
+      color: #e5e7eb;
+    }
+
+    .feedback-block p {
+      margin: 0;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+
+    .score-pill {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #bbf7d0;
+    }
+
+    .score-pill.mid {
+      background: rgba(234, 179, 8, 0.15);
+      color: #facc15;
+    }
+
+    .score-pill.low {
+      background: rgba(248, 113, 113, 0.15);
+      color: #fecaca;
+    }
+
+    .video-wrapper {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #020617;
+      border: 1px solid rgba(30, 64, 175, 0.7);
+      aspect-ratio: 4 / 3;
+    }
+
+    video, canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .video-overlay {
+      position: absolute;
+      inset: auto 8px 8px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 6px;
+      border-radius: 10px;
+      background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.8));
+      font-size: 0.7rem;
+      color: #e5e7eb;
+    }
+
+    .video-overlay span.label {
+      text-transform: uppercase;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: #93c5fd;
+    }
+
+    .video-overlay span.value {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .metrics-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .metric-chip {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    .small-note {
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title">
+      <span class="logo">🔥</span>
+      <div>
+        <h1>Fire Interview Coach</h1>
+        <p class="subtitle">Mock firefighter panels. Real feedback on answers, voice, and body language.</p>
+      </div>
+    </div>
+    <span class="badge">Prototype &bull; Local Only</span>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT SIDE -->
+    <section class="left">
+      <!-- Resume card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Resume
+            <small>(tailors questions to your background)</small>
+          </div>
+          <button class="ghost" id="clearResumeBtn" type="button">Clear</button>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 6px;">
+          <label class="file-label">
+            <span class="icon">📄</span>
+            <span>Upload resume (.txt / simple PDF)</span>
+            <input type="file" id="resumeInput" accept=".txt,.pdf,.doc,.docx,.rtf" />
+          </label>
+          <span class="small-note">
+            For a full build, connect a backend PDF/DOC parser. This demo reads simple text.
+          </span>
+        </div>
+        <div class="resume-summary" id="resumeSummary">
+          No resume loaded yet. Upload a file to extract keywords like “POC firefighter”, “EMR”, “construction”, etc.
+        </div>
+        <div class="resume-tags" id="resumeTags"></div>
+      </div>
+
+      <!-- Question / mic card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Interview Question
+            <small id="questionCategoryLabel"></small>
+          </div>
+          <div class="question-controls">
+            <button id="nextQuestionBtn" type="button">
+              🎤 Next Question
+            </button>
+            <button id="repeatQuestionBtn" class="secondary" type="button">
+              🔁 Repeat
+            </button>
+          </div>
+        </div>
+        <div class="question-text" id="questionText">
+          Click <strong>Next Question</strong> to begin a firefighter interview. Questions will reference your resume where possible.
+        </div>
+        <div class="question-meta">
+          <span>Question #<span id="questionIndex">0</span></span>
+          <span>•</span>
+          <span>Mode: Structured firefighter panel (behavioural + technical)</span>
+        </div>
+        <div class="question-controls" style="margin-top: 10px;">
+          <button id="startAnswerBtn" class="secondary" type="button">
+            ▶ Start Answer (mic)
+          </button>
+          <button id="stopAnswerBtn" class="secondary" type="button" disabled>
+            ⏹ Stop
+          </button>
+          <div class="status">
+            <span class="status-dot off" id="micStatusDot"></span>
+            <span id="micStatusText">Mic idle</span>
+          </div>
+        </div>
+        <div class="transcript" id="transcriptBox">
+          Your live transcript will show here if your browser supports speech recognition. You can also type edits manually.
+        </div>
+      </div>
+
+      <!-- Feedback card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Feedback on This Answer
+          </div>
+          <button id="analyzeBtn" type="button" class="secondary">
+            🧠 Analyze Answer
+          </button>
+        </div>
+        <div class="feedback-grid">
+          <div class="feedback-block">
+            <h4>Content & Structure <span id="contentScore" class="score-pill low">–</span></h4>
+            <p id="contentFeedback">
+              After you answer a question, click “Analyze Answer” for feedback on clarity, structure, and firefighter relevance.
+            </p>
+          </div>
+          <div class="feedback-block">
+            <h4>Voice & Filler Words <span id="voiceScore" class="score-pill low">–</span></h4>
+            <p id="voiceFeedback">
+              “Um, uh, like…” will be detected and summarized here based on your transcript.
+            </p>
+          </div>
+          <div class="feedback-block">
+            <h4>Body Language (Camera) <span id="bodyScore" class="score-pill low">–</span></h4>
+            <p id="bodyFeedback">
+              Movement and stability from the webcam feed will be scored as “steady / moderate / fidgety”.
+            </p>
+          </div>
+          <div class="feedback-block">
+            <h4>Fire-Specific Tips</h4>
+            <p id="fireTips">
+              We’ll highlight if you’re hitting key themes: safety, teamwork, accountability, medical care, community, and learning from mistakes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT SIDE -->
+    <section class="right">
+      <!-- Video card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Camera & Presence
+            <small>(just like sitting in front of a hiring panel)</small>
+          </div>
+          <button id="cameraBtn" type="button" class="secondary">
+            📷 Start Camera
+          </button>
+        </div>
+        <div class="video-wrapper">
+          <video id="camera" autoplay playsinline muted></video>
+          <canvas id="motionCanvas"></canvas>
+          <div class="video-overlay">
+            <span class="label">Body Language</span>
+            <span class="value">
+              Motion score:
+              <strong id="motionScore">–</strong>
+            </span>
+          </div>
+        </div>
+        <div class="metrics-row">
+          <span class="metric-chip">Environment: Aim for chest-up framing, neutral background, good light.</span>
+          <span class="metric-chip">Goal: calm but engaged, limited fidgeting.</span>
+        </div>
+      </div>
+
+      <!-- Meta / instructions -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">How to Use This Prototype</div>
+        </div>
+        <ul style="margin: 0; padding-left: 18px; font-size: 0.75rem; color: #9ca3af; line-height: 1.5;">
+          <li>Upload your resume so questions can reference your real experience (e.g., EMR, volunteer FF, construction, etc).</li>
+          <li>Start the camera. Position yourself as if you’re in a real panel interview.</li>
+          <li>Click <strong>Next Question</strong>. The question will appear on screen and be read aloud.</li>
+          <li>Click <strong>Start Answer</strong>, respond out loud, then click <strong>Stop</strong>.</li>
+          <li>Review or edit the transcript. Then hit <strong>Analyze Answer</strong> for feedback.</li>
+        </ul>
+        <p class="small-note">
+          For a production version you could add: multi-question scoring, saved sessions, question packs per department, and integration with a backend + AI model.
+        </p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // ==========================
+  // Basic data & state
+  // ==========================
+
+  const questionBank = [
+    {
+      category: "Behavioural – High Stress",
+      template: "Tell me about a time you responded to a high-stress emergency. How did you keep scene control and communicate clearly with your team?",
+      tags: ["stress", "communication", "teamwork"]
+    },
+    {
+      category: "Behavioural – Conflict",
+      template: "Describe a situation where you disagreed with a decision from a senior firefighter, officer, or supervisor. How did you handle it?",
+      tags: ["conflict", "professionalism", "chain of command"]
+    },
+    {
+      category: "Safety & Accountability",
+      template: "Tell me about a mistake you made on a call or during training. What did you do in the moment and what did you change afterwards?",
+      tags: ["safety", "accountability", "learning"]
+    },
+    {
+      category: "Medical / EMR",
+      template: "Walk me through how you would approach a call for a patient in respiratory distress. Assume you’re responding as an EMR or first responder.",
+      tags: ["medical", "EMR", "assessment"]
+    },
+    {
+      category: "Teamwork",
+      template: "Give me an example of when you had to rely heavily on your crew or teammates to get a task done safely.",
+      tags: ["teamwork", "trust", "communication"]
+    },
+    {
+      category: "Community Focus",
+      template: "Why do you want to serve in this community specifically, and what have you already done that shows commitment to serving others?",
+      tags: ["community", "motivation"]
+    },
+    {
+      category: "Resilience",
+      template: "Tell me about a time outside the fire service where you had to push through fatigue or setbacks to reach a goal.",
+      tags: ["resilience", "fitness", "discipline"]
+    },
+    {
+      category: "Technical – Fireground",
+      template: "Explain your approach when you arrive first on scene to a structure fire with smoke showing but no flames visible.",
+      tags: ["size-up", "fireground", "command"]
+    }
+  ];
+
+  const firefighterKeywords = [
+    "firefighter", "fire service", "POC", "paid on call", "EMR", "first responder",
+    "ICS", "incident command", "medical", "patient", "scene safety",
+    "hoseline", "ladder", "SCBA", "BA", "RIT", "rapid intervention",
+    "construction", "glazing", "windows", "leadership", "team lead",
+    "training", "drill", "community", "volunteer", "rescue"
+  ];
+
+  let resumeText = "";
+  let resumeKeywords = [];
+  let currentQuestion = null;
+  let questionCount = 0;
+
+  let cameraStream = null;
+  let motionCtx = null;
+  let lastFrameData = null;
+  let motionSamples = [];
+  let motionIntervalId = null;
+
+  let recognition = null;
+  let recognizing = false;
+  let liveTranscriptText = "";
+  let lastAnswerTranscript = "";
+  let motionScoreForAnswer = null;
+
+  // ==========================
+  // Resume handling
+  // ==========================
+
+  const resumeInput = document.getElementById("resumeInput");
+  const resumeSummaryEl = document.getElementById("resumeSummary");
+  const resumeTagsEl = document.getElementById("resumeTags");
+  const clearResumeBtn = document.getElementById("clearResumeBtn");
+
+  resumeInput.addEventListener("change", handleResumeUpload);
+  clearResumeBtn.addEventListener("click", () => {
+    resumeInput.value = "";
+    resumeText = "";
+    resumeKeywords = [];
+    resumeSummaryEl.textContent = "No resume loaded yet. Upload a file to extract keywords like “POC firefighter”, “EMR”, “construction”, etc.";
+    resumeTagsEl.innerHTML = "";
+  });
+
+  function handleResumeUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // For demo we just treat it as text. Real build: use backend to parse PDF/DOCX.
+      resumeText = String(e.target.result || "").replace(/\s+/g, " ").trim();
+      if (!resumeText) {
+        resumeSummaryEl.textContent = "Could not read text from this file. Try exporting your resume as .txt.";
+        return;
+      }
+
+      resumeSummaryEl.textContent = resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
+      resumeKeywords = extractResumeKeywords(resumeText);
+      renderResumeTags();
+    };
+
+    // Read as text – works well for .txt, sometimes for simple PDFs/RTF.
+    reader.readAsText(file);
+  }
+
+  function extractResumeKeywords(text) {
+    const lower = text.toLowerCase();
+    const counts = {};
+
+    firefighterKeywords.forEach(k => {
+      const regex = new RegExp("\\b" + escapeRegExp(k.toLowerCase()) + "\\b", "g");
+      const matches = lower.match(regex);
+      if (matches && matches.length > 0) {
+        counts[k] = matches.length;
+      }
+    });
+
+    // Add role-like words as well
+    const extraPatterns = ["captain", "officer", "volunteer", "paramedic", "wildland", "responder", "crew", "team lead"];
+    extraPatterns.forEach(k => {
+      const regex = new RegExp("\\b" + escapeRegExp(k.toLowerCase()) + "\\b", "g");
+      const matches = lower.match(regex);
+      if (matches && matches.length > 0) {
+        counts[k] = (counts[k] || 0) + matches.length;
+      }
+    });
+
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([word, count]) => ({ word, count }));
+  }
+
+  function renderResumeTags() {
+    resumeTagsEl.innerHTML = "";
+    if (!resumeKeywords.length) {
+      const span = document.createElement("span");
+      span.className = "tag";
+      span.textContent = "No firefighter-specific keywords detected yet.";
+      resumeTagsEl.appendChild(span);
+      return;
+    }
+    resumeKeywords.slice(0, 10).forEach(k => {
+      const span = document.createElement("span");
+      span.className = "tag";
+      span.textContent = `${k.word} ×${k.count}`;
+      resumeTagsEl.appendChild(span);
+    });
+  }
+
+  // ==========================
+  // Question selection & TTS
+  // ==========================
+
+  const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+  const repeatQuestionBtn = document.getElementById("repeatQuestionBtn");
+  const questionTextEl = document.getElementById("questionText");
+  const questionCategoryLabelEl = document.getElementById("questionCategoryLabel");
+  const questionIndexEl = document.getElementById("questionIndex");
+
+  nextQuestionBtn.addEventListener("click", () => {
+    currentQuestion = pickNextQuestion();
+    questionCount++;
+    renderQuestion(currentQuestion);
+    speakQuestion(currentQuestion.template);
+  });
+
+  repeatQuestionBtn.addEventListener("click", () => {
+    if (currentQuestion) {
+      speakQuestion(currentQuestion.template);
+    }
+  });
+
+  function pickNextQuestion() {
+    if (!resumeKeywords.length) {
+      // No resume -> just rotate through the bank
+      return questionBank[questionCount % questionBank.length];
+    }
+
+    // Score questions by overlap with resume keywords
+    const resumeWords = new Set(resumeKeywords.map(k => k.word.toLowerCase()));
+    const scored = questionBank.map(q => {
+      const overlap = q.tags.filter(t => resumeWords.has(t.toLowerCase())).length;
+      // Encourage medical if EMR present, etc.
+      let bonus = 0;
+      const resumeAllText = resumeText.toLowerCase();
+      if (/emr|first responder|first-responder|ambulance|paramedic/.test(resumeAllText) && q.category.includes("Medical")) {
+        bonus += 2;
+      }
+      if (/construction|glazing|installer|foreman|lead/i.test(resumeAllText) && q.category.includes("Safety")) {
+        bonus += 1;
+      }
+      return { q, score: overlap + bonus + Math.random() * 0.1 };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0].q;
+  }
+
+  function renderQuestion(q) {
+    questionTextEl.textContent = q.template;
+    questionCategoryLabelEl.textContent = `(${q.category})`;
+    questionIndexEl.textContent = String(questionCount);
+  }
+
+  function speakQuestion(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.95;
+    utterance.lang = "en-US";
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // ==========================
+  // Camera & motion tracking
+  // ==========================
+
+  const cameraBtn = document.getElementById("cameraBtn");
+  const videoEl = document.getElementById("camera");
+  const motionCanvas = document.getElementById("motionCanvas");
+  const motionScoreEl = document.getElementById("motionScore");
+
+  cameraBtn.addEventListener("click", async () => {
+    if (cameraStream) {
+      stopCamera();
+      return;
+    }
+    await startCamera();
+  });
+
+  async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("getUserMedia not supported in this browser. Try Chrome on https/localhost.");
+      return;
+    }
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      videoEl.srcObject = cameraStream;
+      cameraBtn.textContent = "⏹ Stop Camera";
+
+      // Setup canvas for motion analysis
+      motionCanvas.width = videoEl.clientWidth || 640;
+      motionCanvas.height = videoEl.clientHeight || 480;
+      motionCtx = motionCanvas.getContext("2d");
+
+      motionSamples = [];
+      lastFrameData = null;
+      if (motionIntervalId) clearInterval(motionIntervalId);
+      motionIntervalId = setInterval(captureMotionSample, 600);
+    } catch (err) {
+      console.error(err);
+      alert("Could not access camera. Check permissions.");
+    }
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
+    }
+    videoEl.srcObject = null;
+    cameraBtn.textContent = "📷 Start Camera";
+    if (motionIntervalId) {
+      clearInterval(motionIntervalId);
+      motionIntervalId = null;
+    }
+    motionSamples = [];
+    lastFrameData = null;
+    motionScoreEl.textContent = "–";
+  }
+
+  function captureMotionSample() {
+    if (!cameraStream || !motionCtx) return;
+    const w = motionCanvas.width;
+    const h = motionCanvas.height;
+    if (!w || !h) return;
+
+    motionCtx.drawImage(videoEl, 0, 0, w, h);
+    const frame = motionCtx.getImageData(0, 0, w, h);
+
+    if (!lastFrameData) {
+      lastFrameData = frame;
+      return;
+    }
+
+    // Simple pixel-difference motion score
+    let diffSum = 0;
+    const step = 4 * 8; // sample every 8 pixels for speed
+    for (let i = 0; i < frame.data.length; i += step) {
+      const r = frame.data[i];
+      const g = frame.data[i + 1];
+      const b = frame.data[i + 2];
+      const r0 = lastFrameData.data[i];
+      const g0 = lastFrameData.data[i + 1];
+      const b0 = lastFrameData.data[i + 2];
+      const delta = Math.abs(r - r0) + Math.abs(g - g0) + Math.abs(b - b0);
+      diffSum += delta;
+    }
+    const avgDiff = diffSum / (frame.data.length / step);
+    motionSamples.push(avgDiff);
+    if (motionSamples.length > 40) motionSamples.shift(); // keep last ~24s
+
+    const liveScore = avgDiff.toFixed(0);
+    motionScoreEl.textContent = liveScore;
+    lastFrameData = frame;
+  }
+
+  function computeMotionScoreForAnswer() {
+    if (!motionSamples.length) return null;
+    const avg = motionSamples.reduce((a, b) => a + b, 0) / motionSamples.length;
+    return avg;
+  }
+
+  // ==========================
+  // Speech recognition
+  // ==========================
+
+  const startAnswerBtn = document.getElementById("startAnswerBtn");
+  const stopAnswerBtn = document.getElementById("stopAnswerBtn");
+  const micStatusDot = document.getElementById("micStatusDot");
+  const micStatusText = document.getElementById("micStatusText");
+  const transcriptBox = document.getElementById("transcriptBox");
+
+  initSpeechRecognition();
+
+  function initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      transcriptBox.textContent = "Speech recognition not supported in this browser. You can still type your answer here manually.";
+      transcriptBox.contentEditable = "true";
+      return;
+    }
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      recognizing = true;
+      micStatusDot.classList.remove("off");
+      micStatusText.textContent = "Listening… answer your question.";
+    };
+    recognition.onerror = (event) => {
+      console.warn("Speech recognition error:", event.error);
+    };
+    recognition.onend = () => {
+      recognizing = false;
+      micStatusDot.classList.add("off");
+      micStatusText.textContent = "Mic idle";
+    };
+    recognition.onresult = (event) => {
+      let interim = "";
+      let final = lastAnswerTranscript;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        if (res.isFinal) {
+          final += res[0].transcript + " ";
+        } else {
+          interim += res[0].transcript;
+        }
+      }
+      liveTranscriptText = (final + " " + interim).trim();
+      transcriptBox.textContent = liveTranscriptText;
+    };
+
+    transcriptBox.contentEditable = "true";
+  }
+
+  startAnswerBtn.addEventListener("click", () => {
+    if (!recognition) {
+      // Fallback: manual type only
+      transcriptBox.focus();
+      return;
+    }
+    if (recognizing) return;
+    lastAnswerTranscript = "";
+    liveTranscriptText = "";
+    transcriptBox.textContent = "";
+    motionSamples = []; // reset motion samples for this answer window
+    recognition.start();
+    startAnswerBtn.disabled = true;
+    stopAnswerBtn.disabled = false;
+  });
+
+  stopAnswerBtn.addEventListener("click", () => {
+    if (!recognition || !recognizing) return;
+    recognition.stop();
+    startAnswerBtn.disabled = false;
+    stopAnswerBtn.disabled = true;
+    lastAnswerTranscript = liveTranscriptText || transcriptBox.textContent || "";
+    motionScoreForAnswer = computeMotionScoreForAnswer();
+  });
+
+  // ==========================
+  // Feedback & analysis
+  // ==========================
+
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const contentScoreEl = document.getElementById("contentScore");
+  const voiceScoreEl = document.getElementById("voiceScore");
+  const bodyScoreEl = document.getElementById("bodyScore");
+  const contentFeedbackEl = document.getElementById("contentFeedback");
+  const voiceFeedbackEl = document.getElementById("voiceFeedback");
+  const bodyFeedbackEl = document.getElementById("bodyFeedback");
+  const fireTipsEl = document.getElementById("fireTips");
+
+  analyzeBtn.addEventListener("click", () => {
+    const text = (transcriptBox.textContent || "").trim();
+    if (!text) {
+      alert("No transcript found. Answer the question or type your answer first.");
+      return;
+    }
+    lastAnswerTranscript = text;
+    const content = analyzeContent(text);
+    const voice = analyzeVoice(text);
+    const body = analyzeBody(motionScoreForAnswer);
+    const tips = buildFireTips(content, voice, body);
+
+    applyScoreToPill(contentScoreEl, content.score);
+    applyScoreToPill(voiceScoreEl, voice.score);
+    applyScoreToPill(bodyScoreEl, body.score);
+
+    contentFeedbackEl.textContent = content.feedback;
+    voiceFeedbackEl.textContent = voice.feedback;
+    bodyFeedbackEl.textContent = body.feedback;
+    fireTipsEl.textContent = tips;
+  });
+
+  function analyzeContent(text) {
+    const words = text.split(/\s+/).filter(Boolean);
+    const length = words.length;
+
+    // Very rough structure heuristic: look for “situation”, “task”, “action”, “result” or similar.
+    const structureKeywords = ["situation", "call", "scene", "task", "problem", "action", "then", "after", "result", "outcome", "learned"];
+    const lower = text.toLowerCase();
+    let structureHits = 0;
+    structureKeywords.forEach(k => {
+      if (lower.includes(k)) structureHits++;
+    });
+
+    // Fire/resume keyword hits
+    let keywordHits = 0;
+    const allKeywords = new Set([
+      ...firefighterKeywords.map(k => k.toLowerCase()),
+      ...resumeKeywords.map(k => k.word.toLowerCase())
+    ]);
+    allKeywords.forEach(k => {
+      const regex = new RegExp("\\b" + escapeRegExp(k) + "\\b", "g");
+      const matches = lower.match(regex);
+      if (matches) keywordHits += matches.length;
+    });
+
+    // Score: combine length, structure, and keyword hits
+    let score = 0;
+    if (length >= 80 && length <= 250) score += 3;
+    else if (length >= 50 && length < 80) score += 2;
+    else if (length < 50) score += 1;
+
+    if (structureHits >= 6) score += 3;
+    else if (structureHits >= 3) score += 2;
+    else if (structureHits >= 1) score += 1;
+
+    if (keywordHits >= 5) score += 3;
+    else if (keywordHits >= 2) score += 2;
+    else if (keywordHits >= 1) score += 1;
+
+    const feedbackParts = [];
+    feedbackParts.push(`Length: about ${length} words. Target 90–180 words for most panel answers.`);
+    if (structureHits >= 6) {
+      feedbackParts.push("You naturally walked through the situation, actions, and outcome. Structure was clear.");
+    } else if (structureHits >= 3) {
+      feedbackParts.push("Structure was decent but you could sharpen it with a clear beginning (call setup), middle (actions), and end (results/learning).");
+    } else {
+      feedbackParts.push("Try using a clear flow: brief scene setup → what you did → what happened → what you learned.");
+    }
+
+    if (keywordHits >= 5) {
+      feedbackParts.push("You tied in strong role-specific details (gear, EMR, training, teamwork) which panels like to hear.");
+    } else if (keywordHits >= 2) {
+      feedbackParts.push("You referenced some relevant experience. You could still anchor more to firefighter tasks and your resume (e.g., EMR, call types, training).");
+    } else {
+      feedbackParts.push("You kept things very general. Link the story directly to fire/medical or physical/crew work you actually do.");
+    }
+
+    return {
+      score,
+      feedback: feedbackParts.join(" ")
+    };
+  }
+
+  function analyzeVoice(text) {
+    const lower = text.toLowerCase();
+    const fillerWords = ["um", "uh", "like", "you know", "sort of", "kind of"];
+    let fillerCount = 0;
+    fillerWords.forEach(w => {
+      const regex = new RegExp("\\b" + escapeRegExp(w) + "\\b", "g");
+      const matches = lower.match(regex);
+      if (matches) fillerCount += matches.length;
+    });
+
+    const sentences = text.split(/[.!?]+/).filter(Boolean);
+    const avgSentenceLength = sentences.length
+      ? text.split(/\s+/).filter(Boolean).length / sentences.length
+      : 0;
+
+    let score = 0;
+    if (fillerCount === 0) score += 4;
+    else if (fillerCount <= 2) score += 3;
+    else if (fillerCount <= 5) score += 2;
+    else score += 1;
+
+    if (avgSentenceLength > 8 && avgSentenceLength < 25) score += 3;
+    else if (avgSentenceLength >= 5 && avgSentenceLength <= 30) score += 2;
+    else score += 1;
+
+    const feedbackParts = [];
+    if (fillerCount === 0) {
+      feedbackParts.push("Nice work—no obvious filler words detected.");
+    } else {
+      feedbackParts.push(`Detected about ${fillerCount} filler words (e.g., “um”, “like”). Try pausing silently instead of filling space.`);
+    }
+
+    if (avgSentenceLength > 8 && avgSentenceLength < 25) {
+      feedbackParts.push("Your sentences are a good length—clear but not choppy.");
+    } else if (avgSentenceLength <= 8) {
+      feedbackParts.push("Some sentences are very short. You may sound choppy; try linking ideas together slightly more.");
+    } else {
+      feedbackParts.push("Some sentences are quite long. Break them up so the panel can follow key points.");
+    }
+
+    return {
+      score,
+      fillerCount,
+      feedback: feedbackParts.join(" ")
+    };
+  }
+
+  function analyzeBody(motionScore) {
+    if (motionScore == null || isNaN(motionScore)) {
+      return {
+        score: 2,
+        feedback: "Camera motion data wasn’t available for this answer. Make sure your camera is running before you start speaking."
+      };
+    }
+
+    // Thresholds will depend on your lighting and camera; these are just demo values.
+    let score;
+    let label;
+    if (motionScore < 12) {
+      score = 4;
+      label = "Very steady – little extra movement visible.";
+    } else if (motionScore < 25) {
+      score = 3;
+      label = "Moderate, natural movement – likely fine for a real panel.";
+    } else if (motionScore < 50) {
+      score = 2;
+      label = "Noticeable movement – may read as a bit fidgety or restless.";
+    } else {
+      score = 1;
+      label = "High movement – could distract from your answer. Practice keeping your posture steady.";
+    }
+
+    return {
+      score,
+      feedback: `${label} (motion score ≈ ${motionScore.toFixed(0)} on this answer).`
+    };
+  }
+
+  function buildFireTips(content, voice, body) {
+    const tips = [];
+
+    if (content.score < 7) {
+      tips.push("Practice giving answers in a clear fire-call flow: what the call was, what you saw, what you did, how it ended, and what you learned.");
+    }
+
+    if (voice.fillerCount && voice.fillerCount > 2) {
+      tips.push("Try mock answers where you deliberately pause for one full breath before speaking. That pause cuts out a lot of “ums”.");
+    }
+
+    if (body.score < 3) {
+      tips.push("Set the camera at eye level, plant your feet, and keep your hands rested on the table or in your lap between gestures.");
+    }
+
+    if (tips.length === 0) {
+      tips.push("This answer is close to panel-ready. Next step: practice 3–5 questions in a row so you build stamina and consistency.");
+    }
+
+    return tips.join(" ");
+  }
+
+  function applyScoreToPill(el, score) {
+    el.classList.remove("low", "mid");
+    if (score >= 7) {
+      el.textContent = `${score}/10`;
+      // default (green)
+    } else if (score >= 5) {
+      el.textContent = `${score}/10`;
+      el.classList.add("mid");
+    } else {
+      el.textContent = `${score}/10`;
+      el.classList.add("low");
+    }
+  }
+
+  // ==========================
+  // Helpers
+  // ==========================
+
+  function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+</script>
+</body>
+</html>

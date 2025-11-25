@@ -126,14 +126,6 @@
       color: #9ca3af;
     }
 
-    .pill {
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(15, 118, 110, 0.25);
-      color: #99f6e4;
-      font-size: 0.7rem;
-    }
-
     .left, .right {
       display: flex;
       flex-direction: column;
@@ -397,6 +389,23 @@
   </style>
 </head>
 <body>
+
+<!-- API KEY BOX (per-session only, not stored) -->
+<div id="apiKeyBox" style="background:#020617;padding:16px;border-radius:12px;margin:16px;color:#fff;max-width:1200px;width:100%;">
+  <h3 style="margin:0 0 8px;">🔐 OpenAI API Key (Local Only)</h3>
+  <p style="margin:0 0 6px;font-size:0.8rem;color:#9ca3af;">
+    Enter your API key. It is only used in this tab and cleared when you close or refresh. Don’t share this file with your key inside it.
+  </p>
+  <input type="password" id="apiKeyInput"
+    placeholder="sk-..."
+    style="width:100%;padding:8px;border-radius:8px;border:none;background:#1e293b;color:#fff;">
+  <button id="apiKeySaveBtn"
+    style="margin-top:8px;padding:8px 14px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;">
+    Save Key for This Session
+  </button>
+  <p id="apiKeyStatus" style="font-size:0.75rem;color:#93c5fd;margin-top:6px;"></p>
+</div>
+
 <div class="app">
   <header>
     <div class="title">
@@ -406,7 +415,7 @@
         <p class="subtitle">Mock firefighter panels. Real feedback on answers, voice, and body language.</p>
       </div>
     </div>
-    <span class="badge">Prototype &bull; Local Only</span>
+    <span class="badge">Prototype • Local Only</span>
   </header>
 
   <main class="layout">
@@ -428,7 +437,7 @@
             <input type="file" id="resumeInput" accept=".txt,.pdf,.doc,.docx,.rtf" />
           </label>
           <span class="small-note">
-            For a full build, connect a backend PDF/DOC parser. This demo reads simple text.
+            For a full build, use a backend parser. This demo reads simple text.
           </span>
         </div>
         <div class="resume-summary" id="resumeSummary">
@@ -508,7 +517,7 @@
             </p>
           </div>
           <div class="feedback-block">
-            <h4>Fire-Specific Tips</h4>
+            <h4>Fire-Specific Tips / AI Coach</h4>
             <p id="fireTips">
               We’ll highlight if you’re hitting key themes: safety, teamwork, accountability, medical care, community, and learning from mistakes.
             </p>
@@ -553,14 +562,14 @@
           <div class="card-title">How to Use This Prototype</div>
         </div>
         <ul style="margin: 0; padding-left: 18px; font-size: 0.75rem; color: #9ca3af; line-height: 1.5;">
-          <li>Upload your resume so questions can reference your real experience (e.g., EMR, volunteer FF, construction, etc).</li>
+          <li>Upload your resume so questions can reference your real experience (EMR, volunteer FF, construction, etc).</li>
           <li>Start the camera. Position yourself as if you’re in a real panel interview.</li>
           <li>Click <strong>Next Question</strong>. The question will appear on screen and be read aloud.</li>
           <li>Click <strong>Start Answer</strong>, respond out loud, then click <strong>Stop</strong>.</li>
-          <li>Review or edit the transcript. Then hit <strong>Analyze Answer</strong> for feedback.</li>
+          <li>Review or edit the transcript. Then hit <strong>Analyze Answer</strong> for local + AI feedback.</li>
         </ul>
         <p class="small-note">
-          For a production version you could add: multi-question scoring, saved sessions, question packs per department, and integration with a backend + AI model.
+          For live department use, you’d host this somewhere and keep keys on a backend. This version is designed for you to run privately.
         </p>
       </div>
     </section>
@@ -568,9 +577,25 @@
 </div>
 
 <script>
-  // ==========================
-  // Basic data & state
-  // ==========================
+  // ========== API KEY HANDLING (per-session only) ==========
+  let OPENAI_KEY = null;
+
+  document.getElementById("apiKeySaveBtn").addEventListener("click", () => {
+    const key = document.getElementById("apiKeyInput").value.trim();
+    const status = document.getElementById("apiKeyStatus");
+
+    if (!key || !key.startsWith("sk-")) {
+      status.textContent = "Invalid key. It should start with 'sk-'.";
+      status.style.color = "#fca5a5";
+      OPENAI_KEY = null;
+      return;
+    }
+    OPENAI_KEY = key;
+    status.textContent = "Key saved for this tab only. It will clear when you close/refresh.";
+    status.style.color = "#93c5fd";
+  });
+
+  // ========== BASIC DATA & STATE ==========
 
   const questionBank = [
     {
@@ -640,9 +665,7 @@
   let lastAnswerTranscript = "";
   let motionScoreForAnswer = null;
 
-  // ==========================
-  // Resume handling
-  // ==========================
+  // ========== RESUME HANDLING ==========
 
   const resumeInput = document.getElementById("resumeInput");
   const resumeSummaryEl = document.getElementById("resumeSummary");
@@ -654,7 +677,8 @@
     resumeInput.value = "";
     resumeText = "";
     resumeKeywords = [];
-    resumeSummaryEl.textContent = "No resume loaded yet. Upload a file to extract keywords like “POC firefighter”, “EMR”, “construction”, etc.";
+    resumeSummaryEl.textContent =
+      "No resume loaded yet. Upload a file to extract keywords like “POC firefighter”, “EMR”, “construction”, etc.";
     resumeTagsEl.innerHTML = "";
   });
 
@@ -664,19 +688,19 @@
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      // For demo we just treat it as text. Real build: use backend to parse PDF/DOCX.
       resumeText = String(e.target.result || "").replace(/\s+/g, " ").trim();
       if (!resumeText) {
-        resumeSummaryEl.textContent = "Could not read text from this file. Try exporting your resume as .txt.";
+        resumeSummaryEl.textContent =
+          "Could not read text from this file. Try exporting your resume as .txt.";
         return;
       }
 
-      resumeSummaryEl.textContent = resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
+      resumeSummaryEl.textContent =
+        resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
       resumeKeywords = extractResumeKeywords(resumeText);
       renderResumeTags();
     };
 
-    // Read as text – works well for .txt, sometimes for simple PDFs/RTF.
     reader.readAsText(file);
   }
 
@@ -684,7 +708,7 @@
     const lower = text.toLowerCase();
     const counts = {};
 
-    firefighterKeywords.forEach(k => {
+    firefighterKeywords.forEach((k) => {
       const regex = new RegExp("\\b" + escapeRegExp(k.toLowerCase()) + "\\b", "g");
       const matches = lower.match(regex);
       if (matches && matches.length > 0) {
@@ -692,9 +716,17 @@
       }
     });
 
-    // Add role-like words as well
-    const extraPatterns = ["captain", "officer", "volunteer", "paramedic", "wildland", "responder", "crew", "team lead"];
-    extraPatterns.forEach(k => {
+    const extraPatterns = [
+      "captain",
+      "officer",
+      "volunteer",
+      "paramedic",
+      "wildland",
+      "responder",
+      "crew",
+      "team lead"
+    ];
+    extraPatterns.forEach((k) => {
       const regex = new RegExp("\\b" + escapeRegExp(k.toLowerCase()) + "\\b", "g");
       const matches = lower.match(regex);
       if (matches && matches.length > 0) {
@@ -716,7 +748,7 @@
       resumeTagsEl.appendChild(span);
       return;
     }
-    resumeKeywords.slice(0, 10).forEach(k => {
+    resumeKeywords.slice(0, 10).forEach((k) => {
       const span = document.createElement("span");
       span.className = "tag";
       span.textContent = `${k.word} ×${k.count}`;
@@ -724,9 +756,7 @@
     });
   }
 
-  // ==========================
-  // Question selection & TTS
-  // ==========================
+  // ========== QUESTION SELECTION & TTS ==========
 
   const nextQuestionBtn = document.getElementById("nextQuestionBtn");
   const repeatQuestionBtn = document.getElementById("repeatQuestionBtn");
@@ -742,28 +772,27 @@
   });
 
   repeatQuestionBtn.addEventListener("click", () => {
-    if (currentQuestion) {
-      speakQuestion(currentQuestion.template);
-    }
+    if (currentQuestion) speakQuestion(currentQuestion.template);
   });
 
   function pickNextQuestion() {
     if (!resumeKeywords.length) {
-      // No resume -> just rotate through the bank
       return questionBank[questionCount % questionBank.length];
     }
 
-    // Score questions by overlap with resume keywords
-    const resumeWords = new Set(resumeKeywords.map(k => k.word.toLowerCase()));
-    const scored = questionBank.map(q => {
-      const overlap = q.tags.filter(t => resumeWords.has(t.toLowerCase())).length;
-      // Encourage medical if EMR present, etc.
+    const resumeWords = new Set(resumeKeywords.map((k) => k.word.toLowerCase()));
+    const scored = questionBank.map((q) => {
+      const overlap = q.tags.filter((t) => resumeWords.has(t.toLowerCase())).length;
       let bonus = 0;
       const resumeAllText = resumeText.toLowerCase();
-      if (/emr|first responder|first-responder|ambulance|paramedic/.test(resumeAllText) && q.category.includes("Medical")) {
+      if (
+        /emr|first responder|first-responder|ambulance|paramedic/.test(resumeAllText) &&
+        q.category.includes("Medical")
+      ) {
         bonus += 2;
       }
-      if (/construction|glazing|installer|foreman|lead/i.test(resumeAllText) && q.category.includes("Safety")) {
+      if (/construction|glazing|installer|foreman|lead/i.test(resumeAllText) &&
+        q.category.includes("Safety")) {
         bonus += 1;
       }
       return { q, score: overlap + bonus + Math.random() * 0.1 };
@@ -791,9 +820,7 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  // ==========================
-  // Camera & motion tracking
-  // ==========================
+  // ========== CAMERA & MOTION TRACKING ==========
 
   const cameraBtn = document.getElementById("cameraBtn");
   const videoEl = document.getElementById("camera");
@@ -810,15 +837,17 @@
 
   async function startCamera() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("getUserMedia not supported in this browser. Try Chrome on https/localhost.");
+      alert("getUserMedia not supported. Try Chrome on https/localhost.");
       return;
     }
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false
+      });
       videoEl.srcObject = cameraStream;
       cameraBtn.textContent = "⏹ Stop Camera";
 
-      // Setup canvas for motion analysis
       motionCanvas.width = videoEl.clientWidth || 640;
       motionCanvas.height = videoEl.clientHeight || 480;
       motionCtx = motionCanvas.getContext("2d");
@@ -835,7 +864,7 @@
 
   function stopCamera() {
     if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream.getTracks().forEach((t) => t.stop());
       cameraStream = null;
     }
     videoEl.srcObject = null;
@@ -863,9 +892,8 @@
       return;
     }
 
-    // Simple pixel-difference motion score
     let diffSum = 0;
-    const step = 4 * 8; // sample every 8 pixels for speed
+    const step = 4 * 8;
     for (let i = 0; i < frame.data.length; i += step) {
       const r = frame.data[i];
       const g = frame.data[i + 1];
@@ -878,7 +906,7 @@
     }
     const avgDiff = diffSum / (frame.data.length / step);
     motionSamples.push(avgDiff);
-    if (motionSamples.length > 40) motionSamples.shift(); // keep last ~24s
+    if (motionSamples.length > 40) motionSamples.shift();
 
     const liveScore = avgDiff.toFixed(0);
     motionScoreEl.textContent = liveScore;
@@ -887,13 +915,12 @@
 
   function computeMotionScoreForAnswer() {
     if (!motionSamples.length) return null;
-    const avg = motionSamples.reduce((a, b) => a + b, 0) / motionSamples.length;
+    const avg =
+      motionSamples.reduce((a, b) => a + b, 0) / motionSamples.length;
     return avg;
   }
 
-  // ==========================
-  // Speech recognition
-  // ==========================
+  // ========== SPEECH RECOGNITION ==========
 
   const startAnswerBtn = document.getElementById("startAnswerBtn");
   const stopAnswerBtn = document.getElementById("stopAnswerBtn");
@@ -904,9 +931,11 @@
   initSpeechRecognition();
 
   function initSpeechRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      transcriptBox.textContent = "Speech recognition not supported in this browser. You can still type your answer here manually.";
+      transcriptBox.textContent =
+        "Speech recognition not supported in this browser. You can still type your answer here manually.";
       transcriptBox.contentEditable = "true";
       return;
     }
@@ -948,7 +977,6 @@
 
   startAnswerBtn.addEventListener("click", () => {
     if (!recognition) {
-      // Fallback: manual type only
       transcriptBox.focus();
       return;
     }
@@ -956,7 +984,7 @@
     lastAnswerTranscript = "";
     liveTranscriptText = "";
     transcriptBox.textContent = "";
-    motionSamples = []; // reset motion samples for this answer window
+    motionSamples = [];
     recognition.start();
     startAnswerBtn.disabled = true;
     stopAnswerBtn.disabled = false;
@@ -971,9 +999,7 @@
     motionScoreForAnswer = computeMotionScoreForAnswer();
   });
 
-  // ==========================
-  // Feedback & analysis
-  // ==========================
+  // ========== FEEDBACK & ANALYSIS ==========
 
   const analyzeBtn = document.getElementById("analyzeBtn");
   const contentScoreEl = document.getElementById("contentScore");
@@ -984,13 +1010,14 @@
   const bodyFeedbackEl = document.getElementById("bodyFeedback");
   const fireTipsEl = document.getElementById("fireTips");
 
-  analyzeBtn.addEventListener("click", () => {
+  analyzeBtn.addEventListener("click", async () => {
     const text = (transcriptBox.textContent || "").trim();
     if (!text) {
       alert("No transcript found. Answer the question or type your answer first.");
       return;
     }
     lastAnswerTranscript = text;
+
     const content = analyzeContent(text);
     const voice = analyzeVoice(text);
     const body = analyzeBody(motionScoreForAnswer);
@@ -1004,33 +1031,95 @@
     voiceFeedbackEl.textContent = voice.feedback;
     bodyFeedbackEl.textContent = body.feedback;
     fireTipsEl.textContent = tips;
+
+    // ====== EXTRA AI FEEDBACK (OpenAI direct from browser) ======
+    if (!OPENAI_KEY) {
+      // No key, just keep local feedback
+      return;
+    }
+
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + OPENAI_KEY
+        },
+        body: JSON.stringify({
+          model: "gpt-5.1-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert firefighter interview coach. Be honest, practical, and concise. Focus on panel-style feedback."
+            },
+            {
+              role: "user",
+              content: `
+Interview Question: ${currentQuestion ? currentQuestion.template : "Unknown"}
+Candidate Answer: ${text}
+Approx motion score (higher can mean more fidgeting): ${motionScoreForAnswer ?? "unknown"}
+Resume (may be partial): ${resumeText ? resumeText.slice(0, 1500) : "Not provided"}
+
+Give:
+- 3–5 bullet points of feedback on this answer
+- 1 concrete suggestion for what to improve in the next attempt
+              `.trim()
+            }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      const aiFeedback = data.choices && data.choices[0] && data.choices[0].message
+        ? data.choices[0].message.content
+        : null;
+
+      if (aiFeedback) {
+        fireTipsEl.textContent = aiFeedback;
+      } else {
+        // keep the local tips if AI fails
+      }
+    } catch (err) {
+      console.error("AI feedback error:", err);
+      // keep local tips if AI call fails
+    }
   });
 
   function analyzeContent(text) {
     const words = text.split(/\s+/).filter(Boolean);
     const length = words.length;
 
-    // Very rough structure heuristic: look for “situation”, “task”, “action”, “result” or similar.
-    const structureKeywords = ["situation", "call", "scene", "task", "problem", "action", "then", "after", "result", "outcome", "learned"];
+    const structureKeywords = [
+      "situation",
+      "call",
+      "scene",
+      "task",
+      "problem",
+      "action",
+      "then",
+      "after",
+      "result",
+      "outcome",
+      "learned"
+    ];
     const lower = text.toLowerCase();
     let structureHits = 0;
-    structureKeywords.forEach(k => {
+    structureKeywords.forEach((k) => {
       if (lower.includes(k)) structureHits++;
     });
 
-    // Fire/resume keyword hits
     let keywordHits = 0;
     const allKeywords = new Set([
-      ...firefighterKeywords.map(k => k.toLowerCase()),
-      ...resumeKeywords.map(k => k.word.toLowerCase())
+      ...firefighterKeywords.map((k) => k.toLowerCase()),
+      ...resumeKeywords.map((k) => k.word.toLowerCase())
     ]);
-    allKeywords.forEach(k => {
+    allKeywords.forEach((k) => {
       const regex = new RegExp("\\b" + escapeRegExp(k) + "\\b", "g");
       const matches = lower.match(regex);
       if (matches) keywordHits += matches.length;
     });
 
-    // Score: combine length, structure, and keyword hits
     let score = 0;
     if (length >= 80 && length <= 250) score += 3;
     else if (length >= 50 && length < 80) score += 2;
@@ -1045,21 +1134,35 @@
     else if (keywordHits >= 1) score += 1;
 
     const feedbackParts = [];
-    feedbackParts.push(`Length: about ${length} words. Target 90–180 words for most panel answers.`);
+    feedbackParts.push(
+      `Length: about ${length} words. Target 90–180 words for most panel answers.`
+    );
     if (structureHits >= 6) {
-      feedbackParts.push("You naturally walked through the situation, actions, and outcome. Structure was clear.");
+      feedbackParts.push(
+        "You naturally walked through the situation, actions, and outcome. Structure was clear."
+      );
     } else if (structureHits >= 3) {
-      feedbackParts.push("Structure was decent but you could sharpen it with a clear beginning (call setup), middle (actions), and end (results/learning).");
+      feedbackParts.push(
+        "Structure was decent but you could sharpen it with a clear beginning (call setup), middle (actions), and end (results/learning)."
+      );
     } else {
-      feedbackParts.push("Try using a clear flow: brief scene setup → what you did → what happened → what you learned.");
+      feedbackParts.push(
+        "Try using a clear flow: brief scene setup → what you did → what happened → what you learned."
+      );
     }
 
     if (keywordHits >= 5) {
-      feedbackParts.push("You tied in strong role-specific details (gear, EMR, training, teamwork) which panels like to hear.");
+      feedbackParts.push(
+        "You tied in strong role-specific details (gear, EMR, training, teamwork) which panels like to hear."
+      );
     } else if (keywordHits >= 2) {
-      feedbackParts.push("You referenced some relevant experience. You could still anchor more to firefighter tasks and your resume (e.g., EMR, call types, training).");
+      feedbackParts.push(
+        "You referenced some relevant experience. You could still anchor more to firefighter tasks and your resume (EMR, call types, training)."
+      );
     } else {
-      feedbackParts.push("You kept things very general. Link the story directly to fire/medical or physical/crew work you actually do.");
+      feedbackParts.push(
+        "You kept things very general. Link the story directly to fire/medical or physical/crew work you actually do."
+      );
     }
 
     return {
@@ -1072,7 +1175,7 @@
     const lower = text.toLowerCase();
     const fillerWords = ["um", "uh", "like", "you know", "sort of", "kind of"];
     let fillerCount = 0;
-    fillerWords.forEach(w => {
+    fillerWords.forEach((w) => {
       const regex = new RegExp("\\b" + escapeRegExp(w) + "\\b", "g");
       const matches = lower.match(regex);
       if (matches) fillerCount += matches.length;
@@ -1097,15 +1200,21 @@
     if (fillerCount === 0) {
       feedbackParts.push("Nice work—no obvious filler words detected.");
     } else {
-      feedbackParts.push(`Detected about ${fillerCount} filler words (e.g., “um”, “like”). Try pausing silently instead of filling space.`);
+      feedbackParts.push(
+        `Detected about ${fillerCount} filler words (e.g., “um”, “like”). Try pausing silently instead of filling space.`
+      );
     }
 
     if (avgSentenceLength > 8 && avgSentenceLength < 25) {
       feedbackParts.push("Your sentences are a good length—clear but not choppy.");
     } else if (avgSentenceLength <= 8) {
-      feedbackParts.push("Some sentences are very short. You may sound choppy; try linking ideas together slightly more.");
+      feedbackParts.push(
+        "Some sentences are very short. You may sound choppy; try linking ideas together slightly more."
+      );
     } else {
-      feedbackParts.push("Some sentences are quite long. Break them up so the panel can follow key points.");
+      feedbackParts.push(
+        "Some sentences are quite long. Break them up so the panel can follow key points."
+      );
     }
 
     return {
@@ -1119,11 +1228,11 @@
     if (motionScore == null || isNaN(motionScore)) {
       return {
         score: 2,
-        feedback: "Camera motion data wasn’t available for this answer. Make sure your camera is running before you start speaking."
+        feedback:
+          "Camera motion data wasn’t available for this answer. Make sure your camera is running before you start speaking."
       };
     }
 
-    // Thresholds will depend on your lighting and camera; these are just demo values.
     let score;
     let label;
     if (motionScore < 12) {
@@ -1137,7 +1246,8 @@
       label = "Noticeable movement – may read as a bit fidgety or restless.";
     } else {
       score = 1;
-      label = "High movement – could distract from your answer. Practice keeping your posture steady.";
+      label =
+        "High movement – could distract from your answer. Practice keeping your posture steady.";
     }
 
     return {
@@ -1150,19 +1260,27 @@
     const tips = [];
 
     if (content.score < 7) {
-      tips.push("Practice giving answers in a clear fire-call flow: what the call was, what you saw, what you did, how it ended, and what you learned.");
+      tips.push(
+        "Practice giving answers in a clear fire-call flow: what the call was, what you saw, what you did, how it ended, and what you learned."
+      );
     }
 
     if (voice.fillerCount && voice.fillerCount > 2) {
-      tips.push("Try mock answers where you deliberately pause for one full breath before speaking. That pause cuts out a lot of “ums”.");
+      tips.push(
+        "Try mock answers where you deliberately pause for one full breath before speaking. That pause cuts out a lot of “ums”."
+      );
     }
 
     if (body.score < 3) {
-      tips.push("Set the camera at eye level, plant your feet, and keep your hands rested on the table or in your lap between gestures.");
+      tips.push(
+        "Set the camera at eye level, plant your feet, and keep your hands rested on the table or in your lap between gestures."
+      );
     }
 
     if (tips.length === 0) {
-      tips.push("This answer is close to panel-ready. Next step: practice 3–5 questions in a row so you build stamina and consistency.");
+      tips.push(
+        "This answer is close to panel-ready. Next step: practice 3–5 questions in a row so you build stamina and consistency."
+      );
     }
 
     return tips.join(" ");
@@ -1172,7 +1290,6 @@
     el.classList.remove("low", "mid");
     if (score >= 7) {
       el.textContent = `${score}/10`;
-      // default (green)
     } else if (score >= 5) {
       el.textContent = `${score}/10`;
       el.classList.add("mid");
@@ -1181,10 +1298,6 @@
       el.classList.add("low");
     }
   }
-
-  // ==========================
-  // Helpers
-  // ==========================
 
   function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

@@ -943,10 +943,7 @@
     consoleContent.appendChild(logEntry);
     consoleContent.scrollTop = consoleContent.scrollHeight;
     
-    // Also log to browser console
-    if (type === "error") console.error(message);
-    else if (type === "warn") console.warn(message);
-    else console.log(message);
+    // Don't call console methods here - they're already being called by the override
   }
   
   if (showConsoleBtn) {
@@ -976,23 +973,43 @@
   }
   
   // Override console methods to also log to onscreen console
-  const originalLog = console.log;
-  const originalError = console.error;
-  const originalWarn = console.warn;
+  // Use a flag to prevent infinite recursion
+  let isLogging = false;
+  const originalLog = console.log.bind(console);
+  const originalError = console.error.bind(console);
+  const originalWarn = console.warn.bind(console);
   
   console.log = function(...args) {
-    originalLog.apply(console, args);
-    logToConsole(args.join(" "), "info");
+    if (!isLogging) {
+      isLogging = true;
+      originalLog(...args);
+      logToConsole(args.join(" "), "info");
+      isLogging = false;
+    } else {
+      originalLog(...args);
+    }
   };
   
   console.error = function(...args) {
-    originalError.apply(console, args);
-    logToConsole(args.join(" "), "error");
+    if (!isLogging) {
+      isLogging = true;
+      originalError(...args);
+      logToConsole(args.join(" "), "error");
+      isLogging = false;
+    } else {
+      originalError(...args);
+    }
   };
   
   console.warn = function(...args) {
-    originalWarn.apply(console, args);
-    logToConsole(args.join(" "), "warn");
+    if (!isLogging) {
+      isLogging = true;
+      originalWarn(...args);
+      logToConsole(args.join(" "), "warn");
+      isLogging = false;
+    } else {
+      originalWarn(...args);
+    }
   };
 
   // ========== API KEY HANDLING (per-session only) ==========
@@ -1036,9 +1053,11 @@
     }
     
     // Hide the API key box after a short delay
-    setTimeout(() => {
-      apiKeyBox.style.display = "none";
-    }, 1500);
+    if (apiKeyBox) {
+      setTimeout(() => {
+        apiKeyBox.style.display = "none";
+      }, 1500);
+    }
   });
 
   // ========== BASIC DATA & STATE ==========

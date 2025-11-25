@@ -471,6 +471,7 @@
           <span>•</span>
           <span>Mode: AI-Powered Dynamic Panel (behavioural + technical + contextual followups)</span>
         </div>
+        <div id="followupButtonContainer" style="margin-top: 12px;"></div>
         <div class="question-controls" style="margin-top: 10px;">
           <button id="startAnswerBtn" class="secondary" type="button">
             ▶ Start Answer (mic)
@@ -674,6 +675,83 @@
   let liveTranscriptText = "";
   let lastAnswerTranscript = "";
   let motionScoreForAnswer = null;
+  
+  // ========== VOICE SELECTION ==========
+  let selectedVoice = null;
+  
+  // Find and cache the best available voice
+  function initializeVoice() {
+    if (selectedVoice) return selectedVoice;
+    
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) {
+      // Voices might not be loaded yet, try again after a short delay
+      setTimeout(() => {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices && voices.length > 0) {
+          selectedVoice = selectBestVoice(voices);
+        }
+      }, 100);
+      return null;
+    }
+    
+    selectedVoice = selectBestVoice(voices);
+    return selectedVoice;
+  }
+  
+  function selectBestVoice(voices) {
+    // Preferred voices (more natural sounding)
+    const preferredVoices = [
+      "Google US English", "Microsoft Zira", "Microsoft David",
+      "Samantha", "Alex", "Victoria", "Daniel", "Karen",
+      "Google UK English Female", "Google UK English Male",
+      "Microsoft Mark", "Microsoft Hazel"
+    ];
+    
+    // First, try to find a preferred voice
+    for (const preferred of preferredVoices) {
+      const voice = voices.find(v => 
+        v.name.includes(preferred) || 
+        v.name.toLowerCase().includes(preferred.toLowerCase())
+      );
+      if (voice && voice.lang.startsWith("en")) {
+        return voice;
+      }
+    }
+    
+    // Fallback: find any English voice that's not obviously robotic
+    const englishVoices = voices.filter(v => 
+      v.lang.startsWith("en") && 
+      !v.name.toLowerCase().includes("novelty") &&
+      !v.name.toLowerCase().includes("compact")
+    );
+    
+    if (englishVoices.length > 0) {
+      // Prefer female voices (often sound more natural for interviews)
+      const femaleVoice = englishVoices.find(v => 
+        v.name.toLowerCase().includes("female") ||
+        v.name.toLowerCase().includes("zira") ||
+        v.name.toLowerCase().includes("samantha") ||
+        v.name.toLowerCase().includes("victoria")
+      );
+      if (femaleVoice) return femaleVoice;
+      
+      // Otherwise, return the first English voice
+      return englishVoices[0];
+    }
+    
+    // Last resort: any voice
+    return voices[0] || null;
+  }
+  
+  // Load voices when they become available
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      initializeVoice();
+    };
+    // Try to initialize immediately
+    initializeVoice();
+  }
 
   // ========== RESUME HANDLING ==========
 
@@ -747,8 +825,8 @@
 - Key achievements
 - Areas that would be interesting for interview questions
 
-Resume text:
-${text.slice(0, 4000)}
+Resume text (full text - analyze completely):
+${text}
 
 Return a JSON object with this structure:
 {
@@ -1055,11 +1133,32 @@ Return ONLY the category and question.`
       subtitleEl.style.display = "block";
     }
 
+    // Ensure we have the best voice selected
+    let voice = initializeVoice();
+    
+    // If voice not loaded yet, try to get it from available voices
+    if (!voice && window.speechSynthesis) {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices && voices.length > 0) {
+        voice = selectBestVoice(voices);
+        selectedVoice = voice; // Cache it
+      }
+    }
+    
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.volume = 0.95;
-    utterance.lang = "en-US";
+    
+    // Use the selected voice if available
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = "en-US";
+    }
+    
+    // Optimized parameters for natural speech (interview-style)
+    utterance.rate = 0.90;  // Slightly slower for clarity and professionalism
+    utterance.pitch = 1.08; // Slightly higher pitch (more natural, less robotic)
+    utterance.volume = 1.0;  // Full volume
     
     // Word-by-word highlighting for live captions
     const words = text.split(/\s+/);
@@ -1123,7 +1222,8 @@ Return ONLY the category and question.`
       motionSamples = [];
       lastFrameData = null;
       if (motionIntervalId) clearInterval(motionIntervalId);
-      motionIntervalId = setInterval(captureMotionSample, 600);
+      // Increased interval and added smoothing to reduce jitter
+      motionIntervalId = setInterval(captureMotionSample, 1000);
     } catch (err) {
       console.error(err);
       alert("Could not access camera. Check permissions.");
@@ -1161,7 +1261,7 @@ Return ONLY the category and question.`
     }
 
     let diffSum = 0;
-    const step = 4 * 8;
+    const step = 4 * 12; // Increased step size to reduce sensitivity
     for (let i = 0; i < frame.data.length; i += step) {
       const r = frame.data[i];
       const g = frame.data[i + 1];
@@ -1174,9 +1274,13 @@ Return ONLY the category and question.`
     }
     const avgDiff = diffSum / (frame.data.length / step);
     motionSamples.push(avgDiff);
-    if (motionSamples.length > 40) motionSamples.shift();
+    // Keep more samples for better smoothing
+    if (motionSamples.length > 60) motionSamples.shift();
 
-    const liveScore = avgDiff.toFixed(0);
+    // Smooth the display with exponential moving average
+    const recentSamples = motionSamples.slice(-10);
+    const smoothedScore = recentSamples.reduce((a, b) => a + b, 0) / recentSamples.length;
+    const liveScore = Math.round(smoothedScore);
     motionScoreEl.textContent = liveScore;
     lastFrameData = frame;
   }
@@ -1323,7 +1427,7 @@ Return ONLY the category and question.`
       const resumeContext = resumeAnalysis 
         ? `Resume Analysis: ${JSON.stringify(resumeAnalysis)}`
         : resumeText 
-          ? `Resume: ${resumeText.slice(0, 1500)}`
+          ? `Resume (full): ${resumeText}`
           : "No resume provided";
 
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -1345,18 +1449,40 @@ Return ONLY the category and question.`
               content: `
 Interview Question: ${currentQuestion ? currentQuestion.template : "Unknown"}
 Question Category: ${currentQuestion ? currentQuestion.category : "Unknown"}
-Candidate Answer: ${text}
+
+Candidate's Answer:
+"${text}"
+
 Body Language Score (higher = more movement/fidgeting): ${motionScoreForAnswer ?? "unknown"}
 ${resumeContext}
 
-Provide comprehensive feedback:
-1. **Strengths**: What did they do well? (2-3 specific points)
-2. **Areas for Improvement**: What needs work? (3-4 specific points)
-3. **STAR Format Assessment**: Did they use Situation-Task-Action-Result structure?
-4. **Panel-Ready Score**: Rate 1-10 and explain why
-5. **Next Steps**: 2-3 concrete actions to improve before the real interview
+First, provide a brief 2-3 sentence summary of their answer. Then provide structured feedback:
 
-Format as clear, readable text with sections.
+## Answer Summary
+[2-3 sentence summary of what they said]
+
+## Strengths
+- [Specific point 1]
+- [Specific point 2]
+- [Specific point 3]
+
+## Areas for Improvement
+- [Specific point 1]
+- [Specific point 2]
+- [Specific point 3]
+
+## STAR Format Assessment
+[Did they use Situation-Task-Action-Result? What was missing?]
+
+## Panel-Ready Score: [X]/10
+[Brief explanation of the score]
+
+## Next Steps
+- [Action 1]
+- [Action 2]
+- [Action 3]
+
+Use clear markdown formatting with ## for main sections and - for bullet points.
               `.trim()
             }
           ]
@@ -1369,27 +1495,11 @@ Format as clear, readable text with sections.
         : null;
 
       if (aiFeedback) {
-        fireTipsEl.textContent = aiFeedback;
-        // Add a button to generate followup question
-        const followupBtn = document.createElement("button");
-        followupBtn.textContent = "💬 Ask Followup Question (Like a Real Panel)";
-        followupBtn.style.cssText = "margin-top: 12px; padding: 10px 16px; border-radius: 8px; border: none; background: #ef4444; color: #fff; cursor: pointer; font-size: 0.9rem;";
-        followupBtn.onclick = async () => {
-          followupBtn.disabled = true;
-          followupBtn.textContent = "🤖 Generating followup...";
-          try {
-            currentQuestion = await generateFollowupQuestion();
-            questionCount++;
-            renderQuestion(currentQuestion);
-            speakQuestionWithCaptions(currentQuestion.template);
-            followupBtn.remove();
-          } catch (err) {
-            console.error("Followup generation error:", err);
-            followupBtn.textContent = "Error generating followup";
-          }
-        };
-        fireTipsEl.appendChild(document.createElement("br"));
-        fireTipsEl.appendChild(followupBtn);
+        // Format the AI feedback with proper HTML structure
+        formatAIFeedback(fireTipsEl, aiFeedback);
+        
+        // Add followup button near the question area (more visible)
+        addFollowupButton();
       } else {
         // keep the local tips if AI fails
       }
@@ -1401,6 +1511,94 @@ Format as clear, readable text with sections.
       analyzeBtn.textContent = "Analyze Answer";
     }
   });
+
+  // Format AI feedback with proper HTML structure
+  function formatAIFeedback(container, text) {
+    container.innerHTML = ""; // Clear existing content
+    
+    // Parse markdown-style formatting
+    const lines = text.split("\n");
+    let currentSection = null;
+    let html = "";
+    
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      
+      // Main sections (##)
+      if (trimmed.startsWith("## ")) {
+        if (currentSection) html += "</div>";
+        const sectionTitle = trimmed.substring(3);
+        html += `<div style="margin-bottom: 16px;"><h4 style="margin: 0 0 8px 0; color: #fbbf24; font-size: 1rem; font-weight: 600;">${sectionTitle}</h4>`;
+        currentSection = sectionTitle;
+      }
+      // Bullet points
+      else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+        const content = trimmed.substring(2);
+        html += `<div style="margin-left: 16px; margin-bottom: 6px; color: #e5e7eb;">• ${content}</div>`;
+      }
+      // Regular paragraphs
+      else if (trimmed.length > 0) {
+        // Check if it's a score line
+        if (trimmed.match(/^\d+\/10/)) {
+          html += `<div style="margin-bottom: 8px; color: #fbbf24; font-weight: 600;">${trimmed}</div>`;
+        } else {
+          html += `<div style="margin-bottom: 8px; color: #e5e7eb; line-height: 1.5;">${trimmed}</div>`;
+        }
+      }
+      // Empty lines
+      else {
+        html += "<br>";
+      }
+    });
+    
+    if (currentSection) html += "</div>";
+    
+    container.innerHTML = html;
+    container.style.cssText = "font-size: 0.875rem; line-height: 1.6; color: #e5e7eb; max-height: 500px; overflow-y: auto; padding: 12px; background: rgba(15, 23, 42, 0.5); border-radius: 8px;";
+  }
+  
+  // Add followup button near question area
+  function addFollowupButton() {
+    // Remove existing followup button if any
+    const existingBtn = document.getElementById("followupQuestionBtn");
+    if (existingBtn) existingBtn.remove();
+    
+    const followupBtn = document.createElement("button");
+    followupBtn.id = "followupQuestionBtn";
+    followupBtn.textContent = "💬 Ask Followup Question";
+    followupBtn.style.cssText = "margin-top: 12px; padding: 12px 20px; border-radius: 8px; border: none; background: #ef4444; color: #fff; cursor: pointer; font-size: 0.95rem; font-weight: 600; width: 100%; transition: background 0.2s;";
+    followupBtn.onmouseover = () => followupBtn.style.background = "#dc2626";
+    followupBtn.onmouseout = () => followupBtn.style.background = "#ef4444";
+    
+    followupBtn.onclick = async () => {
+      followupBtn.disabled = true;
+      followupBtn.textContent = "🤖 Generating followup...";
+      try {
+        currentQuestion = await generateFollowupQuestion();
+        questionCount++;
+        renderQuestion(currentQuestion);
+        speakQuestionWithCaptions(currentQuestion.template);
+        followupBtn.remove();
+      } catch (err) {
+        console.error("Followup generation error:", err);
+        followupBtn.textContent = "Error generating followup";
+        followupBtn.disabled = false;
+      }
+    };
+    
+    // Insert into the dedicated container
+    const container = document.getElementById("followupButtonContainer");
+    if (container) {
+      container.innerHTML = "";
+      container.appendChild(followupBtn);
+    } else {
+      // Fallback: add after question meta
+      const questionMeta = document.querySelector(".question-meta");
+      if (questionMeta && questionMeta.parentNode) {
+        questionMeta.parentNode.insertBefore(followupBtn, questionMeta.nextSibling);
+      }
+    }
+  }
 
   function analyzeContent(text) {
     const words = text.split(/\s+/).filter(Boolean);

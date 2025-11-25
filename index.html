@@ -685,18 +685,31 @@
 
 <!-- API KEY BOX (per-session only, not stored) -->
 <div id="apiKeyBox" style="background:linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);padding:20px;border-radius:16px;margin:16px;color:#fff;max-width:1200px;width:100%;border:1px solid rgba(239, 68, 68, 0.2);box-shadow:0 4px 16px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(239, 68, 68, 0.1);">
-  <h3 style="margin:0 0 8px;">🔐 OpenAI API Key (Local Only)</h3>
-  <p style="margin:0 0 6px;font-size:0.8rem;color:#9ca3af;">
-    Enter your API key. It is only used in this tab and cleared when you close or refresh. Don’t share this file with your key inside it.
+  <h3 style="margin:0 0 12px;">🔐 API Keys (Local Only)</h3>
+  <p style="margin:0 0 12px;font-size:0.8rem;color:#9ca3af;">
+    Enter your API keys. They are only used in this tab and cleared when you close or refresh. Don't share this file with your keys inside it.
   </p>
-  <input type="password" id="apiKeyInput"
-    placeholder="sk-..."
-    style="width:100%;padding:8px;border-radius:8px;border:none;background:#1e293b;color:#fff;">
+  
+  <div style="margin-bottom: 12px;">
+    <label style="display:block;margin-bottom:4px;font-size:0.85rem;color:#cbd5e1;font-weight:500;">OpenAI API Key (for AI questions & feedback)</label>
+    <input type="password" id="apiKeyInput"
+      placeholder="sk-..."
+      style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(148, 163, 184, 0.3);background:#1e293b;color:#fff;font-size:0.9rem;">
+  </div>
+  
+  <div style="margin-bottom: 12px;">
+    <label style="display:block;margin-bottom:4px;font-size:0.85rem;color:#cbd5e1;font-weight:500;">ElevenLabs API Key (for natural voice - optional but recommended)</label>
+    <input type="password" id="elevenLabsKeyInput"
+      placeholder="Your ElevenLabs API key..."
+      style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(148, 163, 184, 0.3);background:#1e293b;color:#fff;font-size:0.9rem;">
+    <p style="margin:4px 0 0 0;font-size:0.7rem;color:#9ca3af;">Get your key from <a href="https://elevenlabs.io" target="_blank" style="color:#fbbf24;">elevenlabs.io</a> - provides ChatGPT-like natural voice</p>
+  </div>
+  
   <button id="apiKeySaveBtn"
-    style="margin-top:8px;padding:8px 14px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;">
-    Save Key for This Session
+    style="margin-top:8px;padding:10px 16px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;font-weight:600;width:100%;">
+    Save Keys for This Session
   </button>
-  <p id="apiKeyStatus" style="font-size:0.75rem;color:#93c5fd;margin-top:6px;"></p>
+  <p id="apiKeyStatus" style="font-size:0.75rem;color:#93c5fd;margin-top:8px;"></p>
 </div>
 
 <div class="app">
@@ -890,26 +903,42 @@
 <script>
   // ========== API KEY HANDLING (per-session only) ==========
   let OPENAI_KEY = null;
+  let ELEVENLABS_KEY = null;
 
   document.getElementById("apiKeySaveBtn").addEventListener("click", () => {
-    const key = document.getElementById("apiKeyInput").value.trim();
+    const openaiKey = document.getElementById("apiKeyInput").value.trim();
+    const elevenLabsKey = document.getElementById("elevenLabsKeyInput").value.trim();
     const status = document.getElementById("apiKeyStatus");
     const apiKeyBox = document.getElementById("apiKeyBox");
 
-    if (!key || !key.startsWith("sk-")) {
-      status.textContent = "Invalid key. It should start with 'sk-'.";
+    // Validate OpenAI key if provided
+    if (openaiKey && !openaiKey.startsWith("sk-")) {
+      status.textContent = "Invalid OpenAI key. It should start with 'sk-'.";
       status.style.color = "#fca5a5";
       OPENAI_KEY = null;
       return;
     }
-    OPENAI_KEY = key;
-    status.textContent = "Key saved for this tab only. It will clear when you close/refresh.";
-    status.style.color = "#93c5fd";
+    
+    // Save keys
+    OPENAI_KEY = openaiKey || null;
+    ELEVENLABS_KEY = elevenLabsKey || null;
+    
+    const savedKeys = [];
+    if (OPENAI_KEY) savedKeys.push("OpenAI");
+    if (ELEVENLABS_KEY) savedKeys.push("ElevenLabs");
+    
+    if (savedKeys.length > 0) {
+      status.textContent = `Keys saved (${savedKeys.join(", ")}). They will clear when you close/refresh.`;
+      status.style.color = "#93c5fd";
+    } else {
+      status.textContent = "No keys provided. Some features may not work.";
+      status.style.color = "#fbbf24";
+    }
     
     // Hide the API key box after a short delay
     setTimeout(() => {
       apiKeyBox.style.display = "none";
-    }, 1000);
+    }, 1500);
   });
 
   // ========== BASIC DATA & STATE ==========
@@ -1009,26 +1038,49 @@
   }
   
   function selectBestVoice(voices) {
-    // Preferred voices (more natural sounding)
-    const preferredVoices = [
-      "Google US English", "Microsoft Zira", "Microsoft David",
-      "Samantha", "Alex", "Victoria", "Daniel", "Karen",
-      "Google UK English Female", "Google UK English Male",
-      "Microsoft Mark", "Microsoft Hazel"
+    // Prioritize premium/neural voices that sound most like ChatGPT (natural, conversational)
+    const premiumVoices = [
+      "Google US English", "Google UK English", "Microsoft Zira", "Microsoft David",
+      "Samantha", "Alex", "Victoria", "Daniel", "Karen", "Microsoft Mark", "Microsoft Hazel",
+      "Alloy", "Echo", "Fable", "Onyx", "Nova", "Shimmer" // OpenAI-style names
     ];
     
-    // First, try to find a preferred voice
-    for (const preferred of preferredVoices) {
-      const voice = voices.find(v => 
-        v.name.includes(preferred) || 
-        v.name.toLowerCase().includes(preferred.toLowerCase())
-      );
+    // First, try premium voices (most natural)
+    for (const premium of premiumVoices) {
+      const voice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        return name.includes(premium.toLowerCase()) || 
+               name.includes("neural") ||
+               name.includes("premium") ||
+               (premium === "Google US English" && (name.includes("google") && name.includes("us"))) ||
+               (premium === "Google UK English" && (name.includes("google") && name.includes("uk")));
+      });
       if (voice && voice.lang.startsWith("en")) {
         return voice;
       }
     }
     
-    // Fallback: find any English voice that's not obviously robotic
+    // Try to find voices that sound conversational (not robotic)
+    const conversationalVoices = voices.filter(v => {
+      const name = v.name.toLowerCase();
+      return v.lang.startsWith("en") && 
+             !name.includes("novelty") &&
+             !name.includes("compact") &&
+             !name.includes("robotic") &&
+             (name.includes("female") || 
+              name.includes("zira") || 
+              name.includes("samantha") || 
+              name.includes("victoria") ||
+              name.includes("alex") ||
+              name.includes("daniel") ||
+              name.includes("karen"));
+    });
+    
+    if (conversationalVoices.length > 0) {
+      return conversationalVoices[0];
+    }
+    
+    // Fallback: any English voice
     const englishVoices = voices.filter(v => 
       v.lang.startsWith("en") && 
       !v.name.toLowerCase().includes("novelty") &&
@@ -1036,16 +1088,6 @@
     );
     
     if (englishVoices.length > 0) {
-      // Prefer female voices (often sound more natural for interviews)
-      const femaleVoice = englishVoices.find(v => 
-        v.name.toLowerCase().includes("female") ||
-        v.name.toLowerCase().includes("zira") ||
-        v.name.toLowerCase().includes("samantha") ||
-        v.name.toLowerCase().includes("victoria")
-      );
-      if (femaleVoice) return femaleVoice;
-      
-      // Otherwise, return the first English voice
       return englishVoices[0];
     }
     
@@ -1376,18 +1418,22 @@ Return a JSON object with this structure:
           messages: [
             {
               role: "system",
-              content: "You are an expert firefighter interview panel member. Generate realistic, challenging interview questions that test behavioral competencies, technical knowledge, and situational judgment. Questions should be specific to the candidate's background when possible."
+              content: "You are an expert firefighter interview panel member. Generate realistic, challenging interview questions that test behavioral competencies, technical knowledge, and situational judgment. Focus on GENERAL, OPEN-ENDED situational questions that any firefighter candidate might face, similar to: 'How would you handle a situation if you felt you weren't treated fairly?' or 'How would you handle a leader where you question their leadership, would you still respect them?' Keep questions broad and applicable to all candidates, not overly specific to their resume. The questions should test judgment, ethics, chain of command, and decision-making in hypothetical scenarios."
             },
             {
               role: "user",
-              content: `Generate a single firefighter interview question for this candidate. Make it specific to their background.
+              content: `Generate a single firefighter interview question. Focus on GENERAL, OPEN-ENDED situational questions that test judgment, ethics, and decision-making.
 
 ${resumeContext}${conversationContext}
 
 Requirements:
-- Question should be appropriate for a firefighter panel interview
-- Reference specific experiences or skills from their resume if available
-- Mix of behavioral (STAR format) and technical questions
+- Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
+- Keep it broad and applicable to all candidates, not overly specific to their resume
+- Examples of good questions:
+  * "How would you handle a situation if you felt you weren't treated fairly?"
+  * "How would you handle a leader where you question their leadership, would you still respect them?"
+  * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
+- Test: chain of command, ethics, judgment, decision-making, conflict resolution
 - Avoid repeating questions already asked
 - Make it challenging but fair
 - Format: "Category: [category]\nQuestion: [question text]"
@@ -1501,18 +1547,7 @@ Return ONLY the category and question.`
     questionIndexEl.textContent = String(questionCount);
   }
 
-  function speakQuestionWithCaptions(text) {
-    if (!window.speechSynthesis) {
-      // Fallback: just show text
-      const subtitleEl = document.getElementById("questionSubtitles");
-      if (subtitleEl) {
-        subtitleEl.textContent = text;
-        subtitleEl.style.display = "block";
-      }
-      return;
-    }
-    
-    window.speechSynthesis.cancel();
+  async function speakQuestionWithCaptions(text) {
     const subtitleEl = document.getElementById("questionSubtitles");
     
     // Show full text as subtitle
@@ -1521,6 +1556,25 @@ Return ONLY the category and question.`
       subtitleEl.style.display = "block";
     }
 
+    // Use ElevenLabs if API key is available (best quality, ChatGPT-like voice)
+    if (ELEVENLABS_KEY) {
+      try {
+        await speakWithElevenLabs(text, subtitleEl);
+        return;
+      } catch (err) {
+        console.error("ElevenLabs TTS error:", err);
+        // Fall through to browser TTS as fallback
+      }
+    }
+    
+    // Fallback to browser TTS
+    if (!window.speechSynthesis) {
+      // No TTS available
+      return;
+    }
+    
+    window.speechSynthesis.cancel();
+    
     // Ensure we have the best voice selected
     let voice = initializeVoice();
     
@@ -1543,9 +1597,9 @@ Return ONLY the category and question.`
       utterance.lang = "en-US";
     }
     
-    // Optimized parameters for natural speech (interview-style)
-    utterance.rate = 0.90;  // Slightly slower for clarity and professionalism
-    utterance.pitch = 1.08; // Slightly higher pitch (more natural, less robotic)
+    // Optimized parameters for ChatGPT-like natural, conversational speech
+    utterance.rate = 0.88;  // Slightly slower for natural conversation pace
+    utterance.pitch = 1.0;  // Neutral pitch (most natural, like ChatGPT)
     utterance.volume = 1.0;  // Full volume
     
     // Word-by-word highlighting for live captions
@@ -1568,6 +1622,60 @@ Return ONLY the category and question.`
     };
     
     window.speechSynthesis.speak(utterance);
+  }
+  
+  // ElevenLabs TTS function (ChatGPT-like natural voice)
+  async function speakWithElevenLabs(text, subtitleEl) {
+    // Use a natural, conversational voice ID (like "21m00Tcm4TlvDq8ikWAM" - Rachel, or "pNInz6obpgDQGcFmaJgB" - Adam)
+    // You can change this to any ElevenLabs voice ID you prefer
+    const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel - natural, conversational female voice
+    
+    try {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: "POST",
+        headers: {
+          "Accept": "audio/mpeg",
+          "Content-Type": "application/json",
+          "xi-api-key": ELEVENLABS_KEY
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: "eleven_monolingual_v1", // or "eleven_multilingual_v2" for multilingual
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+            style: 0.0,
+            use_speaker_boost: true
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`ElevenLabs API error: ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      // Update subtitle when audio starts
+      if (subtitleEl) {
+        subtitleEl.innerHTML = `<span style="color: #fbbf24;">${text}</span>`;
+      }
+      
+      // Clean up URL when done
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        if (subtitleEl) {
+          subtitleEl.innerHTML = `<span style="color: #fbbf24;">${text}</span>`;
+        }
+      };
+      
+      await audio.play();
+    } catch (err) {
+      console.error("ElevenLabs TTS error:", err);
+      throw err;
+    }
   }
   
   // Keep old function for backwards compatibility

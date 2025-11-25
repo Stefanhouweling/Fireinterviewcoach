@@ -923,6 +923,12 @@
     OPENAI_KEY = openaiKey || null;
     ELEVENLABS_KEY = elevenLabsKey || null;
     
+    // Debug logging
+    console.log("API Keys saved:", {
+      openai: OPENAI_KEY ? "✓ Set" : "✗ Not set",
+      elevenlabs: ELEVENLABS_KEY ? "✓ Set" : "✗ Not set"
+    });
+    
     const savedKeys = [];
     if (OPENAI_KEY) savedKeys.push("OpenAI");
     if (ELEVENLABS_KEY) savedKeys.push("ElevenLabs");
@@ -1558,13 +1564,18 @@ Return ONLY the category and question.`
 
     // Use ElevenLabs if API key is available (best quality, ChatGPT-like voice)
     if (ELEVENLABS_KEY) {
+      console.log("Using ElevenLabs TTS...");
       try {
         await speakWithElevenLabs(text, subtitleEl);
+        console.log("ElevenLabs TTS completed successfully");
         return;
       } catch (err) {
         console.error("ElevenLabs TTS error:", err);
+        console.log("Falling back to browser TTS");
         // Fall through to browser TTS as fallback
       }
+    } else {
+      console.log("No ElevenLabs key, using browser TTS");
     }
     
     // Fallback to browser TTS
@@ -1651,7 +1662,9 @@ Return ONLY the category and question.`
       });
 
       if (!response.ok) {
-        throw new Error(`ElevenLabs API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error("ElevenLabs API error response:", errorText);
+        throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
       }
 
       const audioBlob = await response.blob();
@@ -1819,25 +1832,70 @@ Return ONLY the category and question.`
     };
     recognition.onerror = (event) => {
       console.warn("Speech recognition error:", event.error);
+      if (event.error === "no-speech") {
+        // No speech detected, but keep listening
+        return;
+      }
+      if (event.error === "network") {
+        // Network error, try to restart
+        if (recognizing) {
+          setTimeout(() => {
+            if (recognizing) {
+              try {
+                recognition.start();
+              } catch (e) {
+                console.error("Failed to restart recognition:", e);
+              }
+            }
+          }, 1000);
+        }
+      }
     };
+    
     recognition.onend = () => {
+      // Auto-restart if we're still supposed to be recording
+      if (recognizing && stopAnswerBtn && !stopAnswerBtn.disabled) {
+        console.log("Recognition ended, auto-restarting...");
+        setTimeout(() => {
+          if (recognizing && stopAnswerBtn && !stopAnswerBtn.disabled) {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.error("Failed to auto-restart recognition:", e);
+              recognizing = false;
+              micStatusDot.classList.add("off");
+              micStatusText.textContent = "Mic idle";
+            }
+          }
+        }, 100);
+        return;
+      }
+      
+      // Only stop if user actually stopped
       recognizing = false;
       micStatusDot.classList.add("off");
       micStatusText.textContent = "Mic idle";
     };
+    
     recognition.onresult = (event) => {
       let interim = "";
       let final = lastAnswerTranscript;
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      
+      // Process ALL results, not just new ones
+      for (let i = 0; i < event.results.length; i++) {
         const res = event.results[i];
         if (res.isFinal) {
           final += res[0].transcript + " ";
         } else {
-          interim += res[0].transcript;
+          interim += res[0].transcript + " ";
         }
       }
-      liveTranscriptText = (final + " " + interim).trim();
+      
+      liveTranscriptText = (final + interim).trim();
       transcriptBox.textContent = liveTranscriptText;
+      
+      // Update lastAnswerTranscript with all final results
+      lastAnswerTranscript = final.trim();
     };
 
     transcriptBox.contentEditable = "true";
@@ -1859,12 +1917,31 @@ Return ONLY the category and question.`
   });
 
   stopAnswerBtn.addEventListener("click", () => {
-    if (!recognition || !recognizing) return;
-    recognition.stop();
+    if (!recognition) return;
+    
+    // Stop recognizing flag first to prevent auto-restart
+    recognizing = false;
+    
+    // Stop recognition
+    try {
+      recognition.stop();
+    } catch (e) {
+      console.error("Error stopping recognition:", e);
+    }
+    
+    // Get final transcript
+    lastAnswerTranscript = liveTranscriptText || transcriptBox.textContent || "";
+    
+    // Update UI
     startAnswerBtn.disabled = false;
     stopAnswerBtn.disabled = true;
-    lastAnswerTranscript = liveTranscriptText || transcriptBox.textContent || "";
+    micStatusDot.classList.add("off");
+    micStatusText.textContent = "Mic idle";
+    
+    // Compute motion score
     motionScoreForAnswer = computeMotionScoreForAnswer();
+    
+    console.log("Recording stopped. Final transcript length:", lastAnswerTranscript.length, "words:", lastAnswerTranscript.split(/\s+/).length);
   });
 
   // ========== FEEDBACK & ANALYSIS ==========

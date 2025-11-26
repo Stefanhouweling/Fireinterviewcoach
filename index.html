@@ -2137,6 +2137,7 @@ Return ONLY the category and question.`
     // Use backend if enabled
     if (USE_BACKEND) {
       try {
+        console.log(`Calling backend TTS at ${BACKEND_URL}/api/tts`);
         const response = await fetch(`${BACKEND_URL}/api/tts`, {
           method: "POST",
           headers: {
@@ -2145,8 +2146,16 @@ Return ONLY the category and question.`
           body: JSON.stringify({ text, voiceId })
         });
         
+        console.log(`Backend TTS response status: ${response.status}`);
+        
         if (response.ok) {
           const audioBlob = await response.blob();
+          console.log(`Received audio blob, size: ${audioBlob.size} bytes`);
+          
+          if (audioBlob.size === 0) {
+            throw new Error("Received empty audio blob from backend");
+          }
+          
           const audioUrl = URL.createObjectURL(audioBlob);
           const audio = new Audio(audioUrl);
           
@@ -2160,16 +2169,24 @@ Return ONLY the category and question.`
               URL.revokeObjectURL(audioUrl);
               resolve();
             };
-            audio.onerror = reject;
-            audio.play();
+            audio.onerror = (e) => {
+              console.error("Audio playback error:", e);
+              reject(new Error("Audio playback failed"));
+            };
+            audio.oncanplaythrough = () => {
+              audio.play().catch(reject);
+            };
+            audio.load();
           });
         } else {
-          throw new Error(`TTS failed: ${response.status}`);
+          const errorText = await response.text().catch(() => `Status ${response.status}`);
+          console.error(`Backend TTS failed: ${response.status}`, errorText);
+          throw new Error(`TTS failed: ${response.status} - ${errorText}`);
         }
       } catch (err) {
         console.error("Backend TTS error:", err);
-        const errorText = await err.response?.text().catch(() => err.message);
-        console.error("Backend TTS error details:", errorText);
+        console.error("Error message:", err.message);
+        console.error("Error stack:", err.stack);
         throw err; // Re-throw to fall back to browser TTS
       }
     }

@@ -325,16 +325,23 @@ app.post('/api/tts', async (req, res) => {
   try {
     const { text, voiceId = "21m00Tcm4TlvDq8ikWAM" } = req.body;
 
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
     if (!process.env.ELEVENLABS_API_KEY) {
+      console.error('ElevenLabs API key not configured');
       return res.status(500).json({ error: 'ElevenLabs API key not configured' });
     }
+
+    console.log(`Generating TTS for text: "${text.substring(0, 50)}..." with voice: ${voiceId}`);
 
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",
       headers: {
         "Accept": "audio/mpeg",
         "Content-Type": "application/json",
-        "xi-api-key": process.env.ELEVENLABS_API_KEY
+        "xi-api-key": process.env.ELEVENLABS_API_KEY.trim()
       },
       body: JSON.stringify({
         text: text,
@@ -350,16 +357,19 @@ app.post('/api/tts', async (req, res) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('ElevenLabs API error:', errorText);
+      console.error('ElevenLabs API error response:', errorText);
       return res.status(response.status).json({ error: 'ElevenLabs TTS failed', details: errorText });
     }
 
     const audioBuffer = await response.arrayBuffer();
+    console.log(`Received audio buffer, size: ${audioBuffer.byteLength} bytes`);
+    
     res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', audioBuffer.byteLength);
     res.send(Buffer.from(audioBuffer));
   } catch (error) {
     console.error('Error with TTS:', error);
-    res.status(500).json({ error: 'TTS failed', message: error.message });
+    res.status(500).json({ error: 'TTS failed', message: error.message, stack: error.stack });
   }
 });
 

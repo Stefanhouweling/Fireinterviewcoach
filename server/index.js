@@ -864,32 +864,63 @@ app.post('/api/research-city', async (req, res) => {
 
     let verifiedFacts = {};
     
-    // Use OpenAI to perform web searches for each critical fact
+    // Use OpenAI with better prompts to extract current information
+    // Note: GPT-4o-mini doesn't have real web search, but we can use better prompts
     for (const search of criticalSearches) {
       try {
         console.log(`Searching for: ${search.query}`);
+        
+        // Use a more direct approach - ask for the most current information available
         const searchResponse = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
             {
               role: "system",
-              content: "You are a fact-checker. Search the web for CURRENT, ACCURATE information. Return ONLY the verified fact, nothing else. If you cannot find current information, return 'NOT FOUND'."
+              content: `You are a fact-checker. Provide the MOST CURRENT information you have. 
+
+IMPORTANT RULES:
+- For "${city}, ${country}" specifically, provide the most recent information available
+- Return ONLY the fact itself (name or number), no explanations
+- If you're uncertain or the information might be outdated, return "NOT FOUND"
+- Do NOT add extra initials or letters to names
+- For numbers, return just the number`
             },
             {
               role: "user",
-              content: `Search the web for: "${search.query}". Return ONLY the current, verified fact. For names, return the exact full name. For numbers, return the exact number. If information is not found or uncertain, return "NOT FOUND".`
+              content: `What is the current fact for "${search.query}"?
+
+Return ONLY the fact:
+- For fire chief: Return the full name (e.g., "Erick Peterson")
+- For mayor: Return the full name (e.g., "Ross Siemens") 
+- For union number: Return the number (e.g., "IAFF Local 1234")
+- For number of stations: Return just the number (e.g., "6")
+- For number of members: Return just the number (e.g., "150")
+
+If you cannot provide a current, verified fact, return "NOT FOUND".`
             }
           ],
           temperature: 0.1,
-          max_tokens: 100
+          max_tokens: 50
         });
         
-        const factResult = searchResponse.choices[0].message.content.trim();
-        if (factResult && factResult !== 'NOT FOUND' && !factResult.toLowerCase().includes('not found')) {
+        let factResult = searchResponse.choices[0].message.content.trim();
+        
+        // Clean up the response - remove any explanatory text, keep only the fact
+        factResult = factResult.split('\n')[0].split('.')[0].trim();
+        // Remove quotes if present
+        factResult = factResult.replace(/^["']|["']$/g, '');
+        
+        if (factResult && 
+            factResult !== 'NOT FOUND' && 
+            !factResult.toLowerCase().includes('not found') &&
+            !factResult.toLowerCase().includes('outdated') &&
+            !factResult.toLowerCase().includes('uncertain') &&
+            factResult.length > 0 &&
+            factResult.length < 100) { // Reasonable length check
           verifiedFacts[search.fact] = factResult;
-          console.log(`Found ${search.fact}: ${factResult}`);
+          console.log(`✓ Found ${search.fact}: ${factResult}`);
         } else {
-          console.log(`Could not find: ${search.fact}`);
+          console.log(`✗ Could not verify: ${search.fact} - ${factResult}`);
         }
       } catch (err) {
         console.error(`Search error for ${search.fact}:`, err);

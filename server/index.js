@@ -324,16 +324,37 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
 
 However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
       } else if (selectedCategory === "City & Department Specific") {
-        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) SPECIFICALLY personalized to the city and department this candidate is applying to.${personalizationContext}
+        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) that TESTS THE CANDIDATE'S KNOWLEDGE of specific facts about the city and department they are applying to.${personalizationContext}
 
-CRITICAL PERSONALIZATION REQUIREMENTS:
-- Reference the specific department name "${profileDepartmentName || '[Department Name]'}" naturally
-- Use city-specific information from the research (fire chief's name, department history, local challenges, union info, city planning)
+CRITICAL REQUIREMENTS - THIS IS A KNOWLEDGE TEST, NOT A BEHAVIORAL/SITUATIONAL QUESTION:
+- This category is RESERVED for testing how well the candidate knows the specific city and department
+- The question MUST test their knowledge of specific, factual information about the city and department
+- DO NOT generate general behavioral or situational questions - those belong in other categories
+- The question should ask about specific facts that a well-prepared candidate should know
+
+REQUIRED KNOWLEDGE AREAS TO TEST:
+1. City Leadership: Who is the mayor? What does the mayor represent for the city? City council members?
+2. Fire Department Leadership: Who is the fire chief? Deputy chiefs? Department structure?
+3. Department Details: How many members does ${profileDepartmentName || 'the department'} have? What are the department's stations? Department history?
+4. Union Information: What is the local union number for ${profileDepartmentName || 'the fire department'}? Union leadership?
+5. City-Specific Information: City demographics, major industries, unique challenges, city planning initiatives, emergency services structure
+6. Department-Specific Information: Department values, mission statement, recent initiatives, community programs, equipment, response areas
+
+QUESTION FORMAT EXAMPLES:
+- "Who is the fire chief of ${profileDepartmentName || 'this department'}?"
+- "What is the local union number for ${profileDepartmentName || 'the fire department'} in ${profileCity || 'this city'}?"
+- "How many members does ${profileDepartmentName || 'the department'} currently have?"
+- "Who is the mayor of ${profileCity || 'this city'} and what are their key priorities for emergency services?"
+- "What are the main challenges facing ${profileCity || 'this city'} that affect fire department operations?"
+- "Can you tell us about the history of ${profileDepartmentName || 'this department'}?"
+- "What community programs does ${profileDepartmentName || 'this department'} participate in?"
+
+IMPORTANT: 
+- Use the city research data to find these specific facts
+- If a specific fact is not available in the research, you can still ask about it to test if the candidate knows it
+- The question should feel like a panel member testing whether the candidate did their homework on the city and department
 - Address the candidate by name (${profileName ? profileName : 'if provided'}) when appropriate
-- Make it feel like a real panel member who knows this department well is asking
-- Examples: "Working for the ${profileDepartmentName || '[Department Name]'} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..." or "Given the challenges in ${profileCity || '[City]'}, how would you handle..."
-
-Use the city research data to incorporate authentic, specific details that make the question feel personalized to THIS exact department and city while still testing general firefighter competencies.`;
+- Make it clear this is testing their knowledge and preparation, not general competencies`;
       } else {
         questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) focused EXCLUSIVELY on the category: "${selectedCategory}".${personalizationContext}
 

@@ -851,7 +851,53 @@ app.post('/api/research-city', async (req, res) => {
 
     console.log(`Researching city information for: ${locationString}, ${jobType}, ${departmentName}`);
 
+    // Perform actual web searches for critical facts
+    const searchQueries = [
+      `current fire chief ${city} ${stateProvince || ''} ${country} 2024`,
+      `mayor ${city} ${country} 2024`,
+      `${departmentName} union number ${city} ${country}`,
+      `${departmentName} number of fire stations ${city} ${country} 2024`,
+      `${departmentName} number of members ${city} ${country} 2024`,
+      `${departmentName} deputy chiefs ${city} ${country} 2024`
+    ];
+
+    // Use DuckDuckGo HTML search (free, no API key needed) or fallback to OpenAI with explicit instructions
+    let webSearchResults = "";
+    try {
+      // Try to get real web search results using DuckDuckGo
+      const searchPromises = searchQueries.map(async (query) => {
+        try {
+          const encodedQuery = encodeURIComponent(query);
+          const response = await fetchModule(`https://html.duckduckgo.com/html/?q=${encodedQuery}`, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+          });
+          const html = await response.text();
+          // Extract text content (simplified - in production, use proper HTML parsing)
+          const textMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+          const bodyText = textMatch ? textMatch[1].replace(/<[^>]+>/g, ' ').substring(0, 500) : '';
+          return `Query: ${query}\nResults: ${bodyText}\n---\n`;
+        } catch (err) {
+          console.error(`Search failed for "${query}":`, err);
+          return `Query: ${query}\nResults: Search failed\n---\n`;
+        }
+      });
+      
+      const results = await Promise.all(searchPromises);
+      webSearchResults = results.join('\n');
+      console.log('Web search results obtained');
+    } catch (err) {
+      console.error('Web search failed, proceeding with AI research:', err);
+      webSearchResults = "Web search unavailable - using AI knowledge base (may be outdated)";
+    }
+
     const researchPrompt = `You are a research assistant helping to prepare KNOWLEDGE-BASED interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
+
+WEB SEARCH RESULTS (use these to verify facts):
+${webSearchResults}
+
+CRITICAL: Use the web search results above to verify ALL facts. If the web search results contradict your training data, use the web search results. If web search results are not available, clearly state "Information not found - web search unavailable" rather than guessing.
 
 CRITICAL SEARCH REQUIREMENTS:
 - ALWAYS include "${city}, ${stateProvince || ''} ${country}" in EVERY search query you perform

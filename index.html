@@ -2057,6 +2057,9 @@
           selectedVoicePreference = onboardingData.voicePreference;
         }
         
+        // Update user profile on backend with all onboarding data
+        await updateUserProfile();
+        
         console.log("City research completed:", data.research);
         
         // Hide onboarding modal and show main app

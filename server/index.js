@@ -182,10 +182,10 @@ app.post('/api/question', async (req, res) => {
     const profileAskedQuestions = userProfile?.askedQuestions || askedQuestions || [];
     const profileAskedCategories = userProfile?.askedCategories || askedCategories || [];
 
-    // Build comprehensive resume context
+    // Build comprehensive resume context (use profile data)
     let resumeContext = "";
-    if (resumeAnalysis) {
-      const analysis = resumeAnalysis;
+    if (profileResumeAnalysis) {
+      const analysis = profileResumeAnalysis;
       resumeContext = `Resume Summary:
 - Experience: ${analysis.experience || analysis.yearsOfExperience || "N/A"}
 - Certifications: ${Array.isArray(analysis.certifications) ? analysis.certifications.join(", ") : "None listed"}
@@ -193,22 +193,22 @@ app.post('/api/question', async (req, res) => {
 - Work History Highlights: ${Array.isArray(analysis.workHistory) ? analysis.workHistory.slice(0, 3).join("; ") : "N/A"}
 - Interview Focus Areas: ${Array.isArray(analysis.interviewFocus) ? analysis.interviewFocus.join(", ") : "General competencies"}
 
-Full Resume Analysis: ${JSON.stringify(resumeAnalysis)}`;
-    } else if (resumeText) {
+Full Resume Analysis: ${JSON.stringify(profileResumeAnalysis)}`;
+    } else if (profileResumeText) {
       resumeContext = `Resume Text (full text for context):
-${resumeText}`;
+${profileResumeText}`;
     } else {
       resumeContext = "No resume provided";
     }
     
-    const conversationContext = history && history.length > 0
-      ? `\n\nPrevious questions asked:\n${history.slice(-3).map((item, i) => 
+    const conversationContext = profileHistory && profileHistory.length > 0
+      ? `\n\nPrevious questions asked:\n${profileHistory.slice(-3).map((item, i) => 
           `${i + 1}. Q: ${item.question}\n   A: ${item.answer ? item.answer.slice(0, 200) + "..." : "No answer yet"}`
         ).join("\n")}`
       : "";
     
     // Normalize asked categories (usually sent as lowercase from frontend)
-    const normalizedAskedCategories = askedCategories.map(c => String(c).toLowerCase());
+    const normalizedAskedCategories = profileAskedCategories.map(c => String(c).toLowerCase());
 
     // Base category set we want to cycle through over a session
     const baseCategories = [

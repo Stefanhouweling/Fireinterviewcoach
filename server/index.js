@@ -445,7 +445,9 @@ app.post('/api/tts', async (req, res) => {
     } else if (voicePreference === "female") {
       voice = "nova"; // Clear, female-sounding voice
     } else {
-      voice = "alloy"; // Neutral default
+      // Auto mode: randomly alternate between male and female
+      const randomChoice = Math.random() < 0.5 ? "male" : "female";
+      voice = randomChoice === "male" ? "onyx" : "nova";
     }
 
     console.log(`Generating TTS for text: "${text.substring(0, 50)}..." with voice: ${voice} (preference: ${voicePreference || 'default'})`);

@@ -851,47 +851,51 @@ app.post('/api/research-city', async (req, res) => {
 
     console.log(`Researching city information for: ${locationString}, ${jobType}, ${departmentName}`);
 
-    // Perform actual web searches for critical facts
-    const searchQueries = [
-      `current fire chief ${city} ${stateProvince || ''} ${country} 2024`,
-      `mayor ${city} ${country} 2024`,
-      `${departmentName} union number ${city} ${country}`,
-      `${departmentName} number of fire stations ${city} ${country} 2024`,
-      `${departmentName} number of members ${city} ${country} 2024`,
-      `${departmentName} deputy chiefs ${city} ${country} 2024`
+    // Perform actual web searches for critical facts using OpenAI's web search capability
+    console.log('Performing web searches for current information...');
+    
+    const criticalSearches = [
+      { query: `current fire chief ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'fire chief name' },
+      { query: `current mayor ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'mayor name' },
+      { query: `${departmentName} union number ${city} ${country}`, fact: 'union number' },
+      { query: `${departmentName} number of fire stations ${city} ${country} 2024 2025`, fact: 'number of fire stations' },
+      { query: `${departmentName} number of members staff ${city} ${country} 2024 2025`, fact: 'number of members' }
     ];
 
-    // Use DuckDuckGo HTML search (free, no API key needed) or fallback to OpenAI with explicit instructions
-    let webSearchResults = "";
-    try {
-      // Try to get real web search results using DuckDuckGo
-      const searchPromises = searchQueries.map(async (query) => {
-        try {
-          const encodedQuery = encodeURIComponent(query);
-          const response = await fetchModule(`https://html.duckduckgo.com/html/?q=${encodedQuery}`, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    let verifiedFacts = {};
+    
+    // Use OpenAI to perform web searches for each critical fact
+    for (const search of criticalSearches) {
+      try {
+        console.log(`Searching for: ${search.query}`);
+        const searchResponse = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are a fact-checker. Search the web for CURRENT, ACCURATE information. Return ONLY the verified fact, nothing else. If you cannot find current information, return 'NOT FOUND'."
+            },
+            {
+              role: "user",
+              content: `Search the web for: "${search.query}". Return ONLY the current, verified fact. For names, return the exact full name. For numbers, return the exact number. If information is not found or uncertain, return "NOT FOUND".`
             }
-          });
-          const html = await response.text();
-          // Extract text content (simplified - in production, use proper HTML parsing)
-          const textMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-          const bodyText = textMatch ? textMatch[1].replace(/<[^>]+>/g, ' ').substring(0, 500) : '';
-          return `Query: ${query}\nResults: ${bodyText}\n---\n`;
-        } catch (err) {
-          console.error(`Search failed for "${query}":`, err);
-          return `Query: ${query}\nResults: Search failed\n---\n`;
+          ],
+          temperature: 0.1,
+          max_tokens: 100
+        });
+        
+        const factResult = searchResponse.choices[0].message.content.trim();
+        if (factResult && factResult !== 'NOT FOUND' && !factResult.toLowerCase().includes('not found')) {
+          verifiedFacts[search.fact] = factResult;
+          console.log(`Found ${search.fact}: ${factResult}`);
+        } else {
+          console.log(`Could not find: ${search.fact}`);
         }
-      });
-      
-      const results = await Promise.all(searchPromises);
-      webSearchResults = results.join('\n');
-      console.log('Web search results obtained');
-    } catch (err) {
-      console.error('Web search failed, proceeding with AI research:', err);
-      webSearchResults = "Web search unavailable - using AI knowledge base (may be outdated)";
+      } catch (err) {
+        console.error(`Search error for ${search.fact}:`, err);
+      }
     }
-
+    
     const verifiedFactsText = Object.keys(verifiedFacts).length > 0 
       ? `VERIFIED FACTS FROM WEB SEARCH (USE THESE - DO NOT USE TRAINING DATA):
 ${Object.entries(verifiedFacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}

@@ -2673,6 +2673,10 @@
         console.log("[RESUME] Received analysis data:", data);
         resumeAnalysis = data.analysis;
         formatResumeSummary(resumeSummaryEl, resumeAnalysis, resumeText);
+        
+        // Update user profile with resume analysis
+        await updateUserProfile();
+        
         return;
       } else {
         const errorText = await response.text();

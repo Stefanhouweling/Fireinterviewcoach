@@ -19,6 +19,24 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    service: 'Fire Interview Coach API',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      question: 'POST /api/question',
+      followup: 'POST /api/followup',
+      analyze: 'POST /api/analyze-answer',
+      parseResume: 'POST /api/parse-resume',
+      tts: 'POST /api/tts'
+    },
+    message: 'API is running. Use the endpoints above to interact with the service.'
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Fire Interview Coach API is running' });

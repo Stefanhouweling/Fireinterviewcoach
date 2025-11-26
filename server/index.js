@@ -1260,9 +1260,9 @@ let citiesData = null;
 // Load data on startup (lightweight, fast)
 async function loadLocationData() {
   try {
-    // Use jsDelivr CDN which is more reliable than raw.githubusercontent.com
-    // jsDelivr serves the npm package directly and handles large files better
-    const baseUrl = 'https://cdn.jsdelivr.net/npm/countries-states-cities-database@latest/json';
+    // Use GitHub raw content URLs - more reliable than npm CDN
+    // The files are in the json/ directory of the repository
+    const baseUrl = 'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json';
     
     console.log('Loading location data from countries-states-cities-database...');
     
@@ -1271,19 +1271,22 @@ async function loadLocationData() {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Fire-Interview-Coach-API/1.0'
-        }
+        },
+        timeout: 30000 // 30 second timeout
       }),
       fetchModule(`${baseUrl}/states.json`, {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Fire-Interview-Coach-API/1.0'
-        }
+        },
+        timeout: 30000
       }),
       fetchModule(`${baseUrl}/cities.json`, {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Fire-Interview-Coach-API/1.0'
-        }
+        },
+        timeout: 60000 // Cities file is larger, allow more time
       })
     ]);
     

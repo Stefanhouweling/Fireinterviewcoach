@@ -907,17 +907,26 @@ CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge. 
    - Department's relationship with city government
 
 CRITICAL ACCURACY REQUIREMENTS: 
-- Provide SPECIFIC NAMES, NUMBERS, and FACTS whenever possible
+- You MUST perform web searches to verify ALL information. Do NOT rely on training data - it may be outdated or incorrect.
+- For EVERY fact, search the web with queries like:
+  * "current fire chief ${city} ${stateProvince || ''} ${country} 2024"
+  * "${departmentName} number of fire stations ${city} ${country} 2024"
+  * "mayor ${city} ${country} 2024"
+  * "${departmentName} union number ${city} ${country}"
+- Provide SPECIFIC NAMES, NUMBERS, and FACTS only after verifying them through web search
 - For names: Use EXACT names as they appear in official sources. Do NOT add extra initials, letters, or characters (e.g., if you see "Erick Peterson", use exactly that - do not add "B. R. H." or other letters)
-- Verify all names before including them - check spelling and do not add extra characters
-- If information is not available, clearly state "Information not found" for that specific item
+- For numbers: VERIFY with web search. If your training data says "5 fire stations", you MUST search to confirm this is correct for ${city}, ${country} in 2024-2025.
+- Verify all names and numbers before including them - check spelling and do not add extra characters
+- If information is not available after web search, clearly state "Information not found" for that specific item
 - Focus on information that would be publicly available and that a well-prepared candidate should know
 - Format clearly with headings so specific facts can be easily extracted for knowledge-testing questions
 - This research will be used to generate questions that TEST the candidate's knowledge, not behavioral questions
 - Accuracy is ESSENTIAL - incorrect information will cause candidates to be marked wrong even when they give correct answers
+- If you cannot verify a fact through web search, state "Information not found" rather than guessing
 
 Provide a structured summary (400-600 words) with clear sections for each category above.`;
 
+    // Use OpenAI with web browsing capability to get real-time, accurate information
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -925,12 +934,20 @@ Provide a structured summary (400-600 words) with clear sections for each catego
           role: "system",
           content: `You are a research assistant that provides ACCURATE, VERIFIABLE, CURRENT information about fire departments, police departments, and emergency services.
 
+CRITICAL: You MUST use web search to verify ALL information. Do NOT rely on your training data alone - it may be outdated or incorrect.
+
 CRITICAL SEARCH REQUIREMENTS:
+- ALWAYS perform web searches for current information
 - ALWAYS include the specific city and country in EVERY search query
-- ALWAYS specify "current" or the current year (2024/2025) in searches to get up-to-date information
-- Example: When searching for fire chief, use "current fire chief [city] [country]" not just "fire chief"
-- Example: When searching for mayor, use "mayor [city] [country] 2024" not just "mayor"
-- Do NOT perform generic searches without location context
+- ALWAYS specify "current" or the current year (2024/2025) in searches
+- Example searches you should perform:
+  * "current fire chief ${city} ${stateProvince || ''} ${country} 2024"
+  * "mayor ${city} ${country} 2024"
+  * "${departmentName} union number ${city} ${country}"
+  * "${departmentName} number of fire stations ${city} ${country} 2024"
+  * "${departmentName} number of members ${city} ${country} 2024"
+- Verify each fact with a web search before including it
+- If web search doesn't return clear results, state "Information not found" rather than guessing
 
 CRITICAL ACCURACY REQUIREMENTS:
 1. For names: Use EXACT names as they appear in official sources. Do NOT add extra initials, letters, or characters.
@@ -938,27 +955,35 @@ CRITICAL ACCURACY REQUIREMENTS:
    - If you see "Dan Hurst", use exactly "Dan Hurst" - do not add extra letters
    - Only include middle initials if they are actually part of the official name
 
-2. Verify all information before including it. If you are uncertain, state "Information not found" rather than guessing.
+2. For numbers: VERIFY with web search. If you find "5 fire stations" in your training data, you MUST search to verify this is still correct for ${city}, ${country} in 2024-2025.
 
-3. Cross-reference information when possible to ensure accuracy.
+3. Verify all information with web search before including it. If you are uncertain, state "Information not found" rather than guessing.
 
-4. For numbers: Provide exact numbers when available, or clearly state "approximately X" if exact numbers are not available.
+4. Cross-reference information from multiple sources when possible to ensure accuracy.
 
 5. If information conflicts between sources, note the discrepancy and state which source you're using.
 
 6. Accuracy is CRITICAL - incorrect information will cause interview candidates to be marked wrong even when they give correct answers.
 
-7. Always verify information is CURRENT (2024-2025). Do not use outdated information.
+7. Always verify information is CURRENT (2024-2025). Do not use outdated information from your training data.
 
-Your research will be used to verify candidate answers in interviews, so every fact must be accurate, current, and verifiable.`
+Your research will be used to verify candidate answers in interviews, so every fact must be accurate, current, and verifiable through web search.`
         },
         {
           role: "user",
-          content: researchPrompt
+          content: researchPrompt + `\n\nIMPORTANT: Before providing any information, perform web searches to verify each fact. Do NOT rely on your training data - it may be outdated. Search for:
+- "current fire chief ${city} ${stateProvince || ''} ${country} 2024"
+- "mayor ${city} ${country} 2024"
+- "${departmentName} union number ${city} ${country}"
+- "${departmentName} number of fire stations ${city} ${country} 2024"
+- "${departmentName} number of members ${city} ${country} 2024"
+- Any other specific facts you need to verify
+
+Only include information that you can verify through web search. If you cannot find current information, state "Information not found" for that specific item.`
         }
       ],
-      temperature: 0.3, // Lower temperature for more factual responses
-      max_tokens: 1000
+      temperature: 0.1, // Very low temperature for maximum accuracy
+      max_tokens: 1500
     });
 
     const research = response.choices[0].message.content;

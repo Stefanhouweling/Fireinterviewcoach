@@ -324,37 +324,38 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
 
 However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
       } else if (selectedCategory === "City & Department Specific") {
-        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) that TESTS THE CANDIDATE'S KNOWLEDGE of specific facts about the city and department they are applying to.${personalizationContext}
+        questionStrategy = `CRITICAL: Generate a KNOWLEDGE-TESTING question (NOT behavioral or situational) that asks about SPECIFIC FACTS regarding ${profileCity || 'the city'} and ${profileDepartmentName || 'the department'}.${personalizationContext}
 
-CRITICAL REQUIREMENTS - THIS IS A KNOWLEDGE TEST, NOT A BEHAVIORAL/SITUATIONAL QUESTION:
-- This category is RESERVED for testing how well the candidate knows the specific city and department
-- The question MUST test their knowledge of specific, factual information about the city and department
-- DO NOT generate general behavioral or situational questions - those belong in other categories
-- The question should ask about specific facts that a well-prepared candidate should know
+THIS CATEGORY IS FOR KNOWLEDGE TESTS ONLY - NOT BEHAVIORAL/SITUATIONAL QUESTIONS:
+- DO NOT ask "How would you handle..." or "Tell us about a time..."
+- DO NOT ask about hypothetical scenarios or past experiences
+- DO ask "Who is...", "What is...", "How many...", "When did...", "What is the..."
+- The question MUST test factual knowledge that a well-prepared candidate should know
 
-REQUIRED KNOWLEDGE AREAS TO TEST:
-1. City Leadership: Who is the mayor? What does the mayor represent for the city? City council members?
-2. Fire Department Leadership: Who is the fire chief? Deputy chiefs? Department structure?
-3. Department Details: How many members does ${profileDepartmentName || 'the department'} have? What are the department's stations? Department history?
-4. Union Information: What is the local union number for ${profileDepartmentName || 'the fire department'}? Union leadership?
-5. City-Specific Information: City demographics, major industries, unique challenges, city planning initiatives, emergency services structure
-6. Department-Specific Information: Department values, mission statement, recent initiatives, community programs, equipment, response areas
+REQUIRED KNOWLEDGE AREAS TO TEST (use city research data):
+1. City Leadership: "Who is the mayor of ${profileCity || 'this city'}?" "What are the mayor's priorities for emergency services?"
+2. Fire Department Leadership: "Who is the fire chief of ${profileDepartmentName || 'this department'}?" "Who are the deputy chiefs?"
+3. Department Details: "How many members does ${profileDepartmentName || 'the department'} have?" "How many fire stations does ${profileDepartmentName || 'the department'} operate?"
+4. Union Information: "What is the local union number for ${profileDepartmentName || 'the fire department'}?" "What union represents ${profileDepartmentName || 'this department'}?"
+5. Department History: "When was ${profileDepartmentName || 'this department'} established?" "What is the history of ${profileDepartmentName || 'this department'}?"
+6. City/Department Facts: "What are the main industries in ${profileCity || 'this city'}?" "What challenges does ${profileCity || 'this city'} face?"
 
-QUESTION FORMAT EXAMPLES:
-- "Who is the fire chief of ${profileDepartmentName || 'this department'}?"
+QUESTION FORMAT EXAMPLES (USE THESE STYLES):
+- "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?"
 - "What is the local union number for ${profileDepartmentName || 'the fire department'} in ${profileCity || 'this city'}?"
 - "How many members does ${profileDepartmentName || 'the department'} currently have?"
-- "Who is the mayor of ${profileCity || 'this city'} and what are their key priorities for emergency services?"
-- "What are the main challenges facing ${profileCity || 'this city'} that affect fire department operations?"
+- "Who is the mayor of ${profileCity || 'this city'}?"
 - "Can you tell us about the history of ${profileDepartmentName || 'this department'}?"
 - "What community programs does ${profileDepartmentName || 'this department'} participate in?"
+- "When was ${profileDepartmentName || 'this department'} first established as a career department?"
 
-IMPORTANT: 
-- Use the city research data to find these specific facts
-- If a specific fact is not available in the research, you can still ask about it to test if the candidate knows it
-- The question should feel like a panel member testing whether the candidate did their homework on the city and department
-- Address the candidate by name (${profileName ? profileName : 'if provided'}) when appropriate
-- Make it clear this is testing their knowledge and preparation, not general competencies`;
+ABSOLUTELY FORBIDDEN QUESTION TYPES:
+- "How would you handle..." (situational)
+- "Tell us about a time..." (behavioral)
+- "What would you do if..." (hypothetical)
+- Any question about past experiences or future scenarios
+
+REQUIRED: The question MUST be a direct knowledge question asking about a specific fact. Use the city research data to find the actual facts and ask about them.`;
       } else {
         questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) focused EXCLUSIVELY on the category: "${selectedCategory}".${personalizationContext}
 
@@ -453,7 +454,12 @@ CRITICAL PERSONALIZATION INSTRUCTIONS:
 - Make it feel like a real panel member who has thoroughly reviewed their application is asking
 - The question should feel tailored specifically to THIS candidate while still testing general competencies
 
-${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !== "City & Department Specific" ? `\nCRITICAL CATEGORY REQUIREMENT: The question MUST be about "${selectedCategory}" category ONLY. Do NOT generate questions about other categories. Stay strictly within the "${selectedCategory}" competency area.` : ''}
+${selectedCategory === "City & Department Specific" ? `\n\nCRITICAL: This is the "City & Department Specific" category. The question MUST be a KNOWLEDGE-TESTING question asking about SPECIFIC FACTS about ${profileCity || 'the city'} and ${profileDepartmentName || 'the department'}.
+
+FORBIDDEN: Do NOT generate behavioral questions ("Tell us about a time...") or situational questions ("How would you handle..."). 
+REQUIRED: Generate a direct knowledge question like "Who is the fire chief?" or "What is the union number?" or "How many members does the department have?"
+
+Use the city research data provided above to find specific facts and ask about them.` : selectedCategory && selectedCategory !== "Resume-Based" ? `\nCRITICAL CATEGORY REQUIREMENT: The question MUST be about "${selectedCategory}" category ONLY. Do NOT generate questions about other categories. Stay strictly within the "${selectedCategory}" competency area.` : ''}
 
 IMPORTANT: This is a NEW, UNRELATED question. Do NOT make it a follow-up to previous questions. Generate a completely fresh question from a different topic/angle.
 

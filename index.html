@@ -3004,6 +3004,11 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
         ? data.choices[0].message.content
         : null;
 
+      // Complete progress bar
+      clearInterval(progressInterval);
+      if (progressBar) progressBar.style.width = "100%";
+      if (progressPercent) progressPercent.textContent = "100%";
+      
       if (aiFeedback) {
         // Format the AI feedback for both the small preview and modal
         formatAIFeedback(fireTipsEl, aiFeedback, true); // true = show preview
@@ -3020,12 +3025,23 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
       } else {
         // keep the local tips if AI fails
       }
+      
+      // Hide progress bar after a short delay
+      setTimeout(() => {
+        if (progressContainer) progressContainer.style.display = "none";
+        if (progressBar) progressBar.style.width = "0%";
+        if (progressPercent) progressPercent.textContent = "0%";
+      }, 500);
     } catch (err) {
+      clearInterval(progressInterval);
       console.error("AI feedback error:", err);
+      if (progressContainer) progressContainer.style.display = "none";
+      if (progressBar) progressBar.style.width = "0%";
+      if (progressPercent) progressPercent.textContent = "0%";
       // keep local tips if AI call fails
     } finally {
       analyzeBtn.disabled = false;
-      analyzeBtn.textContent = "Analyze Answer";
+      analyzeBtn.textContent = "🤖 Analyze Answer";
     }
   });
 

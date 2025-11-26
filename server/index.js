@@ -2,7 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const OpenAI = require('openai');
-const fetch = require('node-fetch');
+// Use native fetch if available (Node 18+), otherwise use node-fetch
+let fetch;
+try {
+  fetch = globalThis.fetch || require('node-fetch');
+} catch (e) {
+  fetch = require('node-fetch');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;

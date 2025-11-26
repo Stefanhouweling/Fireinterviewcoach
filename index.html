@@ -1554,6 +1554,12 @@
           if (!response.ok) {
             const errorText = await response.text();
             console.error('City search API error:', response.status, errorText);
+            
+            // Check if endpoint doesn't exist (404 or 405)
+            if (response.status === 404 || response.status === 405) {
+              throw new Error('Location search not available. Please type manually.');
+            }
+            
             throw new Error(`Search failed: ${response.status}`);
           }
           
@@ -1608,11 +1614,13 @@
             country: countrySelect ? countrySelect.value : "none"
           });
           
-          // Check if it's a network error
+          // Check if it's a network error or endpoint not found
           if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Cannot connect to server. Check your connection.</div>';
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Cannot connect to server. You can type manually.</div>';
+          } else if (error.message.includes('not available')) {
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #fbbf24;">Location search not available. Please type manually.</div>';
           } else {
-            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Please type manually.</div>';
           }
         }
       }, 300); // 300ms debounce
@@ -1666,6 +1674,12 @@
           if (!response.ok) {
             const errorText = await response.text();
             console.error('State search API error:', response.status, errorText);
+            
+            // Check if endpoint doesn't exist (404 or 405)
+            if (response.status === 404 || response.status === 405) {
+              throw new Error('Location search not available. Please type manually.');
+            }
+            
             throw new Error(`Search failed: ${response.status}`);
           }
           
@@ -1714,11 +1728,13 @@
             country: countrySelect ? countrySelect.value : "none"
           });
           
-          // Check if it's a network error
+          // Check if it's a network error or endpoint not found
           if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Cannot connect to server. Check your connection.</div>';
+            stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Cannot connect to server. You can type manually.</div>';
+          } else if (error.message.includes('not available')) {
+            stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #fbbf24;">Location search not available. Please type manually.</div>';
           } else {
-            stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+            stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Please type manually.</div>';
           }
         }
       }, 300); // 300ms debounce

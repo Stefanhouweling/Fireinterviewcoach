@@ -892,6 +892,13 @@ app.post('/api/research-city', async (req, res) => {
       webSearchResults = "Web search unavailable - using AI knowledge base (may be outdated)";
     }
 
+    const verifiedFactsText = Object.keys(verifiedFacts).length > 0 
+      ? `VERIFIED FACTS FROM WEB SEARCH (USE THESE - DO NOT USE TRAINING DATA):
+${Object.entries(verifiedFacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+
+CRITICAL: These are the ONLY facts you should use. If a fact is not listed above, state "Information not found" rather than using your training data.`
+      : `WARNING: Web search verification failed. You MUST state "Information not found - web search unavailable" for any facts you cannot verify. DO NOT use outdated training data.`;
+
     const researchPrompt = `You are a research assistant helping to prepare KNOWLEDGE-BASED interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
 
 ${verifiedFactsText}

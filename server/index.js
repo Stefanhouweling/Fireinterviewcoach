@@ -322,11 +322,11 @@ If this is a HYPOTHETICAL (future) question, DO NOT use STAR. Instead, describe 
 - Keep language natural, plain, and realistic for a firefighter candidate.]
 
 Rules:
-- Use markdown bullets (dash) with bold labels, e.g., "- **Positive 1:** ...".
+- Use markdown bullets (dash) with bold labels using double asterisks, e.g., use dash followed by space and double asterisks for bold.
 - Do NOT use star symbols or plain asterisks for formatting.
 - Keep each bullet to 1–2 short sentences.
 - Avoid walls of text – this should feel light, skimmable, and coach-like.
-- Be encouraging but very specific and honest about what needs to improve.`
+- Be encouraging but very specific and honest about what needs to improve.`;
         }
       ]
     });

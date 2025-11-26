@@ -2664,41 +2664,12 @@ Return ONLY the category and question.`
 
   // Extract analysis logic into a reusable function
   async function triggerAnalysis() {
-    const text = (transcriptBox.textContent || "").trim();
+const text = (transcriptBox.textContent || "").trim();
     if (!text) {
       alert("No transcript found. Answer the question or type your answer first.");
       return;
     }
     lastAnswerTranscript = text;
-
-    // Open modal immediately with analyzing message
-    console.log("[ANALYSIS] Starting analysis process...");
-    console.log("[ANALYSIS] Transcript length:", text.length, "words:", text.split(/\s+/).length);
-    
-    // Open modal immediately
-    openAIModal();
-    
-    // Show loading in modal
-    const modalContent = document.getElementById("aiModalContent");
-    if (modalContent) {
-      modalContent.innerHTML = `
-        <div style="text-align: center; padding: 40px 20px;">
-          <div style="font-size: 1.5rem; color: #f97316; margin-bottom: 30px; font-weight: 600;">
-            🤖 Analyzing Your Answer...
-          </div>
-          <div style="width: 100%; max-width: 500px; margin: 0 auto;">
-            <div style="width: 100%; height: 16px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; overflow: hidden; margin-bottom: 15px; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);">
-              <div id="modalProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #f97316, #ef4444); border-radius: 8px; transition: width 0.3s ease; box-shadow: 0 0 20px rgba(249, 115, 22, 0.8);"></div>
-            </div>
-            <div id="modalProgressPercent" style="font-size: 1.1rem; color: #fbbf24; font-weight: 600;">0%</div>
-            <div style="margin-top: 20px; font-size: 0.9rem; color: #94a3b8;">Please wait while we analyze your response...</div>
-          </div>
-        </div>
-      `;
-      console.log("[MODAL] Modal opened with loading message");
-    } else {
-      console.error("[MODAL ERROR] Modal content element not found!");
-    }
 
     // Add to conversation history
     if (currentQuestion) {
@@ -2710,6 +2681,7 @@ Return ONLY the category and question.`
       });
     }
 
+    // ----- Local (instant) scoring -----
     const content = analyzeContent(text);
     const voice = analyzeVoice(text);
     const body = analyzeBody(motionScoreForAnswer);
@@ -2724,301 +2696,104 @@ Return ONLY the category and question.`
     bodyFeedbackEl.textContent = body.feedback;
     fireTipsEl.textContent = tips;
 
-    // ====== ENHANCED AI FEEDBACK ======
-    // Use backend if enabled, otherwise check for local key
-    // Always use backend
-    {
-      // Start progress bar animation in modal
-      console.log("[ANALYSIS] Starting AI analysis API call...");
-      const modalProgressBar = document.getElementById("modalProgressBar");
-      const modalProgressPercent = document.getElementById("modalProgressPercent");
-      console.log("[PROGRESS] Progress bar elements:", { 
-        modalProgressBar: !!modalProgressBar, 
-        modalProgressPercent: !!modalProgressPercent 
-      });
-      
-      let modalProgress = 0;
-      const modalProgressInterval = setInterval(() => {
-        modalProgress = Math.min(modalProgress + Math.random() * 15, 90);
-        if (modalProgressBar) modalProgressBar.style.width = modalProgress + "%";
-        if (modalProgressPercent) modalProgressPercent.textContent = Math.round(modalProgress) + "%";
-      }, 200);
-      
-      console.log("[PROGRESS] Progress bar animation started");
-
-      if (analyzeBtn) {
-        analyzeBtn.disabled = true;
-        analyzeBtn.textContent = "🤖 Analyzing with AI...";
-      }
-
-      try {
-        console.log("[API] Making request to:", `${BACKEND_URL}/api/analyze-answer`);
-        console.log("[API] Request payload:", {
-          question: currentQuestion ? currentQuestion.template : "Unknown",
-          answerLength: text.length,
-          motionScore: motionScoreForAnswer,
-          hasResumeAnalysis: !!resumeAnalysis,
-          conversationHistoryLength: conversationHistory.length
-        });
-        
-        const response = await fetch(`${BACKEND_URL}/api/analyze-answer`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            question: currentQuestion ? currentQuestion.template : "Unknown",
-            answer: text,
-            motionScore: motionScoreForAnswer,
-            resumeAnalysis: resumeAnalysis,
-            resumeText: resumeText,
-            conversationHistory: conversationHistory
-          })
-        });
-        
-        console.log("[API] Response status:", response.status, response.statusText);
-
-        if (response.ok) {
-          console.log("[ANALYSIS] API response received successfully");
-          // Complete progress bar in modal
-          clearInterval(modalProgressInterval);
-          if (modalProgressBar) modalProgressBar.style.width = "100%";
-          if (modalProgressPercent) modalProgressPercent.textContent = "100%";
-          console.log("[PROGRESS] Progress bar completed to 100%");
-          
-          const data = await response.json();
-          const aiFeedback = data.feedback;
-          console.log("[ANALYSIS] AI feedback received, length:", aiFeedback ? aiFeedback.length : 0);
-          
-          if (aiFeedback) {
-            console.log("[FEEDBACK] Formatting AI feedback for modal display...");
-            // Update modal content directly with formatted feedback
-            formatAIFeedbackForModal(aiFeedback);
-            console.log("[FEEDBACK] Feedback formatted and displayed in modal");
-            
-            // Hide the "View Detailed AI Feedback" button - not needed anymore
-            const viewBtn = document.getElementById("viewAIFeedbackBtn");
-            if (viewBtn) {
-              viewBtn.style.display = "none";
-              console.log("[FEEDBACK] View feedback button hidden (not needed)");
-            }
-            
-            addFollowupButton();
-            console.log("[FEEDBACK] Followup button added");
-            
-            // Modal is already open and showing full feedback
-            console.log("[MODAL] Modal now shows full AI feedback");
-          } else {
-            console.warn("[ANALYSIS] No feedback in response:", data);
-            // Show error in modal
-            if (modalContent) {
-              modalContent.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #fca5a5;">
-                  <div style="font-size: 1.2rem; margin-bottom: 10px;">⚠️ No Feedback Received</div>
-                  <div style="font-size: 0.9rem; color: #94a3b8;">The analysis completed but no feedback was returned. Please try again.</div>
-                </div>
-              `;
-            }
-          }
-        } else {
-          console.error("[API] Backend error response:", response.status, response.statusText);
-          if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
-          clearInterval(modalProgressInterval);
-          const errorText = await response.text();
-          console.error("[API] Error response body:", errorText);
-          throw new Error(`Backend error: ${response.status}`);
-        }
-      } catch (err) {
-        console.error("[ERROR] Analysis failed:", err);
-        if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
-        clearInterval(modalProgressInterval);
-        console.error("[ERROR] Backend analysis error:", err);
-        
-        // Show error in modal (modal is already open)
-        const modalContent = document.getElementById("aiModalContent");
-        if (modalContent) {
-          modalContent.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #fca5a5;">
-              <div style="font-size: 1.2rem; margin-bottom: 10px;">❌ Analysis Failed</div>
-              <div style="font-size: 0.9rem; color: #94a3b8;">${err.message || "Please try again."}</div>
-            </div>
-          `;
-        }
-      } finally {
-        // Clean up - analyzeBtn doesn't exist anymore, but keep for safety
-        if (analyzeBtn) {
-          analyzeBtn.disabled = false;
-          analyzeBtn.textContent = "🤖 Analyze Answer";
-        }
-      }
-      return;
+    // ====== POPUP + AI LOADING BAR ======
+    if (analyzeBtn) {
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "🤖 Analyzing with AI...";
     }
 
-    try {
-      const resumeContext = resumeAnalysis 
-        ? `Resume Analysis: ${JSON.stringify(resumeAnalysis)}`
-        : resumeText 
-          ? `Resume (full): ${resumeText}`
-          : "No resume provided";
+    // Open the AI modal immediately
+    openAIModal();
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Build loading UI inside the modal
+    const modalContentEl = document.getElementById("aiModalContent");
+    if (modalContentEl) {
+      modalContentEl.innerHTML = `
+        <div style="margin-bottom: 12px; font-size: 0.9rem; color: #e5e7eb;">
+          Analyzing your answer and body language. This can take a few seconds...
+        </div>
+        <div style="margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size: 0.85rem; color:#cbd5e1;">Contacting AI Interview Coach</span>
+          <span id="aiModalProgressPercent" style="font-size:0.85rem; color:#f97316; font-weight:600;">0%</span>
+        </div>
+        <div style="width:100%; height:8px; background:#111827; border-radius:999px; overflow:hidden;">
+          <div id="aiModalProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg,#f97316,#ef4444); transition:width 0.2s;"></div>
+        </div>
+      `;
+    }
+
+    const progressBar = document.getElementById("aiModalProgressBar");
+    const progressPercent = document.getElementById("aiModalProgressPercent");
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 90) progress = 90;
+      if (progressBar) progressBar.style.width = progress + "%";
+      if (progressPercent) progressPercent.textContent = Math.round(progress) + "%";
+    }, 200);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/analyze-answer`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + "REMOVED" // Always use backend instead
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an expert firefighter interview coach. Your goal is to help candidates develop better answers. IMPORTANT: Distinguish between two types of questions:\n\n1. BEHAVIORAL QUESTIONS (past experiences): \"Tell me about a time when...\" - Use STAR method (Situation-Task-Action-Result)\n2. HYPOTHETICAL/SITUATIONAL QUESTIONS: \"How would you...\" or \"What would you do if...\" - Focus on approach, reasoning, chain of command, ethics, decision-making process. DO NOT force STAR method on hypothetical questions.\n\nBe encouraging, specific, and actionable. Provide constructive feedback on what firefighter panels actually look for."
-            },
-            {
-              role: "user",
-              content: `
-You are an expert firefighter interview coach. Your goal is to help candidates develop better answers.
-
-Interview Question: ${currentQuestion ? currentQuestion.template : "Unknown"}
-Question Category: ${currentQuestion ? currentQuestion.category : "Unknown"}
-
-Candidate's Answer:
-"${text}"
-
-Body Language Score (higher = more movement/fidgeting): ${motionScoreForAnswer ?? "unknown"}
-${resumeContext}
-
-CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or HYPOTHETICAL question (future scenario).
-
-- BEHAVIORAL questions: "Tell me about a time when...", "Describe a situation where...", "Give me an example of..."
-  → Use STAR method (Situation-Task-Action-Result) for these
-  
-- HYPOTHETICAL questions: "How would you...", "What would you do if...", "How would you approach..."
-  → DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.
-
-Analyze the question above and provide appropriate feedback. Structure your response as follows:
-
-## Answer Summary
-[2-3 sentence summary of what they said - be specific about what they covered]
-
-## Question Type Analysis
-[Identify if this is behavioral or hypothetical, then provide appropriate analysis]
-
-IF BEHAVIORAL (past experience):
-## STAR Method Analysis
-Break down their answer:
-- **Situation**: Did they set the scene? [What they did/didn't do]
-- **Task**: Did they explain what needed to be done? [What they did/didn't do]
-- **Action**: Did they describe their specific actions? [What they did/didn't do]
-- **Result**: Did they explain the outcome? [What they did/didn't do]
-
-## How to Improve Using STAR
-Provide a concrete example showing how they could restructure their answer using STAR.
-
-IF HYPOTHETICAL (future scenario):
-## Approach Analysis
-Evaluate their answer on:
-- **Clarity of Approach**: Did they clearly explain their step-by-step approach?
-- **Reasoning**: Did they explain WHY they would take those actions?
-- **Chain of Command**: Did they consider proper hierarchy and who to involve?
-- **Ethics & Safety**: Did they prioritize safety and ethical considerations?
-- **Specificity**: Were their actions specific enough, or too vague? What would they actually say or do?
-
-## How to Improve (For Hypothetical Questions)
-Provide guidance on:
-- Being more specific about what they would actually say or do
-- Explaining their reasoning and thought process
-- Considering all stakeholders (team, chain of command, safety)
-- Showing they understand fire service protocols
-- DO NOT suggest using STAR method for hypothetical questions
-
-## Strengths
-- [Specific point 1 - what they did well]
-- [Specific point 2]
-- [Specific point 3]
-
-## Areas for Improvement
-- [Specific point 1 - what needs work]
-- [Specific point 2]
-- [Specific point 3]
-
-## Panel-Ready Score: [X]/10
-[Brief explanation of the score and what would make it a 10/10]
-
-## Practice Exercise
-[If behavioral: "Try answering this question again, but this time start with 'The situation was...' and make sure to include the result at the end."]
-[If hypothetical: "Try answering this question again, but this time be more specific about each step you would take and explain your reasoning for each decision. Remember, this is a hypothetical question, so focus on your approach and reasoning, not a past experience."]
-
-## Reformulated Answer (Panel-Ready Version)
-[IMPORTANT: Create a polished, panel-ready version of their answer. Take what they said and reformulate it into a strong, professional answer that:
-- Incorporates all the key points they mentioned
-- Uses their actual experience, certifications, and background from their resume (if provided)
-- Follows STAR method if behavioral, or clear step-by-step approach if hypothetical
-- Is specific, clear, and demonstrates firefighter competencies
-- Shows proper chain of command awareness, safety focus, and professional judgment
-- Is the answer they SHOULD give - polished and ready for a real panel
-
-Format this as a complete, natural-sounding answer that they could use as a template. Make it sound like them but better - use their words and ideas, just refined and structured properly.]
-
-Use clear markdown formatting with ## for main sections and - for bullet points. Be encouraging but specific.
-              `.trim()
-            }
-          ]
+          question: currentQuestion ? currentQuestion.template : "Unknown",
+          answer: text,
+          motionScore: motionScoreForAnswer,
+          resumeAnalysis: resumeAnalysis,
+          resumeText: resumeText,
+          conversationHistory: conversationHistory
         })
       });
 
-      const data = await response.json();
-      const aiFeedback = data.choices && data.choices[0] && data.choices[0].message
-        ? data.choices[0].message.content
-        : null;
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.status}`);
+      }
 
-      // Complete progress bar
+      const data = await response.json();
+      const aiFeedback = data.feedback;
+
+      // Finish progress bar
       clearInterval(progressInterval);
       if (progressBar) progressBar.style.width = "100%";
       if (progressPercent) progressPercent.textContent = "100%";
-      
+
       if (aiFeedback) {
-        // Format the AI feedback for both the small preview and modal
-        formatAIFeedback(fireTipsEl, aiFeedback, true); // true = show preview
+        // Small preview in right-hand card
+        formatAIFeedback(fireTipsEl, aiFeedback, true);
+        // Full formatted feedback into the modal
         formatAIFeedbackForModal(aiFeedback);
-        
-        // Show the "View Detailed Feedback" button
+
         const viewBtn = document.getElementById("viewAIFeedbackBtn");
         if (viewBtn) {
           viewBtn.style.display = "block";
         }
-        
-        // Add followup button near the question area (more visible)
+
         addFollowupButton();
-        
-        // Automatically open the AI feedback modal
-        openAIModal();
-      } else {
-        // keep the local tips if AI fails
+      } else if (modalContentEl) {
+        modalContentEl.innerHTML = `
+          <p style="color:#fecaca;">AI didn't return any feedback. Please try again.</p>
+        `;
       }
-      
-      // Hide progress bar after a short delay
-      setTimeout(() => {
-        if (progressContainer) progressContainer.style.display = "none";
-        if (progressBar) progressBar.style.width = "0%";
-        if (progressPercent) progressPercent.textContent = "0%";
-      }, 500);
     } catch (err) {
+      console.error("Backend analysis error:", err);
       clearInterval(progressInterval);
-      console.error("AI feedback error:", err);
-      if (progressContainer) progressContainer.style.display = "none";
-      if (progressBar) progressBar.style.width = "0%";
-      if (progressPercent) progressPercent.textContent = "0%";
-      // keep local tips if AI call fails
+      if (modalContentEl) {
+        modalContentEl.innerHTML = `
+          <p style="color:#fecaca; margin-bottom:4px;">AI analysis failed.</p>
+          <p style="color:#9ca3af; font-size:0.85rem;">Check your connection and try again.</p>
+        `;
+      }
     } finally {
-      // Note: analyzeBtn may not exist if button was removed, so check first
       if (analyzeBtn) {
         analyzeBtn.disabled = false;
         analyzeBtn.textContent = "🤖 Analyze Answer";
       }
     }
   }
+
   
   // Note: The analyze button is now hidden/removed from UI, but we keep the function for auto-triggering
 

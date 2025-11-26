@@ -870,13 +870,40 @@ app.post('/api/research-city', async (req, res) => {
       try {
         console.log(`Searching for: ${search.query}`);
         
-        // Use a more direct approach - ask for the most current information available
-        const searchResponse = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: `You are a fact-checker. Provide the MOST CURRENT information you have. 
+        // Try OpenAI Responses API with web search first (if available)
+        let factResult = null;
+        let usedWebSearch = false;
+        
+        try {
+          // Try Responses API with web_search tool for real-time information
+          if (openai.responses && typeof openai.responses.create === 'function') {
+            console.log(`Attempting Responses API with web search for: ${search.query}`);
+            const searchResponse = await openai.responses.create({
+              model: "gpt-4o", // Use gpt-4o for Responses API (gpt-5 doesn't exist yet)
+              tools: [
+                { type: "web_search" }
+              ],
+              input: `What is the current, verified fact for: "${search.query}"? Return ONLY the fact itself (name or number), no explanations.`
+            });
+            
+            if (searchResponse && searchResponse.output_text) {
+              factResult = searchResponse.output_text.trim();
+              usedWebSearch = true;
+              console.log(`✓ Responses API with web search found ${search.fact}: ${factResult}`);
+            }
+          }
+        } catch (responsesError) {
+          console.log(`Responses API not available (${responsesError.message}), falling back to chat completions`);
+        }
+        
+        // Fallback to chat completions if Responses API not available or failed
+        if (!factResult) {
+          const searchResponse = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content: `You are a fact-checker. Provide the MOST CURRENT information you have. 
 
 IMPORTANT RULES:
 - For "${city}, ${country}" specifically, provide the most recent information available
@@ -884,10 +911,10 @@ IMPORTANT RULES:
 - If you're uncertain or the information might be outdated, return "NOT FOUND"
 - Do NOT add extra initials or letters to names
 - For numbers, return just the number`
-            },
-            {
-              role: "user",
-              content: `What is the current fact for "${search.query}"?
+              },
+              {
+                role: "user",
+                content: `What is the current fact for "${search.query}"?
 
 Return ONLY the fact:
 - For fire chief: Return the full name (e.g., "Erick Peterson")
@@ -897,13 +924,14 @@ Return ONLY the fact:
 - For number of members: Return just the number (e.g., "150")
 
 If you cannot provide a current, verified fact, return "NOT FOUND".`
-            }
-          ],
-          temperature: 0.1,
-          max_tokens: 50
-        });
-        
-        let factResult = searchResponse.choices[0].message.content.trim();
+              }
+            ],
+            temperature: 0.1,
+            max_tokens: 50
+          });
+          
+          factResult = searchResponse.choices[0].message.content.trim();
+        }
         
         // Clean up the response - remove any explanatory text, keep only the fact
         factResult = factResult.split('\n')[0].split('.')[0].trim();
@@ -918,7 +946,7 @@ If you cannot provide a current, verified fact, return "NOT FOUND".`
             factResult.length > 0 &&
             factResult.length < 100) { // Reasonable length check
           verifiedFacts[search.fact] = factResult;
-          console.log(`✓ Found ${search.fact}: ${factResult}`);
+          console.log(`✓ Found ${search.fact}: ${factResult}${usedWebSearch ? ' (via web search)' : ''}`);
         } else {
           console.log(`✗ Could not verify: ${search.fact} - ${factResult}`);
         }

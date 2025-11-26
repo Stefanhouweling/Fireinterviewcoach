@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
     service: 'Fire Interview Coach API',
     status: 'running',
     version: '1.0.0',
-      endpoints: {
+    endpoints: {
       health: '/health',
       question: 'POST /api/question',
       followup: 'POST /api/followup',
@@ -160,7 +160,7 @@ app.post('/api/question', async (req, res) => {
         userProfile = getUserProfile(sessionId);
       }
       
-      if (resumeAnalysis) {
+    if (resumeAnalysis) {
         updateUserProfile(sessionId, { resumeAnalysis });
         userProfile = getUserProfile(sessionId);
       }
@@ -529,9 +529,9 @@ ${selectedCategory === "City & Department Specific" ? `  * KNOWLEDGE QUESTIONS (
     * Equipment: "What specialized equipment does ${profileDepartmentName || 'this department'} have?" "What technical rescue capabilities does ${profileDepartmentName || 'this department'} have?"
     * Values: "What are the core values of ${profileDepartmentName || 'this department'}?" "What is the mission statement of ${profileDepartmentName || 'this department'}?"
   * FORBIDDEN: "How would you handle..." or "Tell us about a time..." (these are behavioral/situational, NOT knowledge questions)` : `  * Behavioral/Situational questions:
-    * "How would you handle a situation if you felt you weren't treated fairly?"
-    * "How would you handle a leader where you question their leadership, would you still respect them?"
-    * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
+  * "How would you handle a situation if you felt you weren't treated fairly?"
+  * "How would you handle a leader where you question their leadership, would you still respect them?"
+  * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
     * Resume-based example: "Given your experience with [specific certification/experience from resume], how would you approach a situation where you need to apply that knowledge under pressure?"`}
 - Test: ${selectedCategory === "City & Department Specific" ? 'candidate knowledge of specific facts about the city and department' : 'chain of command, ethics, judgment, decision-making, conflict resolution'}
 - CRITICAL: The question MUST be completely different from any question already asked (see list above)
@@ -832,7 +832,7 @@ Return a JSON object with this structure:
 app.post('/api/tts', async (req, res) => {
   try {
     const { text, voicePreference } = req.body;
-    
+
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
     }
@@ -1266,28 +1266,36 @@ async function loadLocationData() {
     
     console.log('Loading location data from countries-states-cities-database...');
     
+    // Helper function to fetch with timeout
+    const fetchWithTimeout = (url, options, timeout = 30000) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      return fetchModule(url, {
+        ...options,
+        signal: controller.signal
+      }).finally(() => clearTimeout(timeoutId));
+    };
+    
     const [countriesRes, statesRes, citiesRes] = await Promise.all([
-      fetchModule(`${baseUrl}/countries.json`, {
+      fetchWithTimeout(`${baseUrl}/countries.json`, {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Fire-Interview-Coach-API/1.0'
-        },
-        timeout: 30000 // 30 second timeout
-      }),
-      fetchModule(`${baseUrl}/states.json`, {
+        }
+      }, 30000),
+      fetchWithTimeout(`${baseUrl}/states.json`, {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Fire-Interview-Coach-API/1.0'
-        },
-        timeout: 30000
-      }),
-      fetchModule(`${baseUrl}/cities.json`, {
+        }
+      }, 30000),
+      fetchWithTimeout(`${baseUrl}/cities.json`, {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Fire-Interview-Coach-API/1.0'
-        },
-        timeout: 60000 // Cities file is larger, allow more time
-      })
+        }
+      }, 60000) // Cities file is larger, allow more time
     ]);
     
     // Check if responses are OK

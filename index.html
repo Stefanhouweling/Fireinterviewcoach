@@ -175,9 +175,125 @@
       gap: 12px;
     }
 
-    @media (max-width: 900px) {
+    /* Mobile Responsive Styles */
+    @media (max-width: 1024px) {
       .layout {
         grid-template-columns: 1fr;
+      }
+      
+      .app {
+        margin: 10px;
+        padding: 16px;
+        border-radius: 16px;
+      }
+      
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      
+      .title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      .card {
+        padding: 16px;
+      }
+      
+      .feedback-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .question-controls {
+        flex-wrap: wrap;
+      }
+      
+      .video-wrapper {
+        max-height: 400px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .app {
+        margin: 5px;
+        padding: 12px;
+      }
+      
+      header .title {
+        width: 100%;
+      }
+      
+      header .title > div:first-child {
+        width: 70px;
+        height: 70px;
+      }
+      
+      h1 {
+        font-size: 1.3rem;
+        flex-wrap: wrap;
+      }
+      
+      .subtitle {
+        font-size: 0.8rem;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      .card-title {
+        font-size: 0.95rem;
+      }
+      
+      button {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+      }
+      
+      .video-wrapper {
+        max-height: 300px;
+      }
+      
+      video, canvas {
+        max-height: 300px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .app {
+        margin: 0;
+        padding: 8px;
+        border-radius: 0;
+      }
+      
+      header {
+        padding: 8px 0;
+      }
+      
+      .card {
+        padding: 12px;
+        border-radius: 12px;
+      }
+      
+      .feedback-block {
+        padding: 10px;
+      }
+      
+      .feedback-block h4 {
+        font-size: 0.9rem;
+      }
+      
+      .feedback-block p {
+        font-size: 0.8rem;
       }
     }
 
@@ -774,7 +890,11 @@
     <div class="title" style="display: flex; align-items: center; gap: 20px;">
       <!-- Logo -->
       <div style="display: flex; align-items: center; justify-content: center; width: 90px; height: 90px; flex-shrink: 0; position: relative;">
-        <svg width="90" height="90" viewBox="0 0 90 90" style="filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.4));">
+        <img id="logoImage" src="logo.png" alt="Interview Coach AI Logo" 
+             style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.4));"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <!-- Fallback SVG if logo image not found -->
+        <svg width="90" height="90" viewBox="0 0 90 90" style="filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.4)); display: none;">
           <!-- Maltese Cross Background -->
           <path d="M45 12 L50 32 L70 32 L55 44 L60 64 L45 52 L30 64 L35 44 L20 32 L40 32 Z" 
                 fill="none" 
@@ -932,46 +1052,6 @@
         </div>
       </div>
 
-      <!-- Feedback card -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            Feedback on This Answer
-          </div>
-          <button id="analyzeBtn" type="button" class="secondary">
-            🧠 Analyze Answer
-          </button>
-        </div>
-        <div class="feedback-grid">
-          <div class="feedback-block">
-            <h4>Content & Structure <span id="contentScore" class="score-pill low">–</span></h4>
-            <p id="contentFeedback">
-              After you answer a question, click “Analyze Answer” for feedback on clarity, structure, and firefighter relevance.
-            </p>
-          </div>
-          <div class="feedback-block">
-            <h4>Voice & Filler Words <span id="voiceScore" class="score-pill low">–</span></h4>
-            <p id="voiceFeedback">
-              “Um, uh, like…” will be detected and summarized here based on your transcript.
-            </p>
-          </div>
-          <div class="feedback-block">
-            <h4>Body Language (Camera) <span id="bodyScore" class="score-pill low">–</span></h4>
-            <p id="bodyFeedback">
-              Movement and stability from the webcam feed will be scored as “steady / moderate / fidgety”.
-            </p>
-          </div>
-          <div class="feedback-block">
-            <h4>Fire-Specific Tips / AI Coach</h4>
-            <p id="fireTips">
-              We'll highlight if you're hitting key themes: safety, teamwork, accountability, medical care, community, and learning from mistakes.
-            </p>
-            <button id="viewAIFeedbackBtn" type="button" style="margin-top: 8px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); color: #fca5a5; cursor: pointer; font-size: 0.85rem; display: none;">
-              📖 View Detailed AI Feedback
-            </button>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- RIGHT SIDE -->
@@ -2753,6 +2833,11 @@ Return ONLY the category and question.`
         });
 
         if (response.ok) {
+          // Complete progress bar
+          clearInterval(progressInterval);
+          if (progressBar) progressBar.style.width = "100%";
+          if (progressPercent) progressPercent.textContent = "100%";
+          
           const data = await response.json();
           const aiFeedback = data.feedback;
           
@@ -2767,11 +2852,23 @@ Return ONLY the category and question.`
             
             addFollowupButton();
           }
+          
+          // Hide progress bar after a short delay
+          setTimeout(() => {
+            if (progressContainer) progressContainer.style.display = "none";
+            if (progressBar) progressBar.style.width = "0%";
+            if (progressPercent) progressPercent.textContent = "0%";
+          }, 500);
         } else {
+          clearInterval(progressInterval);
           throw new Error(`Backend error: ${response.status}`);
         }
       } catch (err) {
+        clearInterval(progressInterval);
         console.error("Backend analysis error:", err);
+        if (progressContainer) progressContainer.style.display = "none";
+        if (progressBar) progressBar.style.width = "0%";
+        if (progressPercent) progressPercent.textContent = "0%";
         alert("AI analysis failed. Please try again or use local API keys.");
       } finally {
         analyzeBtn.disabled = false;

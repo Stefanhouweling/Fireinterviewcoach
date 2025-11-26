@@ -477,11 +477,19 @@ ${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !=
 - Keep it broad and applicable to all candidates, not overly specific to their resume
 `}
 - Examples of good questions:
-  * "How would you handle a situation if you felt you weren't treated fairly?"
-  * "How would you handle a leader where you question their leadership, would you still respect them?"
-  * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
-  * Resume-based example: "Given your experience with [specific certification/experience from resume], how would you approach a situation where you need to apply that knowledge under pressure?"
-- Test: chain of command, ethics, judgment, decision-making, conflict resolution
+${selectedCategory === "City & Department Specific" ? `  * KNOWLEDGE QUESTIONS (REQUIRED for this category - use city research data):
+    * "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?"
+    * "What is the local union number for ${profileDepartmentName || 'the fire department'} in ${profileCity || 'this city'}?"
+    * "How many members does ${profileDepartmentName || 'the department'} currently have?"
+    * "Who is the mayor of ${profileCity || 'this city'}?"
+    * "When was ${profileDepartmentName || 'this department'} first established as a career department?"
+    * "What community programs does ${profileDepartmentName || 'this department'} participate in?"
+  * FORBIDDEN: "How would you handle..." or "Tell us about a time..." (these are behavioral/situational, NOT knowledge questions)` : `  * Behavioral/Situational questions:
+    * "How would you handle a situation if you felt you weren't treated fairly?"
+    * "How would you handle a leader where you question their leadership, would you still respect them?"
+    * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
+    * Resume-based example: "Given your experience with [specific certification/experience from resume], how would you approach a situation where you need to apply that knowledge under pressure?"`}
+- Test: ${selectedCategory === "City & Department Specific" ? 'candidate knowledge of specific facts about the city and department' : 'chain of command, ethics, judgment, decision-making, conflict resolution'}
 - CRITICAL: The question MUST be completely different from any question already asked (see list above)
 ${practiceMode === "simulation" ? `- If resume is provided and mode allows, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates
 - Rotate through different question types: hypothetical scenarios, ethical dilemmas, chain of command situations, team dynamics, safety protocols, etc.

@@ -3041,7 +3041,10 @@ Return ONLY the category and question.`
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text, voice })
+        body: JSON.stringify({ 
+          text,
+          voicePreference: selectedVoicePreference || onboardingData?.voicePreference || null
+        })
       });
       
       console.log(`Backend TTS response status: ${response.status}`);

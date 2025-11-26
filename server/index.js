@@ -422,8 +422,8 @@ Return a JSON object with this structure:
 // POST /api/tts - Text-to-speech using OpenAI TTS
 app.post('/api/tts', async (req, res) => {
   try {
-    const { text, voice = "alloy" } = req.body; // voice options: alloy, echo, fable, onyx, nova, shimmer
-
+    const { text, voicePreference } = req.body;
+    
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
     }
@@ -433,7 +433,20 @@ app.post('/api/tts', async (req, res) => {
       return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
 
-    console.log(`Generating TTS for text: "${text.substring(0, 50)}..." with voice: ${voice}`);
+    // Map voice preference to OpenAI voice
+    // OpenAI voices: alloy, echo, fable, onyx, nova, shimmer
+    // Male-sounding: alloy, echo, onyx
+    // Female-sounding: fable, nova, shimmer
+    let voice = "alloy"; // Default
+    if (voicePreference === "male") {
+      voice = "onyx"; // Deep, male-sounding voice
+    } else if (voicePreference === "female") {
+      voice = "nova"; // Clear, female-sounding voice
+    } else {
+      voice = "alloy"; // Neutral default
+    }
+
+    console.log(`Generating TTS for text: "${text.substring(0, 50)}..." with voice: ${voice} (preference: ${voicePreference || 'default'})`);
 
     const response = await openai.audio.speech.create({
       model: "tts-1-hd", // High quality, or use "tts-1" for faster/cheaper

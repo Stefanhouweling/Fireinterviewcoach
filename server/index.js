@@ -2,13 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const OpenAI = require('openai');
-// Use native fetch if available (Node 18+), otherwise use node-fetch
-let fetch;
-try {
-  fetch = globalThis.fetch || require('node-fetch');
-} catch (e) {
-  fetch = require('node-fetch');
-}
+// Use node-fetch for external API calls (Nominatim)
+const fetchModule = require('node-fetch');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -595,7 +590,7 @@ app.post('/api/search-location', async (req, res) => {
     console.log(`Calling Nominatim API: ${url}`);
 
     // Call Nominatim API with proper headers (required by their usage policy)
-    const response = await fetch(url, {
+    const response = await fetchModule(url, {
       headers: {
         'User-Agent': 'FireInterviewCoach/1.0 (contact: support@fireinterviewcoach.com)', // Required by Nominatim
         'Accept': 'application/json'

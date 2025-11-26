@@ -266,67 +266,52 @@ app.post('/api/analyze-answer', async (req, res) => {
         },
         {
           role: "user",
-          content: `You are an expert firefighter interview coach. Your goal is to help candidates develop better answers.
-
-Interview Question: ${question}
-Question Category: General
-
-Candidate's Answer:
-"${answer}"
-
-Body Language Score (higher = more movement/fidgeting): ${motionScore ?? "unknown"}
-${resumeContext}
-
-CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or HYPOTHETICAL question (future scenario).
-
-- BEHAVIORAL questions: \"Tell me about a time when...\", \"Describe a situation where...\", \"Give me an example of...\"  
-  → Use STAR method (Situation-Task-Action-Result) for these.
-  
-- HYPOTHETICAL questions: \"How would you...\", \"What would you do if...\", \"How would you approach...\"  
-  → DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.
-
-Keep the response concise and easy to skim. Avoid long paragraphs. Use short sentences and compact sections.
-
-STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bold labels with double asterisks, NOT star symbols):
-
-## Answer Summary & Score
-- **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]  
-- **Score:** [X/10 – very short explanation of why, and what would make it a 10/10]
-
-## What You Did Well
-- **Positive 1:** [Short, specific positive point]  
-- **Positive 2:** [Short, specific positive point]  
-- **Positive 3 (optional):** [Only if there is a clear extra strength]
-
-## What To Improve Next
-- **Focus 1:** [Very practical change they can make next time]  
-- **Focus 2:** [Another clear tweak or addition]  
-- **Focus 3 (optional):** [Only if it adds real value]
-
-## STAR or Approach Overview
-If this is a BEHAVIORAL (past) question, use STAR in a very compact way:
-- **Situation:** [1 short sentence: how they should set the scene]  
-- **Task:** [1 short sentence: what the goal or responsibility was]  
-- **Action:** [1–2 short sentences: the key actions they should clearly state]  
-- **Result:** [1 short sentence: the outcome + what changed or improved]
-
-If this is a HYPOTHETICAL (future) question, DO NOT use STAR. Instead, describe a clear approach:
-- **Step 1:** [What they should do first and why]  
-- **Step 2:** [Next key step, including chain of command / safety / communication]  
-- **Step 3:** [How they would wrap up, debrief, or follow up]
-
-## Panel-Ready 10/10 Answer
-Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:
-- 1 short opening sentence that orients the panel.
-- 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.
-- Keep language natural, plain, and realistic for a firefighter candidate.
-
-Rules:
-- Use markdown bullets (dash) with bold labels using double asterisks, e.g., use dash followed by space and double asterisks for bold.
-- Do NOT use star symbols or plain asterisks for formatting.
-- Keep each bullet to 1–2 short sentences.
-- Avoid walls of text – this should feel light, skimmable, and coach-like.
-- Be encouraging but very specific and honest about what needs to improve.`;
+          content: "You are an expert firefighter interview coach. Your goal is to help candidates develop better answers.\n\n" +
+            "Interview Question: " + question + "\n" +
+            "Question Category: General\n\n" +
+            "Candidate's Answer:\n" +
+            "\"" + String(answer).replace(/"/g, '\\"') + "\"\n\n" +
+            "Body Language Score (higher = more movement/fidgeting): " + (motionScore ?? "unknown") + "\n" +
+            resumeContext + "\n\n" +
+            "CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or HYPOTHETICAL question (future scenario).\n\n" +
+            "- BEHAVIORAL questions: \"Tell me about a time when...\", \"Describe a situation where...\", \"Give me an example of...\"\n" +
+            "  → Use STAR method (Situation-Task-Action-Result) for these.\n\n" +
+            "- HYPOTHETICAL questions: \"How would you...\", \"What would you do if...\", \"How would you approach...\"\n" +
+            "  → DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.\n\n" +
+            "Keep the response concise and easy to skim. Avoid long paragraphs. Use short sentences and compact sections.\n\n" +
+            "STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bold labels with double asterisks, NOT star symbols):\n\n" +
+            "## Answer Summary & Score\n" +
+            "- **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]\n" +
+            "- **Score:** [X/10 – very short explanation of why, and what would make it a 10/10]\n\n" +
+            "## What You Did Well\n" +
+            "- **Positive 1:** [Short, specific positive point]\n" +
+            "- **Positive 2:** [Short, specific positive point]\n" +
+            "- **Positive 3 (optional):** [Only if there is a clear extra strength]\n\n" +
+            "## What To Improve Next\n" +
+            "- **Focus 1:** [Very practical change they can make next time]\n" +
+            "- **Focus 2:** [Another clear tweak or addition]\n" +
+            "- **Focus 3 (optional):** [Only if it adds real value]\n\n" +
+            "## STAR or Approach Overview\n" +
+            "If this is a BEHAVIORAL (past) question, use STAR in a very compact way:\n" +
+            "- **Situation:** [1 short sentence: how they should set the scene]\n" +
+            "- **Task:** [1 short sentence: what the goal or responsibility was]\n" +
+            "- **Action:** [1–2 short sentences: the key actions they should clearly state]\n" +
+            "- **Result:** [1 short sentence: the outcome + what changed or improved]\n\n" +
+            "If this is a HYPOTHETICAL (future) question, DO NOT use STAR. Instead, describe a clear approach:\n" +
+            "- **Step 1:** [What they should do first and why]\n" +
+            "- **Step 2:** [Next key step, including chain of command / safety / communication]\n" +
+            "- **Step 3:** [How they would wrap up, debrief, or follow up]\n\n" +
+            "## Panel-Ready 10/10 Answer\n" +
+            "Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:\n" +
+            "- 1 short opening sentence that orients the panel.\n" +
+            "- 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.\n" +
+            "- Keep language natural, plain, and realistic for a firefighter candidate.\n\n" +
+            "Rules:\n" +
+            "- Use markdown bullets (dash) with bold labels using double asterisks, e.g., use dash followed by space and double asterisks for bold.\n" +
+            "- Do NOT use star symbols or plain asterisks for formatting.\n" +
+            "- Keep each bullet to 1–2 short sentences.\n" +
+            "- Avoid walls of text – this should feel light, skimmable, and coach-like.\n" +
+            "- Be encouraging but very specific and honest about what needs to improve."
         }
       ]
     });

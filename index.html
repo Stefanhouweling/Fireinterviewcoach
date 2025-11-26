@@ -982,6 +982,28 @@
         <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;" id="onboardingDepartmentHelper">This will be used to personalize your interview questions</p>
       </div>
 
+      <!-- Name (Optional) -->
+      <div>
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingNameLabel">
+          5. Your Name <span style="color: #94a3b8; font-weight: 400;">(Optional)</span>
+        </label>
+        <input type="text" id="onboardingName" placeholder="e.g., John Smith" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">AI will address you by name in some questions</p>
+      </div>
+
+      <!-- Voice Selection -->
+      <div>
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingVoiceLabel">
+          6. Voice Preference <span style="color: #94a3b8; font-weight: 400;">(Optional)</span>
+        </label>
+        <select id="onboardingVoice" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer;">
+          <option value="">Default (Auto)</option>
+          <option value="male">Male Voice</option>
+          <option value="female">Female Voice</option>
+        </select>
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">Choose your preferred voice for question narration</p>
+      </div>
+
       <!-- Submit Button -->
       <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
         <button type="submit" id="onboardingSubmitBtn" style="padding: 14px 28px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">Start Practice Session</button>
@@ -1121,6 +1143,7 @@
               <option value="Medical / EMR">Medical / EMR</option>
               <option value="Technical – Fireground">Technical – Fireground</option>
               <option value="Resume-Based">Resume-Based Questions</option>
+              <option value="City & Department Specific">City & Department Specific</option>
             </select>
           </div>
         </div>
@@ -1841,6 +1864,8 @@
       const city = document.getElementById("onboardingCity").value.trim();
       const jobType = document.getElementById("onboardingJobType").value;
       const departmentName = document.getElementById("onboardingDepartmentName").value.trim();
+      const name = document.getElementById("onboardingName") ? document.getElementById("onboardingName").value.trim() : "";
+      const voicePreference = document.getElementById("onboardingVoice") ? document.getElementById("onboardingVoice").value : "";
       
       // Validate required fields
       if (!country || !city || !jobType || !departmentName) {
@@ -1855,6 +1880,8 @@
         city,
         jobType,
         departmentName,
+        name: name || null,
+        voicePreference: voicePreference || null,
         cityResearch: null // Will be populated by backend
       };
       
@@ -1890,6 +1917,11 @@
         const data = await response.json();
         onboardingData.cityResearch = data.research;
         localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
+        
+        // Set voice preference
+        if (onboardingData.voicePreference) {
+          selectedVoicePreference = onboardingData.voicePreference;
+        }
         
         console.log("City research completed:", data.research);
         
@@ -2119,8 +2151,13 @@
     city: "",
     jobType: "",
     departmentName: "",
+    name: null,
+    voicePreference: null,
     cityResearch: null // Will be populated by backend
   };
+  
+  // Voice preference for TTS
+  let selectedVoicePreference = null;
 
   const questionBank = [
     {

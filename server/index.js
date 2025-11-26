@@ -126,11 +126,23 @@ ${resumeText}`;
       }
     }
 
+    // Get candidate name from onboarding data
+    const candidateName = onboardingData?.name || null;
+    const nameContext = candidateName ? `\n\nIMPORTANT: The candidate's name is ${candidateName}. Occasionally address them by name in questions to make it more personal and realistic (e.g., "${candidateName}, tell us about a time..." or "${candidateName}, how would you..."). Use the name naturally, not in every question - mix it in about 30% of the time.` : "";
+
     // Determine question strategy based on mode
     let questionStrategy = "";
     if (practiceMode === "specific" && selectedCategory) {
       if (selectedCategory === "Resume-Based") {
         questionStrategy = `Generate a question SPECIFICALLY based on the candidate's resume. Reference their actual experience, certifications, or background mentioned in the resume. However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
+      } else if (selectedCategory === "City & Department Specific") {
+        questionStrategy = `Generate a question SPECIFICALLY about the city and department the candidate is applying to. Use the city research and department information to create questions that reference:
+- The specific department name and its history
+- City-specific challenges, demographics, or initiatives
+- The fire chief's name or department leadership
+- Local union information or department structure
+- City planning or emergency services initiatives
+Make the question feel personalized to THIS specific department and city while still testing general firefighter competencies. Examples: "Working for the ${onboardingData?.departmentName || '[Department Name]'} is a stressful job, ${candidateName ? candidateName + ', ' : ''}tell us about a time..." or "Given the challenges in ${onboardingData?.city || '[City]'}, how would you handle...".`;
       } else {
         questionStrategy = `Generate a question focused on the category: "${selectedCategory}". Make it relevant to this specific area while still being a general situational question.`;
       }
@@ -153,7 +165,7 @@ ${resumeText}`;
 
 ${questionStrategy}
 
-${resumeContext}${conversationContext}${diversityContext}${onboardingContext}
+${resumeContext}${conversationContext}${diversityContext}${onboardingContext}${nameContext}
 
 Requirements:
 - Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")

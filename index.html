@@ -1577,6 +1577,66 @@
     }
   }
   
+  // Format resume summary with clean, structured display
+  function formatResumeSummary(element, analysis, rawText) {
+    if (!element) return;
+    
+    if (analysis) {
+      // Use AI analysis for clean summary
+      const experience = analysis.experience || analysis.yearsOfExperience || "Not specified";
+      const certifications = Array.isArray(analysis.certifications) ? analysis.certifications : [];
+      const skills = Array.isArray(analysis.skills) ? analysis.skills : [];
+      const workHistory = Array.isArray(analysis.workHistory) ? analysis.workHistory : [];
+      const achievements = Array.isArray(analysis.achievements) ? analysis.achievements : [];
+      const focusAreas = Array.isArray(analysis.interviewFocus) ? analysis.interviewFocus : [];
+      
+      let html = '<div style="color: #e2e8f0;">';
+      
+      // Experience
+      html += `<div style="margin-bottom: 12px;">
+        <div style="color: #fca5a5; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px;">📊 Experience</div>
+        <div style="color: #cbd5e1; font-size: 0.9rem;">${experience}</div>
+      </div>`;
+      
+      // Certifications
+      if (certifications.length > 0) {
+        html += `<div style="margin-bottom: 12px;">
+          <div style="color: #fca5a5; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px;">🏆 Certifications</div>
+          <div style="color: #cbd5e1; font-size: 0.9rem;">${certifications.join(" • ")}</div>
+        </div>`;
+      }
+      
+      // Key Skills
+      if (skills.length > 0) {
+        html += `<div style="margin-bottom: 12px;">
+          <div style="color: #fca5a5; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px;">💼 Key Skills</div>
+          <div style="color: #cbd5e1; font-size: 0.9rem;">${skills.slice(0, 6).join(" • ")}${skills.length > 6 ? "..." : ""}</div>
+        </div>`;
+      }
+      
+      // Interview Focus Areas
+      if (focusAreas.length > 0) {
+        html += `<div style="margin-bottom: 12px;">
+          <div style="color: #fca5a5; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px;">🎯 Interview Focus</div>
+          <div style="color: #cbd5e1; font-size: 0.9rem;">${focusAreas.slice(0, 4).join(" • ")}</div>
+        </div>`;
+      }
+      
+      html += '</div>';
+      element.innerHTML = html;
+    } else if (rawText) {
+      // Fallback: show basic info from raw text
+      const preview = rawText.slice(0, 200).replace(/\s+/g, " ").trim();
+      element.innerHTML = `<div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
+        <div style="color: #fca5a5; font-weight: 600; margin-bottom: 8px;">📄 Resume Loaded</div>
+        <div>${preview}${rawText.length > 200 ? "..." : ""}</div>
+        <div style="margin-top: 8px; color: #94a3b8; font-size: 0.85rem;">Enable AI analysis for detailed summary</div>
+      </div>`;
+    } else {
+      element.innerHTML = '<div style="color: #94a3b8; font-size: 0.9rem; text-align: center; padding: 20px;">No resume loaded yet.</div>';
+    }
+  }
+
   async function parseResumeWithAI(text) {
     if (!OPENAI_KEY) return;
     

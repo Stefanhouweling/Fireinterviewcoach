@@ -833,7 +833,11 @@ function searchStaticList(query, type, country) {
         if (a.relevance !== b.relevance) {
           return a.relevance - b.relevance;
         }
-        // If same relevance, sort alphabetically
+        // If same relevance, prioritize shorter names (more specific matches)
+        if (a.name.length !== b.name.length) {
+          return a.name.length - b.name.length;
+        }
+        // If same length, sort alphabetically
         return a.name.localeCompare(b.name);
       })
       .slice(0, 8)

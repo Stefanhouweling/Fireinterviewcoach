@@ -705,12 +705,10 @@
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
       width: 100vw;
       height: 100vh;
       background: rgba(0, 0, 0, 0.9);
-      z-index: 9999;
+      z-index: 99999;
       align-items: center;
       justify-content: center;
       padding: 20px;
@@ -727,18 +725,18 @@
       background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
       border-radius: 24px;
       padding: 32px;
-      max-width: 900px;
       width: 90%;
-      max-width: min(900px, calc(100vw - 40px));
-      max-height: calc(100vh - 40px);
+      max-width: 900px;
+      max-height: 85vh;
       overflow-y: auto;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
       border: 1px solid rgba(239, 68, 68, 0.3);
       position: relative;
-      margin: 20px auto;
+      margin: 0;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      align-self: center;
     }
 
     .ai-modal-header {

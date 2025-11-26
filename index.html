@@ -3692,7 +3692,9 @@ Return ONLY the category and question.`
           motionScore: motionScoreForAnswer,
           resumeAnalysis: resumeAnalysis,
           resumeText: resumeText,
-          conversationHistory: conversationHistory
+          conversationHistory: conversationHistory,
+          cityResearch: onboardingData?.cityResearch || null,
+          category: currentQuestion?.category || null
         })
       });
 

@@ -317,6 +317,15 @@ app.post('/api/parse-resume', async (req, res) => {
   try {
     const { resumeText } = req.body;
 
+    if (!resumeText || resumeText.trim().length === 0) {
+      return res.status(400).json({ 
+        error: 'Resume text is required',
+        message: 'No resume text provided'
+      });
+    }
+
+    console.log(`[RESUME] Parsing resume, text length: ${resumeText.length} characters`);
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -351,13 +360,38 @@ Return a JSON object with this structure:
       response_format: { type: "json_object" }
     });
 
-    const content = response.choices[0].message.content;
-    const resumeAnalysis = typeof content === "string" ? JSON.parse(content) : content;
+    if (!response || !response.choices || !response.choices[0] || !response.choices[0].message) {
+      throw new Error('Invalid response from OpenAI API');
+    }
 
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error('Empty response from OpenAI API');
+    }
+
+    let resumeAnalysis;
+    try {
+      resumeAnalysis = typeof content === "string" ? JSON.parse(content) : content;
+    } catch (parseError) {
+      console.error('[RESUME] JSON parse error:', parseError);
+      console.error('[RESUME] Content received:', content);
+      throw new Error('Failed to parse JSON response from AI');
+    }
+
+    console.log('[RESUME] Successfully parsed resume analysis');
     res.json({ analysis: resumeAnalysis });
   } catch (error) {
-    console.error('Error parsing resume:', error);
-    res.status(500).json({ error: 'Failed to parse resume', message: error.message });
+    console.error('[RESUME] Error parsing resume:', error);
+    console.error('[RESUME] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    res.status(500).json({ 
+      error: 'Failed to parse resume', 
+      message: error.message || 'Unknown error occurred',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

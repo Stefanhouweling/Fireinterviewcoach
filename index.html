@@ -1217,6 +1217,10 @@
   // Use backend by default, allow local keys for development
   let USE_BACKEND = true;  // Set to false to use local API keys
   let OPENAI_KEY = null;
+  
+  // Practice mode: "simulation" (random) or "specific" (category-based)
+  let practiceMode = "simulation";
+  let selectedCategory = "";
 
   document.getElementById("apiKeySaveBtn").addEventListener("click", () => {
     const openaiKey = document.getElementById("apiKeyInput").value.trim();
@@ -1730,7 +1734,9 @@ Return a JSON object with this structure:
             resumeAnalysis: resumeAnalysis,
             history: conversationHistory,
             askedQuestions: allAskedQuestions,
-            askedCategories: askedCategoriesList
+            askedCategories: askedCategoriesList,
+            practiceMode: practiceMode,
+            selectedCategory: selectedCategory
           })
         });
         

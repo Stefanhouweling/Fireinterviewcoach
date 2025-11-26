@@ -45,7 +45,7 @@ app.get('/health', (req, res) => {
 // POST /api/question - Generate a new interview question
 app.post('/api/question', async (req, res) => {
   try {
-    const { resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [] } = req.body;
+    const { resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "" } = req.body;
 
     const resumeContext = resumeAnalysis 
       ? `Resume Analysis: ${JSON.stringify(resumeAnalysis)}`
@@ -63,6 +63,20 @@ app.post('/api/question', async (req, res) => {
       ? `\n\nCRITICAL - Questions already asked in this session (DO NOT repeat these):\n${askedQuestions.slice(-10).map((q, i) => `${i + 1}. ${q}`).join("\n")}\n\nCategories already covered: ${askedCategories.join(", ") || "None"}\n\nYou MUST generate a completely different question that hasn't been asked yet.`
       : "";
 
+    // Determine question strategy based on mode
+    let questionStrategy = "";
+    if (practiceMode === "specific" && selectedCategory) {
+      if (selectedCategory === "Resume-Based") {
+        questionStrategy = `Generate a question SPECIFICALLY based on the candidate's resume. Reference their actual experience, certifications, or background mentioned in the resume. However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
+      } else {
+        questionStrategy = `Generate a question focused on the category: "${selectedCategory}". Make it relevant to this specific area while still being a general situational question.`;
+      }
+    } else if (practiceMode === "simulation") {
+      questionStrategy = `Generate a RANDOM question from any category. Vary the topics to simulate a real interview where questions come from different areas. Mix general questions with occasional resume-based questions (about 20% resume-based, 80% general) if a resume is provided.`;
+    } else {
+      questionStrategy = `Generate a question mixing general firefighter competencies with occasional resume references (about 20% resume-based, 80% general) if a resume is provided.`;
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -72,7 +86,9 @@ app.post('/api/question', async (req, res) => {
         },
         {
           role: "user",
-          content: `Generate a single firefighter interview question. Focus on GENERAL, OPEN-ENDED situational questions that test judgment, ethics, and decision-making.
+          content: `Generate a single firefighter interview question.
+
+${questionStrategy}
 
 ${resumeContext}${conversationContext}${diversityContext}
 
@@ -83,10 +99,11 @@ Requirements:
   * "How would you handle a situation if you felt you weren't treated fairly?"
   * "How would you handle a leader where you question their leadership, would you still respect them?"
   * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
+  * Resume-based example: "Given your experience with [specific certification/experience from resume], how would you approach a situation where you need to apply that knowledge under pressure?"
 - Test: chain of command, ethics, judgment, decision-making, conflict resolution
 - CRITICAL: The question MUST be completely different from any question already asked (see list above)
 - Ensure diversity: Cover different topics and areas. If many questions have been asked, explore new categories/topics. Vary between: chain of command, ethics, conflict resolution, safety, teamwork, leadership, decision-making, communication, stress management, equipment, training, etc.
-- If resume is provided, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates
+- If resume is provided and mode allows, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates
 - Rotate through different question types: hypothetical scenarios, ethical dilemmas, chain of command situations, team dynamics, safety protocols, etc.
 - Format: "Category: [category]\nQuestion: [question text]"
 

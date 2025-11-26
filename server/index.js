@@ -898,16 +898,29 @@ app.post('/api/research-city', async (req, res) => {
     
     const criticalSearches = [
       { query: `current fire chief ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'fire chief name' },
+      { query: `deputy chiefs ${departmentName} ${city} ${country} 2024 2025`, fact: 'deputy chiefs' },
       { query: `current mayor ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'mayor name' },
+      { query: `city council public safety committee ${city} ${country} 2024`, fact: 'public safety committee members' },
       { query: `${departmentName} union number ${city} ${country}`, fact: 'union number' },
+      { query: `union president ${departmentName} ${city} ${country} 2024`, fact: 'union president' },
       { query: `${departmentName} number of fire stations ${city} ${country} 2024 2025`, fact: 'number of fire stations' },
-      { query: `${departmentName} number of members staff ${city} ${country} 2024 2025`, fact: 'number of members' }
+      { query: `${departmentName} number of members staff ${city} ${country} 2024 2025`, fact: 'number of members' },
+      { query: `${departmentName} annual budget ${city} ${country} 2024`, fact: 'annual budget' },
+      { query: `when was ${departmentName} established ${city} ${country}`, fact: 'department established date' },
+      { query: `${departmentName} mission statement values ${city} ${country}`, fact: 'department mission statement' },
+      { query: `${departmentName} community programs ${city} ${country} 2024`, fact: 'community programs' },
+      { query: `${departmentName} fire prevention programs ${city} ${country}`, fact: 'fire prevention programs' },
+      { query: `population ${city} ${stateProvince || ''} ${country} 2024`, fact: 'city population' },
+      { query: `main industries ${city} ${country}`, fact: 'city main industries' },
+      { query: `${departmentName} specialized equipment apparatus ${city} ${country}`, fact: 'specialized equipment' },
+      { query: `${departmentName} technical rescue capabilities ${city} ${country}`, fact: 'technical rescue capabilities' }
     ];
 
     let verifiedFacts = {};
     
-    // Use OpenAI with better prompts to extract current information
-    // Note: GPT-4o-mini doesn't have real web search, but we can use better prompts
+    console.log(`Starting ${criticalSearches.length} web searches for city research...`);
+    
+    // Use OpenAI Responses API with web search to get current, accurate information
     for (const search of criticalSearches) {
       try {
         console.log(`Searching for: ${search.query}`);

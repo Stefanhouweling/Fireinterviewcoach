@@ -1061,6 +1061,13 @@ app.post('/api/search-location', async (req, res) => {
         if (!countryMatch) return false;
       }
       
+      // Filter by state/province if specified (for cities)
+      if (type === 'city' && stateProvince && item.stateProvince) {
+        const stateMatch = item.stateProvince.toLowerCase().includes(stateProvince.toLowerCase()) ||
+                          stateProvince.toLowerCase().includes(item.stateProvince.toLowerCase());
+        if (!stateMatch) return false;
+      }
+      
       // Filter out results that don't match the query at all
       const nameLower = item.name.toLowerCase();
       if (!nameLower.includes(queryLower)) {
@@ -1077,10 +1084,11 @@ app.post('/api/search-location', async (req, res) => {
       return a.name.localeCompare(b.name);
     });
 
-    // Remove duplicates based on name and country, and remove relevance score before returning
+    // Limit to 8 suggestions and remove duplicates based on name and country
     const uniqueSuggestions = [];
     const seen = new Set();
     for (const suggestion of suggestions) {
+      if (uniqueSuggestions.length >= 8) break; // Limit to 8 suggestions
       const key = `${suggestion.name}|${suggestion.country}`;
       if (!seen.has(key)) {
         seen.add(key);

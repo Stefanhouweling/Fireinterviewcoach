@@ -1481,6 +1481,140 @@
   }
 
   // Load onboarding config on page load
+  function loadOnboardingConfig() {
+    if (typeof ONBOARDING_CONFIG === 'undefined') {
+      console.warn('Onboarding config not loaded');
+      return;
+    }
+    
+    // Update title and subtitle
+    const titleEl = document.getElementById('onboardingTitle');
+    const subtitleEl = document.getElementById('onboardingSubtitle');
+    if (titleEl) titleEl.textContent = ONBOARDING_CONFIG.title;
+    if (subtitleEl) subtitleEl.textContent = ONBOARDING_CONFIG.subtitle;
+    
+    // Update resume section
+    const resumeLabelEl = document.getElementById('onboardingResumeLabel');
+    const resumeButtonEl = document.getElementById('onboardingResumeButtonText');
+    if (resumeLabelEl) {
+      resumeLabelEl.innerHTML = ONBOARDING_CONFIG.resume.label + ' <span style="color: #94a3b8; font-weight: 400;">' + ONBOARDING_CONFIG.resume.optional + '</span>';
+    }
+    if (resumeButtonEl) resumeButtonEl.textContent = ONBOARDING_CONFIG.resume.uploadButtonText;
+    
+    // Update location section
+    const locationLabelEl = document.getElementById('onboardingLocationLabel');
+    const countryLabelEl = document.getElementById('onboardingCountryLabel');
+    const stateLabelEl = document.getElementById('onboardingStateLabel');
+    const cityLabelEl = document.getElementById('onboardingCityLabel');
+    const stateInputEl = document.getElementById('onboardingStateProvince');
+    const cityInputEl = document.getElementById('onboardingCity');
+    
+    if (locationLabelEl) {
+      locationLabelEl.innerHTML = ONBOARDING_CONFIG.location.mainLabel + ' <span style="color: #ef4444;">' + ONBOARDING_CONFIG.location.required + '</span>';
+    }
+    if (countryLabelEl) countryLabelEl.textContent = ONBOARDING_CONFIG.location.country.label;
+    if (stateLabelEl) stateLabelEl.textContent = ONBOARDING_CONFIG.location.stateProvince.label;
+    if (cityLabelEl) cityLabelEl.textContent = ONBOARDING_CONFIG.location.city.label;
+    if (stateInputEl) stateInputEl.placeholder = ONBOARDING_CONFIG.location.stateProvince.placeholder;
+    if (cityInputEl) cityInputEl.placeholder = ONBOARDING_CONFIG.location.city.placeholder;
+    
+    // Update country dropdown
+    const countrySelectEl = document.getElementById('onboardingCountry');
+    if (countrySelectEl) {
+      const placeholderEl = document.getElementById('onboardingCountryPlaceholder');
+      if (placeholderEl) placeholderEl.textContent = ONBOARDING_CONFIG.location.country.placeholder;
+      // Update option texts
+      const usEl = document.getElementById('onboardingCountryUS');
+      const canadaEl = document.getElementById('onboardingCountryCanada');
+      const ukEl = document.getElementById('onboardingCountryUK');
+      const ausEl = document.getElementById('onboardingCountryAustralia');
+      const nzEl = document.getElementById('onboardingCountryNZ');
+      const otherEl = document.getElementById('onboardingCountryOther');
+      if (usEl) usEl.textContent = ONBOARDING_CONFIG.location.country.options.unitedStates;
+      if (canadaEl) canadaEl.textContent = ONBOARDING_CONFIG.location.country.options.canada;
+      if (ukEl) ukEl.textContent = ONBOARDING_CONFIG.location.country.options.unitedKingdom;
+      if (ausEl) ausEl.textContent = ONBOARDING_CONFIG.location.country.options.australia;
+      if (nzEl) nzEl.textContent = ONBOARDING_CONFIG.location.country.options.newZealand;
+      if (otherEl) otherEl.textContent = ONBOARDING_CONFIG.location.country.options.other;
+    }
+    
+    // Update job type section
+    const jobTypeLabelEl = document.getElementById('onboardingJobTypeLabel');
+    const jobTypeSelectEl = document.getElementById('onboardingJobType');
+    if (jobTypeLabelEl) {
+      jobTypeLabelEl.innerHTML = ONBOARDING_CONFIG.jobType.label + ' <span style="color: #ef4444;">' + ONBOARDING_CONFIG.jobType.required + '</span>';
+    }
+    if (jobTypeSelectEl) {
+      const placeholderEl = document.getElementById('onboardingJobTypePlaceholder');
+      if (placeholderEl) placeholderEl.textContent = ONBOARDING_CONFIG.jobType.placeholder;
+      // Update option texts
+      const fireEl = document.getElementById('onboardingJobTypeFire');
+      const policeEl = document.getElementById('onboardingJobTypePolice');
+      const paramedicEl = document.getElementById('onboardingJobTypeParamedic');
+      const firstResponderEl = document.getElementById('onboardingJobTypeFirstResponder');
+      const dispatcherEl = document.getElementById('onboardingJobTypeDispatcher');
+      if (fireEl) fireEl.textContent = ONBOARDING_CONFIG.jobType.options.fire;
+      if (policeEl) policeEl.textContent = ONBOARDING_CONFIG.jobType.options.police;
+      if (paramedicEl) paramedicEl.textContent = ONBOARDING_CONFIG.jobType.options.paramedic;
+      if (firstResponderEl) firstResponderEl.textContent = ONBOARDING_CONFIG.jobType.options.firstResponder;
+      if (dispatcherEl) dispatcherEl.textContent = ONBOARDING_CONFIG.jobType.options.dispatcher;
+    }
+    
+    // Update department section
+    const deptLabelEl = document.getElementById('onboardingDepartmentLabel');
+    const deptInputEl = document.getElementById('onboardingDepartmentName');
+    const deptHelperEl = document.getElementById('onboardingDepartmentHelper');
+    if (deptLabelEl) {
+      deptLabelEl.innerHTML = ONBOARDING_CONFIG.department.label + ' <span style="color: #ef4444;">' + ONBOARDING_CONFIG.department.required + '</span>';
+    }
+    if (deptInputEl) deptInputEl.placeholder = ONBOARDING_CONFIG.department.placeholder;
+    if (deptHelperEl) deptHelperEl.textContent = ONBOARDING_CONFIG.department.helperText;
+    
+    // Update name section
+    const nameLabelEl = document.getElementById('onboardingNameLabel');
+    const nameInputEl = document.getElementById('onboardingName');
+    if (nameLabelEl) {
+      nameLabelEl.innerHTML = ONBOARDING_CONFIG.name.label + ' <span style="color: #94a3b8; font-weight: 400;">' + ONBOARDING_CONFIG.name.optional + '</span>';
+    }
+    if (nameInputEl) {
+      nameInputEl.placeholder = ONBOARDING_CONFIG.name.placeholder;
+      const nameHelper = nameInputEl.nextElementSibling;
+      if (nameHelper && nameHelper.tagName === 'P') {
+        nameHelper.textContent = ONBOARDING_CONFIG.name.helperText;
+      }
+    }
+    
+    // Update voice section
+    const voiceLabelEl = document.getElementById('onboardingVoiceLabel');
+    const voiceSelectEl = document.getElementById('onboardingVoice');
+    if (voiceLabelEl) {
+      voiceLabelEl.innerHTML = ONBOARDING_CONFIG.voice.label + ' <span style="color: #94a3b8; font-weight: 400;">' + ONBOARDING_CONFIG.voice.optional + '</span>';
+    }
+    if (voiceSelectEl) {
+      const defaultOpt = voiceSelectEl.querySelector('option[value=""]');
+      const maleOpt = voiceSelectEl.querySelector('option[value="male"]');
+      const femaleOpt = voiceSelectEl.querySelector('option[value="female"]');
+      if (defaultOpt) defaultOpt.textContent = ONBOARDING_CONFIG.voice.options.default;
+      if (maleOpt) maleOpt.textContent = ONBOARDING_CONFIG.voice.options.male;
+      if (femaleOpt) femaleOpt.textContent = ONBOARDING_CONFIG.voice.options.female;
+      const voiceHelper = voiceSelectEl.nextElementSibling;
+      if (voiceHelper && voiceHelper.tagName === 'P') {
+        voiceHelper.textContent = ONBOARDING_CONFIG.voice.helperText;
+      }
+    }
+    
+    // Update submit button
+    const submitBtnEl = document.getElementById('onboardingSubmitBtn');
+    if (submitBtnEl) submitBtnEl.textContent = ONBOARDING_CONFIG.submit.buttonText;
+    
+    // Update footer
+    const requiredFieldsEl = document.getElementById('onboardingRequiredFields');
+    if (requiredFieldsEl) {
+      requiredFieldsEl.innerHTML = '<span style="color: #ef4444;">' + ONBOARDING_CONFIG.footer.requiredFields.split(' ')[0] + '</span> ' + ONBOARDING_CONFIG.footer.requiredFields.split(' ').slice(1).join(' ');
+    }
+  }
+  
+  // Load onboarding config on page load
   loadOnboardingConfig();
   
   // ========== ONBOARDING MODAL ==========

@@ -536,6 +536,10 @@ Provide a comprehensive but concise summary (300-500 words) that covers the most
   }
 });
 
+// Simple in-memory cache for location searches (expires after 1 hour)
+const locationCache = new Map();
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
 // POST /api/search-location - Location search using OpenStreetMap Nominatim API (free, no API key)
 app.post('/api/search-location', async (req, res) => {
   try {
@@ -545,23 +549,28 @@ app.post('/api/search-location', async (req, res) => {
       return res.json({ suggestions: [] });
     }
 
+    // Check cache first
+    const cacheKey = `${type}:${query.toLowerCase()}:${country || ''}`;
+    const cached = locationCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      console.log(`Cache hit for: ${cacheKey}`);
+      return res.json({ suggestions: cached.data });
+    }
+
     console.log(`Searching for ${type} with query: "${query}"${country ? ` in ${country}` : ''}`);
 
     // Use OpenStreetMap Nominatim API (free, no API key required)
     // Documentation: https://nominatim.org/release-docs/develop/api/Search/
     
     let searchQuery = query;
-    let featureType = '';
     
     if (type === 'city') {
-      featureType = 'city,town,village';
-      // Add country filter if provided
+      // Optimize: search for cities/towns/villages, prioritize by country
       if (country) {
         searchQuery = `${query}, ${country}`;
       }
     } else if (type === 'state') {
-      featureType = 'state,province';
-      // Add country filter if provided
+      // Optimize: search for states/provinces, prioritize by country
       if (country) {
         searchQuery = `${query}, ${country}`;
       }
@@ -569,7 +578,7 @@ app.post('/api/search-location', async (req, res) => {
       return res.status(400).json({ error: 'Invalid type. Must be "city" or "state"' });
     }
 
-    // Build Nominatim API URL
+    // Build Nominatim API URL with optimized parameters
     const baseUrl = 'https://nominatim.openstreetmap.org/search';
     const params = new URLSearchParams({
       q: searchQuery,
@@ -577,12 +586,17 @@ app.post('/api/search-location', async (req, res) => {
       addressdetails: '1',
       limit: '8',
       dedupe: '1', // Remove duplicates
-      'accept-language': 'en'
+      'accept-language': 'en',
+      namedetails: '0', // Don't need named details for speed
+      extratags: '0' // Don't need extra tags for speed
     });
     
-    // Add feature type filter for better results
-    if (featureType) {
-      params.append('featuretype', featureType);
+    // Add feature type filter for better results (but don't use it if it slows things down)
+    if (type === 'city') {
+      // Prioritize cities/towns
+      params.append('featuretype', 'city,town,village');
+    } else if (type === 'state') {
+      params.append('featuretype', 'state,province');
     }
 
     const url = `${baseUrl}?${params.toString()}`;
@@ -590,18 +604,26 @@ app.post('/api/search-location', async (req, res) => {
     console.log(`Calling Nominatim API: ${url}`);
 
     // Call Nominatim API with proper headers (required by their usage policy)
-    const response = await fetchModule(url, {
-      headers: {
-        'User-Agent': 'FireInterviewCoach/1.0 (contact: support@fireinterviewcoach.com)', // Required by Nominatim
-        'Accept': 'application/json'
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    try {
+      const response = await fetchModule(url, {
+        headers: {
+          'User-Agent': 'FireInterviewCoach/1.0 (contact: support@fireinterviewcoach.com)', // Required by Nominatim
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Nominatim API error: ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      throw new Error(`Nominatim API error: ${response.status}`);
-    }
-
-    const data = await response.json();
+      const data = await response.json();
     
     // Transform Nominatim results to our format
     const suggestions = data.map(item => {
@@ -649,8 +671,30 @@ app.post('/api/search-location', async (req, res) => {
       }
     }
 
-    console.log(`Returning ${uniqueSuggestions.length} suggestions for ${type} query: "${query}"`);
-    res.json({ suggestions: uniqueSuggestions.slice(0, 8) });
+      console.log(`Returning ${uniqueSuggestions.length} suggestions for ${type} query: "${query}"`);
+      
+      // Cache the results
+      locationCache.set(cacheKey, {
+        data: uniqueSuggestions.slice(0, 8),
+        timestamp: Date.now()
+      });
+      
+      // Clean up old cache entries (keep cache under 1000 entries)
+      if (locationCache.size > 1000) {
+        const oldestKey = Array.from(locationCache.entries())
+          .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
+        locationCache.delete(oldestKey);
+      }
+      
+      res.json({ suggestions: uniqueSuggestions.slice(0, 8) });
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('Nominatim API timeout');
+        throw new Error('Search timeout - please try again');
+      }
+      throw fetchError;
+    }
   } catch (error) {
     console.error('Error searching location:', error);
     console.error('Error stack:', error.stack);

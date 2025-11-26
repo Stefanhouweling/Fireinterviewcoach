@@ -1535,7 +1535,7 @@
       citySuggestions.style.display = "block";
       citySuggestions.innerHTML = '<div class="suggestion-loading">🤖 Searching cities...</div>';
       
-      // Debounce search
+      // Debounce search (increased to 500ms to reduce API calls)
       citySearchTimeout = setTimeout(async () => {
         try {
           const country = countrySelect ? countrySelect.value : "";
@@ -1623,7 +1623,7 @@
             citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Please type manually.</div>';
           }
         }
-      }, 300); // 300ms debounce
+      }, 500); // 500ms debounce to reduce API calls
     });
     
     // Hide suggestions when clicking outside
@@ -1655,7 +1655,7 @@
       stateSuggestions.style.display = "block";
       stateSuggestions.innerHTML = '<div class="suggestion-loading">🤖 Searching states/provinces...</div>';
       
-      // Debounce search
+      // Debounce search (increased to 500ms to reduce API calls)
       stateSearchTimeout = setTimeout(async () => {
         try {
           const country = countrySelect ? countrySelect.value : "";
@@ -1737,7 +1737,7 @@
             stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Please type manually.</div>';
           }
         }
-      }, 300); // 300ms debounce
+      }, 500); // 500ms debounce to reduce API calls
     });
     
     // Hide suggestions when clicking outside

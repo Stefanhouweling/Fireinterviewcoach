@@ -316,10 +316,10 @@ If this is a HYPOTHETICAL (future) question, DO NOT use STAR. Instead, describe 
 - **Step 3:** [How they would wrap up, debrief, or follow up]
 
 ## Panel-Ready 10/10 Answer
-[Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate’s ideas and resume context but clean them up:
+Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:
 - 1 short opening sentence that orients the panel.
 - 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.
-- Keep language natural, plain, and realistic for a firefighter candidate.]
+- Keep language natural, plain, and realistic for a firefighter candidate.
 
 Rules:
 - Use markdown bullets (dash) with bold labels using double asterisks, e.g., use dash followed by space and double asterisks for bold.

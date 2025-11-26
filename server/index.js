@@ -32,7 +32,8 @@ app.get('/', (req, res) => {
       analyze: 'POST /api/analyze-answer',
       parseResume: 'POST /api/parse-resume',
       tts: 'POST /api/tts',
-      researchCity: 'POST /api/research-city'
+      researchCity: 'POST /api/research-city',
+      searchLocation: 'POST /api/search-location'
     },
     message: 'API is running. Use the endpoints above to interact with the service.'
   });
@@ -531,6 +532,100 @@ Provide a comprehensive but concise summary (300-500 words) that covers the most
   } catch (error) {
     console.error('Error researching city:', error);
     res.status(500).json({ error: 'Failed to research city information', message: error.message });
+  }
+});
+
+// POST /api/search-location - AI-powered location search for autocomplete
+app.post('/api/search-location', async (req, res) => {
+  try {
+    const { query, type, country } = req.body; // type: 'city' or 'state'
+
+    if (!query || query.length < 2) {
+      return res.json({ suggestions: [] });
+    }
+
+    console.log(`Searching for ${type} with query: "${query}"${country ? ` in ${country}` : ''}`);
+
+    let searchPrompt = '';
+    if (type === 'city') {
+      searchPrompt = `Given the search query "${query}"${country ? ` in ${country}` : ''}, provide a list of real city names that match or are similar to this query.
+
+Requirements:
+- Return ONLY valid, real city names
+- If country is provided, prioritize cities in that country
+- Include major cities and well-known cities
+- Format: Return a JSON array of objects, each with: { "name": "City Name", "stateProvince": "State/Province Name", "country": "Country Name", "fullLocation": "City, State/Province, Country" }
+- Maximum 8 suggestions
+- Order by relevance (exact matches first, then partial matches)
+
+Example format:
+[
+  { "name": "Abbotsford", "stateProvince": "British Columbia", "country": "Canada", "fullLocation": "Abbotsford, British Columbia, Canada" },
+  { "name": "Abbotsford", "stateProvince": "Wisconsin", "country": "United States", "fullLocation": "Abbotsford, Wisconsin, United States" }
+]
+
+Return ONLY the JSON array, no other text.`;
+    } else if (type === 'state') {
+      searchPrompt = `Given the search query "${query}"${country ? ` in ${country}` : ''}, provide a list of real state/province names that match or are similar to this query.
+
+Requirements:
+- Return ONLY valid, real state/province/territory names
+- If country is provided, only return states/provinces from that country
+- Include common abbreviations and full names
+- Format: Return a JSON array of objects, each with: { "name": "State/Province Name", "country": "Country Name", "fullLocation": "State/Province, Country" }
+- Maximum 8 suggestions
+- Order by relevance
+
+Example format:
+[
+  { "name": "British Columbia", "country": "Canada", "fullLocation": "British Columbia, Canada" },
+  { "name": "California", "country": "United States", "fullLocation": "California, United States" }
+]
+
+Return ONLY the JSON array, no other text.`;
+    } else {
+      return res.status(400).json({ error: 'Invalid type. Must be "city" or "state"' });
+    }
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a location search assistant. You provide accurate, real-world location names in JSON format. Always return valid JSON arrays."
+        },
+        {
+          role: "user",
+          content: searchPrompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 500
+    });
+
+    const content = response.choices[0].message.content.trim();
+    
+    // Try to parse JSON from the response
+    let suggestions = [];
+    try {
+      // Remove any markdown code blocks if present
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        suggestions = JSON.parse(jsonMatch[0]);
+      } else {
+        suggestions = JSON.parse(content);
+      }
+    } catch (e) {
+      console.error('Failed to parse location suggestions:', e);
+      console.error('Response content:', content);
+      // Fallback: try to extract city/state names from text
+      suggestions = [];
+    }
+
+    res.json({ suggestions: suggestions.slice(0, 8) });
+  } catch (error) {
+    console.error('Error searching location:', error);
+    res.status(500).json({ error: 'Failed to search location', message: error.message });
   }
 });
 

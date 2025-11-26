@@ -817,6 +817,42 @@
       font-weight: 600;
       font-size: 1.1rem;
     }
+
+    /* Autocomplete Suggestions */
+    .suggestion-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+      transition: background 0.2s;
+    }
+
+    .suggestion-item:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item .suggestion-main {
+      font-weight: 500;
+      color: #fca5a5;
+    }
+
+    .suggestion-item .suggestion-detail {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .suggestion-loading {
+      padding: 12px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
   </style>
   <!-- PDF.js for PDF text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -898,27 +934,27 @@
         <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
           2. What City are you applying to? <span style="color: #ef4444;">*</span>
         </label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-          <div>
-            <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Country</label>
-            <select id="onboardingCountry" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer;">
-              <option value="">Select Country</option>
-              <option value="United States">United States</option>
-              <option value="Canada">Canada</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="Australia">Australia</option>
-              <option value="New Zealand">New Zealand</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">State/Province</label>
-            <input type="text" id="onboardingStateProvince" placeholder="Enter state/province" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
-          </div>
-        </div>
         <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Country</label>
+          <select id="onboardingCountry" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer; margin-bottom: 12px;">
+            <option value="">Select Country</option>
+            <option value="United States">United States</option>
+            <option value="Canada">Canada</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Australia">Australia</option>
+            <option value="New Zealand">New Zealand</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div style="position: relative; margin-bottom: 12px;">
+          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">State/Province</label>
+          <input type="text" id="onboardingStateProvince" placeholder="Start typing state/province (AI will suggest)" autocomplete="off" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+          <div id="stateSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 10002; display: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"></div>
+        </div>
+        <div style="position: relative;">
           <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">City</label>
-          <input type="text" id="onboardingCity" placeholder="Enter city name" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+          <input type="text" id="onboardingCity" placeholder="Start typing city name (AI will suggest)" required autocomplete="off" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+          <div id="citySuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 10002; display: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"></div>
         </div>
       </div>
 
@@ -1466,6 +1502,196 @@
       onboardingModal.style.display = "flex";
       document.body.style.overflow = "hidden";
     }
+  }
+  
+  // ========== LOCATION AUTCOMPLETE ==========
+  const cityInput = document.getElementById("onboardingCity");
+  const stateInput = document.getElementById("onboardingStateProvince");
+  const countrySelect = document.getElementById("onboardingCountry");
+  const citySuggestions = document.getElementById("citySuggestions");
+  const stateSuggestions = document.getElementById("stateSuggestions");
+  
+  let citySearchTimeout = null;
+  let stateSearchTimeout = null;
+  
+  // City autocomplete
+  if (cityInput && citySuggestions) {
+    cityInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim();
+      
+      // Clear previous timeout
+      if (citySearchTimeout) {
+        clearTimeout(citySearchTimeout);
+      }
+      
+      // Hide suggestions if query is too short
+      if (query.length < 2) {
+        citySuggestions.style.display = "none";
+        citySuggestions.innerHTML = "";
+        return;
+      }
+      
+      // Show loading state
+      citySuggestions.style.display = "block";
+      citySuggestions.innerHTML = '<div class="suggestion-loading">🤖 Searching cities...</div>';
+      
+      // Debounce search
+      citySearchTimeout = setTimeout(async () => {
+        try {
+          const country = countrySelect ? countrySelect.value : "";
+          const response = await fetch(`${BACKEND_URL}/api/search-location`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query: query,
+              type: "city",
+              country: country || undefined
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Search failed: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          const suggestions = data.suggestions || [];
+          
+          if (suggestions.length === 0) {
+            citySuggestions.innerHTML = '<div class="suggestion-loading">No cities found</div>';
+            return;
+          }
+          
+          // Render suggestions
+          citySuggestions.innerHTML = suggestions.map(s => `
+            <div class="suggestion-item" data-city="${s.name}" data-state="${s.stateProvince || ''}" data-country="${s.country || ''}">
+              <div class="suggestion-main">${s.name}</div>
+              <div class="suggestion-detail">${s.fullLocation || `${s.name}, ${s.stateProvince || ''}, ${s.country || ''}`}</div>
+            </div>
+          `).join("");
+          
+          // Add click handlers
+          citySuggestions.querySelectorAll(".suggestion-item").forEach(item => {
+            item.addEventListener("click", () => {
+              const city = item.dataset.city;
+              const state = item.dataset.state;
+              const countryFromSuggestion = item.dataset.country;
+              
+              cityInput.value = city;
+              citySuggestions.style.display = "none";
+              
+              // Auto-fill state/province if not already filled
+              if (state && stateInput && !stateInput.value.trim()) {
+                stateInput.value = state;
+              }
+              
+              // Auto-fill country if not already selected
+              if (countryFromSuggestion && countrySelect && !countrySelect.value) {
+                countrySelect.value = countryFromSuggestion;
+              }
+            });
+          });
+        } catch (error) {
+          console.error("City search error:", error);
+          citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+        }
+      }, 300); // 300ms debounce
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!cityInput.contains(e.target) && !citySuggestions.contains(e.target)) {
+        citySuggestions.style.display = "none";
+      }
+    });
+  }
+  
+  // State/Province autocomplete
+  if (stateInput && stateSuggestions) {
+    stateInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim();
+      
+      // Clear previous timeout
+      if (stateSearchTimeout) {
+        clearTimeout(stateSearchTimeout);
+      }
+      
+      // Hide suggestions if query is too short
+      if (query.length < 2) {
+        stateSuggestions.style.display = "none";
+        stateSuggestions.innerHTML = "";
+        return;
+      }
+      
+      // Show loading state
+      stateSuggestions.style.display = "block";
+      stateSuggestions.innerHTML = '<div class="suggestion-loading">🤖 Searching states/provinces...</div>';
+      
+      // Debounce search
+      stateSearchTimeout = setTimeout(async () => {
+        try {
+          const country = countrySelect ? countrySelect.value : "";
+          const response = await fetch(`${BACKEND_URL}/api/search-location`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query: query,
+              type: "state",
+              country: country || undefined
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Search failed: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          const suggestions = data.suggestions || [];
+          
+          if (suggestions.length === 0) {
+            stateSuggestions.innerHTML = '<div class="suggestion-loading">No states/provinces found</div>';
+            return;
+          }
+          
+          // Render suggestions
+          stateSuggestions.innerHTML = suggestions.map(s => `
+            <div class="suggestion-item" data-state="${s.name}" data-country="${s.country || ''}">
+              <div class="suggestion-main">${s.name}</div>
+              <div class="suggestion-detail">${s.fullLocation || `${s.name}, ${s.country || ''}`}</div>
+            </div>
+          `).join("");
+          
+          // Add click handlers
+          stateSuggestions.querySelectorAll(".suggestion-item").forEach(item => {
+            item.addEventListener("click", () => {
+              const state = item.dataset.state;
+              const countryFromSuggestion = item.dataset.country;
+              
+              stateInput.value = state;
+              stateSuggestions.style.display = "none";
+              
+              // Auto-fill country if not already selected
+              if (countryFromSuggestion && countrySelect && !countrySelect.value) {
+                countrySelect.value = countryFromSuggestion;
+              }
+            });
+          });
+        } catch (error) {
+          console.error("State search error:", error);
+          stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+        }
+      }, 300); // 300ms debounce
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!stateInput.contains(e.target) && !stateSuggestions.contains(e.target)) {
+        stateSuggestions.style.display = "none";
+      }
+    });
   }
   
   // Handle resume upload in onboarding

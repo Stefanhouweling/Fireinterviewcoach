@@ -2126,7 +2126,7 @@ Return ONLY the category and question.`
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ text, voiceId })
+          body: JSON.stringify({ text, voice: "alloy" })
         });
         
         console.log(`Backend TTS response status: ${response.status}`);

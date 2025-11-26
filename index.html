@@ -707,12 +707,13 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 1000;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
       align-items: center;
       justify-content: center;
       padding: 20px;
       overflow-y: auto;
+      backdrop-filter: blur(5px);
     }
 
     .ai-modal-overlay.active {
@@ -2653,23 +2654,33 @@ Return ONLY the category and question.`
     lastAnswerTranscript = text;
 
     // Open modal immediately with analyzing message
+    console.log("Opening AI modal for analysis...");
     const modalContent = document.getElementById("aiModalContent");
-    if (modalContent) {
+    const aiModalOverlay = document.getElementById("aiModalOverlay");
+    
+    if (modalContent && aiModalOverlay) {
       modalContent.innerHTML = `
         <div style="text-align: center; padding: 40px 20px;">
-          <div style="font-size: 1.2rem; color: #f97316; margin-bottom: 20px; font-weight: 600;">
+          <div style="font-size: 1.5rem; color: #f97316; margin-bottom: 30px; font-weight: 600;">
             🤖 Analyzing Your Answer...
           </div>
-          <div style="width: 100%; max-width: 400px; margin: 0 auto;">
-            <div style="width: 100%; height: 12px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; overflow: hidden; margin-bottom: 10px;">
-              <div id="modalProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #f97316, #ef4444); border-radius: 6px; transition: width 0.3s ease; box-shadow: 0 0 15px rgba(249, 115, 22, 0.6);"></div>
+          <div style="width: 100%; max-width: 500px; margin: 0 auto;">
+            <div style="width: 100%; height: 16px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; overflow: hidden; margin-bottom: 15px; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);">
+              <div id="modalProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #f97316, #ef4444); border-radius: 8px; transition: width 0.3s ease; box-shadow: 0 0 20px rgba(249, 115, 22, 0.8);"></div>
             </div>
-            <div id="modalProgressPercent" style="font-size: 0.9rem; color: #cbd5e1;">0%</div>
+            <div id="modalProgressPercent" style="font-size: 1.1rem; color: #fbbf24; font-weight: 600;">0%</div>
+            <div style="margin-top: 20px; font-size: 0.9rem; color: #94a3b8;">Please wait while we analyze your response...</div>
           </div>
         </div>
       `;
+      
+      // Open the modal
+      aiModalOverlay.classList.add("active");
+      document.body.style.overflow = "hidden";
+      console.log("Modal opened and displayed");
+    } else {
+      console.error("Modal elements not found!", { modalContent: !!modalContent, aiModalOverlay: !!aiModalOverlay });
     }
-    openAIModal();
 
     // Add to conversation history
     if (currentQuestion) {
@@ -3051,6 +3062,9 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
     if (aiModalOverlay) {
       aiModalOverlay.classList.add("active");
       document.body.style.overflow = "hidden"; // Prevent background scrolling
+      console.log("AI Modal opened");
+    } else {
+      console.error("aiModalOverlay element not found!");
     }
   }
   

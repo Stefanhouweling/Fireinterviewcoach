@@ -81,6 +81,27 @@ const ONBOARDING_CONFIG = {
     helperText: "This will be used to personalize your interview questions"
   },
   
+  // Section 5: Name (Optional)
+  name: {
+    label: "5. Your Name",
+    optional: "(Optional)",
+    placeholder: "e.g., John Smith",
+    helperText: "AI will address you by name in some questions"
+  },
+  
+  // Section 6: Voice Preference
+  voice: {
+    label: "6. Voice Preference",
+    optional: "(Optional)",
+    placeholder: "Default (Auto)",
+    options: {
+      default: "Default (Auto)",
+      male: "Male Voice",
+      female: "Female Voice"
+    },
+    helperText: "Choose your preferred voice for question narration"
+  },
+  
   // Submit Button
   submit: {
     buttonText: "Start Practice Session"

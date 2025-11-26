@@ -2884,6 +2884,24 @@ Return ONLY the category and question.`
 
     analyzeBtn.disabled = true;
     analyzeBtn.textContent = "🤖 Analyzing with AI...";
+    
+    // Show and animate progress bar
+    const progressContainer = document.getElementById("aiProgressContainer");
+    const progressBar = document.getElementById("aiProgressBar");
+    const progressPercent = document.getElementById("aiProgressPercent");
+    
+    if (progressContainer) {
+      progressContainer.style.display = "block";
+    }
+    
+    // Simulate progress (0-90% during API call)
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 90) progress = 90;
+      if (progressBar) progressBar.style.width = progress + "%";
+      if (progressPercent) progressPercent.textContent = Math.round(progress) + "%";
+    }, 200);
 
     try {
       const resumeContext = resumeAnalysis 

@@ -331,13 +331,28 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
 
 Use the city research data to incorporate authentic, specific details that make the question feel personalized to THIS exact department and city while still testing general firefighter competencies.`;
       } else {
-        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) focused on the category: "${selectedCategory}".${personalizationContext}
+        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) focused EXCLUSIVELY on the category: "${selectedCategory}".${personalizationContext}
 
-CRITICAL PERSONALIZATION REQUIREMENTS:
+CRITICAL REQUIREMENTS:
+- The question MUST be about "${selectedCategory}" and ONLY this category
+- Do NOT generate questions about other categories like "Behavioural – High Stress", "Medical / EMR", "Teamwork", etc.
+- The question must directly test competencies related to "${selectedCategory}"
 - Personalize it using the candidate's profile information above
 - Reference their name (${profileName ? profileName : 'if provided'}), department, city, or resume when relevant
 - Make it feel tailored to this specific candidate while still testing the "${selectedCategory}" competency area
-- Make it relevant to this specific area while still being a general situational question that tests judgment.`;
+- Make it relevant to this specific area while still being a general situational question that tests judgment
+
+CATEGORY-SPECIFIC GUIDANCE:
+- If category is "Behavioural – High Stress": Focus on stress management, pressure situations, crisis response
+- If category is "Behavioural – Conflict": Focus on conflict resolution, disagreements, interpersonal challenges
+- If category is "Safety & Accountability": Focus on safety protocols, hazard recognition, responsibility
+- If category is "Medical / EMR": Focus on medical emergencies, patient care, first aid scenarios
+- If category is "Teamwork": Focus on collaboration, team dynamics, working with others
+- If category is "Community Focus": Focus on public service, community relations, citizen interaction
+- If category is "Resilience": Focus on overcoming challenges, bouncing back, perseverance
+- If category is "Technical – Fireground": Focus on firefighting techniques, equipment, fireground operations
+
+IMPORTANT: The question MUST stay within the "${selectedCategory}" category. Do not drift into other competency areas.`;
       }
     } else if (practiceMode === "simulation") {
       questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) for an interview simulation.${personalizationContext}
@@ -410,6 +425,8 @@ CRITICAL PERSONALIZATION INSTRUCTIONS:
 - If resume information is available, reference their background naturally
 - Make it feel like a real panel member who has thoroughly reviewed their application is asking
 - The question should feel tailored specifically to THIS candidate while still testing general competencies
+
+${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !== "City & Department Specific" ? `\nCRITICAL CATEGORY REQUIREMENT: The question MUST be about "${selectedCategory}" category ONLY. Do NOT generate questions about other categories. Stay strictly within the "${selectedCategory}" competency area.` : ''}
 
 IMPORTANT: This is a NEW, UNRELATED question. Do NOT make it a follow-up to previous questions. Generate a completely fresh question from a different topic/angle.
 

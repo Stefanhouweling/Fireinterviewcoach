@@ -918,12 +918,12 @@
     <form id="onboardingForm" style="display: flex; flex-direction: column; gap: 20px;">
       <!-- Resume Upload (Optional) -->
       <div>
-        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingResumeLabel">
           1. Upload Resume <span style="color: #94a3b8; font-weight: 400;">(Optional)</span>
         </label>
         <label class="file-label" style="display: flex; align-items: center; gap: 8px; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
           <span class="icon">📄</span>
-          <span style="flex: 1; color: #cbd5e1;">Upload resume (.txt / PDF)</span>
+          <span style="flex: 1; color: #cbd5e1;" id="onboardingResumeButtonText">Upload resume (.txt / PDF)</span>
           <input type="file" id="onboardingResumeInput" accept=".txt,.pdf,.doc,.docx,.rtf" style="display: none;" />
         </label>
         <div id="onboardingResumeStatus" style="margin-top: 8px; font-size: 0.85rem; color: #94a3b8; min-height: 20px;"></div>
@@ -931,28 +931,28 @@
 
       <!-- Location Selection -->
       <div>
-        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingLocationLabel">
           2. What City are you applying to? <span style="color: #ef4444;">*</span>
         </label>
         <div>
-          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Country</label>
+          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;" id="onboardingCountryLabel">Country</label>
           <select id="onboardingCountry" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer; margin-bottom: 12px;">
-            <option value="">Select Country</option>
-            <option value="United States">United States</option>
-            <option value="Canada">Canada</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="Australia">Australia</option>
-            <option value="New Zealand">New Zealand</option>
-            <option value="Other">Other</option>
+            <option value="" id="onboardingCountryPlaceholder">Select Country</option>
+            <option value="United States" id="onboardingCountryUS">United States</option>
+            <option value="Canada" id="onboardingCountryCanada">Canada</option>
+            <option value="United Kingdom" id="onboardingCountryUK">United Kingdom</option>
+            <option value="Australia" id="onboardingCountryAustralia">Australia</option>
+            <option value="New Zealand" id="onboardingCountryNZ">New Zealand</option>
+            <option value="Other" id="onboardingCountryOther">Other</option>
           </select>
         </div>
         <div style="position: relative; margin-bottom: 12px;">
-          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">State/Province</label>
+          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;" id="onboardingStateLabel">State/Province</label>
           <input type="text" id="onboardingStateProvince" placeholder="Start typing state/province (AI will suggest)" autocomplete="off" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
           <div id="stateSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 10002; display: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"></div>
         </div>
         <div style="position: relative;">
-          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">City</label>
+          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;" id="onboardingCityLabel">City</label>
           <input type="text" id="onboardingCity" placeholder="Start typing city name (AI will suggest)" required autocomplete="off" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
           <div id="citySuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 10002; display: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"></div>
         </div>
@@ -960,36 +960,34 @@
 
       <!-- Job Type Selection -->
       <div>
-        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingJobTypeLabel">
           3. What are you applying for? <span style="color: #ef4444;">*</span>
         </label>
         <select id="onboardingJobType" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer;">
-          <option value="">Select Position Type</option>
-          <option value="Fire">Fire</option>
-          <option value="Police">Police</option>
-          <option value="Paramedic">Paramedic</option>
-          <option value="First Responder">First Responder</option>
-          <option value="Dispatcher">Dispatcher</option>
+          <option value="" id="onboardingJobTypePlaceholder">Select Position Type</option>
+          <option value="Fire" id="onboardingJobTypeFire">Fire</option>
+          <option value="Police" id="onboardingJobTypePolice">Police</option>
+          <option value="Paramedic" id="onboardingJobTypeParamedic">Paramedic</option>
+          <option value="First Responder" id="onboardingJobTypeFirstResponder">First Responder</option>
+          <option value="Dispatcher" id="onboardingJobTypeDispatcher">Dispatcher</option>
         </select>
       </div>
 
       <!-- Department Name -->
       <div>
-        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingDepartmentLabel">
           4. Department Name <span style="color: #ef4444;">*</span>
         </label>
         <input type="text" id="onboardingDepartmentName" placeholder="e.g., Abbotsford Fire Department" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
-        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">This will be used to personalize your interview questions</p>
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;" id="onboardingDepartmentHelper">This will be used to personalize your interview questions</p>
       </div>
 
       <!-- Submit Button -->
       <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
-        <button type="submit" id="onboardingSubmitBtn" style="padding: 14px 28px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">
-          Start Practice Session
-        </button>
+        <button type="submit" id="onboardingSubmitBtn" style="padding: 14px 28px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">Start Practice Session</button>
       </div>
       
-      <p style="text-align: center; margin-top: 10px; color: #94a3b8; font-size: 0.85em;">
+      <p style="text-align: center; margin-top: 10px; color: #94a3b8; font-size: 0.85em;" id="onboardingRequiredFields">
         <span style="color: #ef4444;">*</span> Required fields
       </p>
     </form>
@@ -1459,6 +1457,9 @@
     });
   }
 
+  // Load onboarding config on page load
+  loadOnboardingConfig();
+  
   // ========== ONBOARDING MODAL ==========
   const onboardingForm = document.getElementById("onboardingForm");
   const onboardingResumeInput = document.getElementById("onboardingResumeInput");
@@ -1571,9 +1572,9 @@
           if (suggestions.length === 0) {
             if (data.error) {
               console.error('Backend error:', data.error);
-              citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Try typing manually.</div>';
+              citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">' + ONBOARDING_CONFIG.location.searchMessages.searchUnavailable + '</div>';
             } else {
-              citySuggestions.innerHTML = '<div class="suggestion-loading">No cities found</div>';
+              citySuggestions.innerHTML = '<div class="suggestion-loading">' + ONBOARDING_CONFIG.location.searchMessages.noCitiesFound + '</div>';
             }
             return;
           }
@@ -1618,11 +1619,11 @@
           
           // Check if it's a network error or endpoint not found
           if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Cannot connect to server. You can type manually.</div>';
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">' + ONBOARDING_CONFIG.location.searchMessages.cannotConnect + '</div>';
           } else if (error.message.includes('not available')) {
-            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #fbbf24;">Location search not available. Please type manually.</div>';
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #fbbf24;">' + ONBOARDING_CONFIG.location.searchMessages.notAvailable + '</div>';
           } else {
-            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Please type manually.</div>';
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">' + ONBOARDING_CONFIG.location.searchMessages.searchUnavailable + '</div>';
           }
         }
       }, 500); // 500ms debounce to reduce API calls

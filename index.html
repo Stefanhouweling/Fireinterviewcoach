@@ -1212,9 +1212,8 @@
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'http://localhost:3001';
     }
-    // Production - UPDATE THIS with your actual Render backend URL
-    // Example: 'https://fire-interview-coach-api.onrender.com'
-    return 'https://YOUR-BACKEND-URL.onrender.com';  // ⚠️ UPDATE THIS AFTER DEPLOYING BACKEND
+    // Production - Backend URL
+    return 'https://fire-interview-coach-api.onrender.com';
   })();
   
   // Use backend by default, allow local keys for development

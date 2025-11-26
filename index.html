@@ -1310,16 +1310,18 @@
   const acceptTermsCheckbox = document.getElementById("acceptTerms");
   const acceptPrivacyCheckbox = document.getElementById("acceptPrivacy");
   const acceptTermsBtn = document.getElementById("acceptTermsBtn");
-  
-  // Check if user has already accepted terms
-  const termsAccepted = localStorage.getItem("termsAccepted") === "true";
-  const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
-  const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+  const onboardingModal = document.getElementById("onboardingModal");
+  const mainApp = document.getElementById("mainApp");
   
   // Hide main app by default
   if (mainApp) {
     mainApp.style.display = "none";
   }
+  
+  // Check if user has already accepted terms
+  const termsAccepted = localStorage.getItem("termsAccepted") === "true";
+  const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
+  const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
   
   // Show modal if terms not accepted
   if (!termsAccepted || !privacyAccepted) {
@@ -1330,21 +1332,28 @@
       console.log("Terms modal displayed - terms not yet accepted");
     } else {
       console.error("Terms modal element not found!");
+      // Fallback: show main app if modal doesn't exist
+      if (mainApp) mainApp.style.display = "block";
     }
   } else if (!onboardingComplete) {
     // Terms accepted but onboarding not complete - show onboarding modal
-    const onboardingModal = document.getElementById("onboardingModal");
     if (onboardingModal) {
       onboardingModal.style.display = "flex";
       document.body.style.overflow = "hidden";
       console.log("Onboarding modal displayed - onboarding not yet complete");
+    } else {
+      console.error("Onboarding modal element not found!");
+      // Fallback: show main app if modal doesn't exist
+      if (mainApp) mainApp.style.display = "block";
     }
   } else {
     // Both terms and onboarding complete - show main app
     if (mainApp) {
       mainApp.style.display = "block";
+      console.log("Terms and onboarding already complete - showing main app");
+    } else {
+      console.error("Main app element not found!");
     }
-    console.log("Terms and onboarding already complete - showing main app");
   }
   
   // Update accept button state
@@ -1384,17 +1393,15 @@
         }
         
         // Check if onboarding is complete
-        const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
-        if (!onboardingComplete) {
+        const onboardingCompleteCheck = localStorage.getItem("onboardingComplete") === "true";
+        if (!onboardingCompleteCheck) {
           // Show onboarding modal
-          const onboardingModal = document.getElementById("onboardingModal");
           if (onboardingModal) {
             onboardingModal.style.display = "flex";
             document.body.style.overflow = "hidden";
           }
         } else {
           // Show main app
-          const mainApp = document.getElementById("mainApp");
           if (mainApp) {
             mainApp.style.display = "block";
           }
@@ -1417,14 +1424,11 @@
   }
 
   // ========== ONBOARDING MODAL ==========
-  const onboardingModal = document.getElementById("onboardingModal");
   const onboardingForm = document.getElementById("onboardingForm");
   const onboardingResumeInput = document.getElementById("onboardingResumeInput");
   const onboardingResumeStatus = document.getElementById("onboardingResumeStatus");
-  const mainApp = document.getElementById("mainApp");
   
-  // Check if onboarding is already complete
-  const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+  // Check if onboarding is already complete (onboardingModal and mainApp already defined above)
   if (onboardingComplete) {
     // Load saved onboarding data
     const savedData = localStorage.getItem("onboardingData");

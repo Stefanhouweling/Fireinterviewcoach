@@ -2815,6 +2815,14 @@ Return ONLY the category and question.`
     motionScoreForAnswer = computeMotionScoreForAnswer();
     
     console.log("Recording stopped. Final transcript length:", lastAnswerTranscript.length, "words:", lastAnswerTranscript.split(/\s+/).length);
+    
+    // Automatically trigger analysis
+    if (lastAnswerTranscript.trim()) {
+      // Small delay to ensure transcript is finalized
+      setTimeout(() => {
+        triggerAnalysis();
+      }, 500);
+    }
   });
 
   // ========== FEEDBACK & ANALYSIS ==========
@@ -3113,11 +3121,8 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
     }
   }
   
-  // Keep the button click handler for manual analysis if needed
-  const analyzeBtn = document.getElementById("analyzeBtn");
-  if (analyzeBtn) {
-    analyzeBtn.addEventListener("click", triggerAnalysis);
-  }
+  // Note: analyzeBtn is already declared above, so we just add the event listener
+  // The button is now hidden/removed, but we keep the function for auto-triggering
 
   // Format AI feedback with proper HTML structure (for small preview)
   function formatAIFeedback(container, text, showPreview = false) {

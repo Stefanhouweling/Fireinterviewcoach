@@ -588,15 +588,39 @@ function searchStaticList(query, type, country) {
     }
     
     results = list
-      .filter(state => state.toLowerCase().includes(queryLower))
-      .map(state => ({
-        name: state,
-        country: US_STATES.includes(state) ? 'United States' : 'Canada',
-        fullLocation: `${state}, ${US_STATES.includes(state) ? 'United States' : 'Canada'}`,
-        relevance: state.toLowerCase().startsWith(queryLower) ? 1 : 2
-      }))
-      .sort((a, b) => a.relevance - b.relevance || a.name.localeCompare(b.name))
-      .slice(0, 8);
+      .filter(state => {
+        const stateLower = state.toLowerCase();
+        return stateLower.includes(queryLower);
+      })
+      .map(state => {
+        const stateLower = state.toLowerCase();
+        let relevance = 3;
+        if (stateLower.startsWith(queryLower)) {
+          relevance = 1; // Highest priority: starts with query
+        } else if (stateLower.includes(queryLower)) {
+          relevance = 2; // Medium priority: contains query
+        }
+        return {
+          name: state,
+          country: US_STATES.includes(state) ? 'United States' : 'Canada',
+          fullLocation: `${state}, ${US_STATES.includes(state) ? 'United States' : 'Canada'}`,
+          relevance: relevance
+        };
+      })
+      .sort((a, b) => {
+        // Sort by relevance first (1 = best, 2 = good, 3 = ok)
+        if (a.relevance !== b.relevance) {
+          return a.relevance - b.relevance;
+        }
+        // If same relevance, sort alphabetically
+        return a.name.localeCompare(b.name);
+      })
+      .slice(0, 8)
+      .map(item => {
+        // Remove relevance before returning
+        const { relevance, ...clean } = item;
+        return clean;
+      });
   } else if (type === 'city') {
     // Search common cities
     const allCities = [];
@@ -608,20 +632,41 @@ function searchStaticList(query, type, country) {
     
     results = allCities
       .filter(item => {
-        const matchesQuery = item.city.toLowerCase().includes(queryLower);
+        const cityLower = item.city.toLowerCase();
+        const matchesQuery = cityLower.includes(queryLower);
         const matchesCountry = !country || item.country === country;
-        const matchesState = true; // We'll filter by state if provided later
-        return matchesQuery && matchesCountry && matchesState;
+        return matchesQuery && matchesCountry;
       })
-      .map(item => ({
-        name: item.city,
-        stateProvince: item.state,
-        country: item.country,
-        fullLocation: `${item.city}, ${item.state}, ${item.country}`,
-        relevance: item.city.toLowerCase().startsWith(queryLower) ? 1 : 2
-      }))
-      .sort((a, b) => a.relevance - b.relevance || a.name.localeCompare(b.name))
-      .slice(0, 8);
+      .map(item => {
+        const cityLower = item.city.toLowerCase();
+        let relevance = 3;
+        if (cityLower.startsWith(queryLower)) {
+          relevance = 1; // Highest priority: starts with query
+        } else if (cityLower.includes(queryLower)) {
+          relevance = 2; // Medium priority: contains query
+        }
+        return {
+          name: item.city,
+          stateProvince: item.state,
+          country: item.country,
+          fullLocation: `${item.city}, ${item.state}, ${item.country}`,
+          relevance: relevance
+        };
+      })
+      .sort((a, b) => {
+        // Sort by relevance first (1 = best, 2 = good, 3 = ok)
+        if (a.relevance !== b.relevance) {
+          return a.relevance - b.relevance;
+        }
+        // If same relevance, sort alphabetically
+        return a.name.localeCompare(b.name);
+      })
+      .slice(0, 8)
+      .map(item => {
+        // Remove relevance before returning
+        const { relevance, ...clean } = item;
+        return clean;
+      });
   }
   
   return results;

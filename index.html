@@ -2836,7 +2836,8 @@ Return ONLY the category and question.`
   const bodyFeedbackEl = document.getElementById("bodyFeedback");
   const fireTipsEl = document.getElementById("fireTips");
 
-  analyzeBtn.addEventListener("click", async () => {
+  // Extract analysis logic into a reusable function
+  async function triggerAnalysis() {
     const text = (transcriptBox.textContent || "").trim();
     if (!text) {
       alert("No transcript found. Answer the question or type your answer first.");
@@ -3116,13 +3117,15 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
       if (progressPercent) progressPercent.textContent = "0%";
       // keep local tips if AI call fails
     } finally {
-      analyzeBtn.disabled = false;
-      analyzeBtn.textContent = "🤖 Analyze Answer";
+      // Note: analyzeBtn may not exist if button was removed, so check first
+      if (analyzeBtn) {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = "🤖 Analyze Answer";
+      }
     }
   }
   
-  // Note: analyzeBtn is already declared above, so we just add the event listener
-  // The button is now hidden/removed, but we keep the function for auto-triggering
+  // Note: The analyze button is now hidden/removed from UI, but we keep the function for auto-triggering
 
   // Format AI feedback with proper HTML structure (for small preview)
   function formatAIFeedback(container, text, showPreview = false) {

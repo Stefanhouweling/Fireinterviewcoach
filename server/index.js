@@ -1019,7 +1019,7 @@ app.post('/api/search-location', async (req, res) => {
     const queryLower = query.toLowerCase();
     const suggestions = data.map(item => {
       const address = item.address || {};
-      
+
       if (type === 'city') {
         const cityName = address.city || address.town || address.village || address.municipality || item.display_name.split(',')[0];
         const stateProvince = address.state || address.province || address.region || '';
@@ -1056,11 +1056,19 @@ app.post('/api/search-location', async (req, res) => {
     }).filter(item => {
       // Filter by country if specified
       if (country && item.country) {
-        const countryMatch = item.country.toLowerCase().includes(country.toLowerCase()) || 
+        const countryMatch = item.country.toLowerCase().includes(country.toLowerCase()) ||
                             country.toLowerCase().includes(item.country.toLowerCase());
         if (!countryMatch) return false;
       }
-      
+
+      // Filter by state/province when provided to keep suggestions relevant
+      if (stateProvince && item.stateProvince) {
+        const stateLower = item.stateProvince.toLowerCase();
+        const requestedStateLower = stateProvince.toLowerCase();
+        const stateMatch = stateLower.includes(requestedStateLower) || requestedStateLower.includes(stateLower);
+        if (!stateMatch) return false;
+      }
+
       // Filter out results that don't match the query at all
       const nameLower = item.name.toLowerCase();
       if (!nameLower.includes(queryLower)) {

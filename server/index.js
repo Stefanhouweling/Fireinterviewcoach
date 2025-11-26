@@ -340,14 +340,53 @@ REQUIRED KNOWLEDGE AREAS TO TEST (use city research data):
 5. Department History: "When was ${profileDepartmentName || 'this department'} established?" "What is the history of ${profileDepartmentName || 'this department'}?"
 6. City/Department Facts: "What are the main industries in ${profileCity || 'this city'}?" "What challenges does ${profileCity || 'this city'} face?"
 
-QUESTION FORMAT EXAMPLES (USE THESE STYLES):
+QUESTION FORMAT EXAMPLES (USE THESE STYLES - VARIETY IS KEY):
+Leadership & Structure:
 - "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?"
-- "What is the local union number for ${profileDepartmentName || 'the fire department'} in ${profileCity || 'this city'}?"
-- "How many members does ${profileDepartmentName || 'the department'} currently have?"
+- "Who are the deputy chiefs of ${profileDepartmentName || 'this department'}?"
+- "What is the organizational structure of ${profileDepartmentName || 'this department'}?"
 - "Who is the mayor of ${profileCity || 'this city'}?"
-- "Can you tell us about the history of ${profileDepartmentName || 'this department'}?"
-- "What community programs does ${profileDepartmentName || 'this department'} participate in?"
+- "What city council members serve on the public safety committee for ${profileCity || 'this city'}?"
+
+Union & Labor:
+- "What is the local union number for ${profileDepartmentName || 'the fire department'} in ${profileCity || 'this city'}?"
+- "What union represents ${profileDepartmentName || 'this department'}?"
+- "Who is the union president for ${profileDepartmentName || 'this department'}?"
+
+Department Size & Resources:
+- "How many members does ${profileDepartmentName || 'the department'} currently have?"
+- "How many fire stations does ${profileDepartmentName || 'the department'} operate?"
+- "How many apparatus/engines does ${profileDepartmentName || 'the department'} have?"
+- "What is the annual budget for ${profileDepartmentName || 'this department'}?"
+
+Department History:
 - "When was ${profileDepartmentName || 'this department'} first established as a career department?"
+- "Can you tell us about the history of ${profileDepartmentName || 'this department'}?"
+- "What are some significant milestones in ${profileDepartmentName || 'this department'}'s history?"
+- "When did ${profileDepartmentName || 'this department'} transition from volunteer to career?"
+
+City & Department Context:
+- "What are the main industries in ${profileCity || 'this city'}?"
+- "What unique challenges does ${profileCity || 'this city'} face that affect fire department operations?"
+- "What is the population of ${profileCity || 'this city'}?"
+- "What response areas or coverage zones does ${profileDepartmentName || 'this department'} serve?"
+- "How does ${profileDepartmentName || 'this department'} coordinate with neighboring fire departments?"
+
+Programs & Initiatives:
+- "What community programs does ${profileDepartmentName || 'this department'} participate in?"
+- "What fire prevention programs does ${profileDepartmentName || 'this department'} offer?"
+- "What recent initiatives has ${profileDepartmentName || 'this department'} implemented?"
+- "Does ${profileDepartmentName || 'this department'} participate in any mutual aid agreements?"
+
+Values & Mission:
+- "What are the core values of ${profileDepartmentName || 'this department'}?"
+- "What is the mission statement of ${profileDepartmentName || 'this department'}?"
+- "What makes ${profileDepartmentName || 'this department'} unique or special?"
+
+Equipment & Capabilities:
+- "What specialized equipment or apparatus does ${profileDepartmentName || 'this department'} have?"
+- "Does ${profileDepartmentName || 'this department'} have any technical rescue capabilities?"
+- "What type of hazmat response capabilities does ${profileDepartmentName || 'this department'} have?"
 
 ABSOLUTELY FORBIDDEN QUESTION TYPES:
 - "How would you handle..." (situational)

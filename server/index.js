@@ -286,6 +286,10 @@ ${profileResumeText}`;
       return 'hard';
     })();
     
+    // Initialize question bank reference (currently not used, but kept for future use)
+    let questionBankReference = null;
+    let bankReferenceText = "";
+    
     // Build personalization context
     let personalizationContext = "";
     if (profileName) {
@@ -379,7 +383,7 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
     }
     
     // Add question bank reference as inspiration if available
-    let bankReferenceText = "";
+    // (This is defined earlier in the code, but ensure it's always initialized)
     if (questionBankReference) {
       bankReferenceText = `\n\nQUESTION BANK REFERENCE (use as inspiration, but create a NEW, PERSONALIZED question):
 - Type: ${questionBankReference.type}
@@ -388,6 +392,8 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
 - Example question style: "${questionBankReference.question}"
 
 IMPORTANT: Do NOT copy this question. Use it as inspiration for the TYPE and STYLE of question, but create a completely new, personalized question that incorporates the candidate's profile information above.`;
+    } else {
+      bankReferenceText = "";
     }
 
     const response = await openai.chat.completions.create({

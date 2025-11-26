@@ -605,7 +605,160 @@ const COMMON_CITIES = {
   'Quebec': ['Montreal', 'Quebec City', 'Laval', 'Gatineau', 'Longueuil', 'Sherbrooke', 'Saguenay', 'Levis']
 };
 
-// Helper function to search static lists first (instant results)
+// Helper function to search comprehensive location database (instant results)
+function searchLocationDatabase(query, type, country, stateProvince) {
+  const queryLower = query.toLowerCase();
+  let results = [];
+  
+  if (type === 'state') {
+    // Search states/provinces
+    let filteredStates = statesData || [];
+    
+    // Filter by country if specified
+    if (country && countriesData) {
+      const countryObj = countriesData.find(c => 
+        c.name.toLowerCase() === country.toLowerCase() || 
+        c.name === country
+      );
+      if (countryObj) {
+        filteredStates = filteredStates.filter(state => 
+          state.country_id === countryObj.id
+        );
+      }
+    }
+    
+    results = filteredStates
+      .filter(state => {
+        const stateName = (state.name || '').toLowerCase();
+        return stateName.includes(queryLower);
+      })
+      .map(state => {
+        const stateName = state.name || '';
+        const stateLower = stateName.toLowerCase();
+        let relevance = 3;
+        if (stateLower.startsWith(queryLower)) {
+          relevance = 1; // Highest priority: starts with query
+        } else if (stateLower.includes(queryLower)) {
+          relevance = 2; // Medium priority: contains query
+        }
+        
+        // Get country name
+        let countryName = country || 'Unknown';
+        if (countriesData && state.country_id) {
+          const countryObj = countriesData.find(c => c.id === state.country_id);
+          if (countryObj) {
+            countryName = countryObj.name;
+          }
+        }
+        
+        return {
+          name: stateName,
+          country: countryName,
+          fullLocation: `${stateName}, ${countryName}`,
+          relevance: relevance
+        };
+      })
+      .sort((a, b) => {
+        if (a.relevance !== b.relevance) {
+          return a.relevance - b.relevance;
+        }
+        return a.name.localeCompare(b.name);
+      })
+      .slice(0, 8)
+      .map(item => {
+        const { relevance, ...clean } = item;
+        return clean;
+      });
+      
+  } else if (type === 'city') {
+    // Search cities
+    let filteredCities = citiesData || [];
+    
+    // Filter by state/province if specified
+    if (stateProvince && statesData) {
+      const stateObj = statesData.find(s => 
+        (s.name || '').toLowerCase() === stateProvince.toLowerCase()
+      );
+      if (stateObj) {
+        filteredCities = filteredCities.filter(city => 
+          city.state_id === stateObj.id
+        );
+      }
+    }
+    
+    // Filter by country if specified (and no state filter)
+    if (country && !stateProvince && countriesData) {
+      const countryObj = countriesData.find(c => 
+        c.name.toLowerCase() === country.toLowerCase() || 
+        c.name === country
+      );
+      if (countryObj && statesData) {
+        const countryStates = statesData.filter(s => s.country_id === countryObj.id);
+        const countryStateIds = new Set(countryStates.map(s => s.id));
+        filteredCities = filteredCities.filter(city => 
+          countryStateIds.has(city.state_id)
+        );
+      }
+    }
+    
+    results = filteredCities
+      .filter(city => {
+        const cityName = (city.name || '').toLowerCase();
+        return cityName.includes(queryLower);
+      })
+      .map(city => {
+        const cityName = city.name || '';
+        const cityLower = cityName.toLowerCase();
+        let relevance = 3;
+        if (cityLower.startsWith(queryLower)) {
+          relevance = 1;
+        } else if (cityLower.includes(queryLower)) {
+          relevance = 2;
+        }
+        
+        // Get state and country names
+        let stateName = stateProvince || '';
+        let countryName = country || 'Unknown';
+        
+        if (statesData && city.state_id) {
+          const stateObj = statesData.find(s => s.id === city.state_id);
+          if (stateObj) {
+            stateName = stateObj.name || '';
+            
+            if (countriesData && stateObj.country_id) {
+              const countryObj = countriesData.find(c => c.id === stateObj.country_id);
+              if (countryObj) {
+                countryName = countryObj.name;
+              }
+            }
+          }
+        }
+        
+        return {
+          name: cityName,
+          stateProvince: stateName,
+          country: countryName,
+          fullLocation: [cityName, stateName, countryName].filter(Boolean).join(', '),
+          relevance: relevance
+        };
+      })
+      .sort((a, b) => {
+        if (a.relevance !== b.relevance) {
+          return a.relevance - b.relevance;
+        }
+        return a.name.localeCompare(b.name);
+      })
+      .slice(0, 8)
+      .map(item => {
+        const { relevance, ...clean } = item;
+        return clean;
+      });
+  }
+  
+  return results;
+}
+
+// Fallback function using static lists (if database not loaded)
 function searchStaticList(query, type, country) {
   const queryLower = query.toLowerCase();
   let results = [];

@@ -2358,9 +2358,9 @@ Return ONLY the category and question.`
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         
-        // Update subtitle when audio starts
+        // Update subtitle during speech (word-by-word highlighting will happen via audio events)
         if (subtitleEl) {
-          subtitleEl.innerHTML = `<span style="color: #fbbf24;">${text}</span>`;
+          subtitleEl.innerHTML = `<span style="color: #fbbf24;">Speaking...</span>`;
         }
         
           return new Promise((resolve, reject) => {
@@ -2392,6 +2392,10 @@ Return ONLY the category and question.`
             
             audio.onended = () => {
               URL.revokeObjectURL(audioUrl);
+              // Hide subtitle when audio ends - question is already displayed in questionText
+              if (subtitleEl) {
+                subtitleEl.style.display = "none";
+              }
               resolve();
             };
             audio.onerror = (e) => {

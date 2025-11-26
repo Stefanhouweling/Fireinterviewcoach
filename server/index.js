@@ -230,76 +230,52 @@ ${resumeContext}
 CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or HYPOTHETICAL question (future scenario).
 
 - BEHAVIORAL questions: "Tell me about a time when...", "Describe a situation where...", "Give me an example of..."
-  → Use STAR method (Situation-Task-Action-Result) for these
+  → Use STAR method (Situation-Task-Action-Result) for these.
   
 - HYPOTHETICAL questions: "How would you...", "What would you do if...", "How would you approach..."
   → DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.
 
-Analyze the question above and provide appropriate feedback. Structure your response as follows:
+Keep the response concise and easy to skim. Avoid long paragraphs. Use short sentences and compact sections.
 
-## Answer Summary
-[2-3 sentence summary of what they said - be specific about what they covered]
+STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bullet points with stars \"★\" instead of bold):
 
-## Question Type Analysis
-[First, identify if this is behavioral (past experience) or hypothetical (future scenario), then provide appropriate analysis]
+## Answer Summary & Score
+[1–2 short sentences summarizing what they actually said, using plain language.]
+Score: [X]/10
 
-IF BEHAVIORAL (past experience) - Use this section:
-## STAR Method Analysis
-Break down their answer:
-- **Situation**: Did they set the scene? [What they did/didn't do]
-- **Task**: Did they explain what needed to be done? [What they did/didn't do]
-- **Action**: Did they describe their specific actions? [What they did/didn't do]
-- **Result**: Did they explain the outcome? [What they did/didn't do]
+## What You Did Well
+★ [Short positive point 1 – specific and concrete]  
+★ [Short positive point 2]  
+★ [Optional: Short positive point 3]
 
-## How to Improve Using STAR
-Provide a concrete example showing how they could restructure their answer using STAR.
+## What To Improve Next
+★ [Short improvement point 1 – very practical]  
+★ [Short improvement point 2]  
+★ [Optional: Short improvement point 3]
 
-IF HYPOTHETICAL (future scenario) - Use this section instead:
-## Approach Analysis
-Evaluate their answer on:
-- **Clarity of Approach**: Did they clearly explain their step-by-step approach?
-- **Reasoning**: Did they explain WHY they would take those actions?
-- **Chain of Command**: Did they consider proper hierarchy and who to involve?
-- **Ethics & Safety**: Did they prioritize safety and ethical considerations?
-- **Specificity**: Were their actions specific enough, or too vague? What would they actually say or do?
+## STAR or Approach Overview
+If this is a BEHAVIORAL (past) question, use STAR in a very compact way:
+★ Situation – [1 short sentence: how they should set the scene]  
+★ Task – [1 short sentence: what the goal or responsibility was]  
+★ Action – [1–2 short sentences: key actions they should clearly state]  
+★ Result – [1 short sentence: the outcome + what changed or improved]
 
-## How to Improve (For Hypothetical Questions)
-Provide guidance on:
-- Being more specific about what they would actually say or do
-- Explaining their reasoning and thought process
-- Considering all stakeholders (team, chain of command, safety)
-- Showing they understand fire service protocols
-- DO NOT suggest using STAR method for hypothetical questions - it doesn't apply
+If this is a HYPOTHETICAL (future) question, DO NOT use STAR. Instead, describe a clear approach:
+★ Step 1 – [What they should do first and why]  
+★ Step 2 – [Next key step, including chain of command / safety / communication]  
+★ Step 3 – [How they would wrap up, debrief, or follow up]
 
-## Strengths
-- [Specific point 1 - what they did well]
-- [Specific point 2]
-- [Specific point 3]
+## Panel-Ready 10/10 Answer
+[Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate’s ideas and resume context but clean them up:
+- 1 short opening sentence that orients the panel.
+- 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.
+- Keep language natural, plain, and realistic for a firefighter candidate.]
 
-## Areas for Improvement
-- [Specific point 1 - what needs work]
-- [Specific point 2]
-- [Specific point 3]
-
-## Panel-Ready Score: [X]/10
-[Brief explanation of the score and what would make it a 10/10]
-
-## Practice Exercise
-[If behavioral: "Try answering this question again, but this time start with 'The situation was...' and make sure to include the result at the end."]
-[If hypothetical: "Try answering this question again, but this time be more specific about each step you would take and explain your reasoning for each decision. Remember, this is a hypothetical question, so focus on your approach and reasoning, not a past experience."]
-
-## Reformulated Answer (Panel-Ready Version)
-[IMPORTANT: Create a polished, panel-ready version of their answer. Take what they said and reformulate it into a strong, professional answer that:
-- Incorporates all the key points they mentioned
-- Uses their actual experience, certifications, and background from their resume (if provided)
-- Follows STAR method if behavioral, or clear step-by-step approach if hypothetical
-- Is specific, clear, and demonstrates firefighter competencies
-- Shows proper chain of command awareness, safety focus, and professional judgment
-- Is the answer they SHOULD give - polished and ready for a real panel
-
-Format this as a complete, natural-sounding answer that they could use as a template. Make it sound like them but better - use their words and ideas, just refined and structured properly.]
-
-Use clear markdown formatting with ## for main sections and - for bullet points. Be encouraging but specific.`
+Rules:
+- Use \"★\" for bullet points instead of bold labels.
+- Keep each bullet to 1–2 short sentences.
+- Avoid walls of text – this should feel light, skimmable, and coach-like.
+- Be encouraging but very specific and honest about what needs to improve.`
         }
       ]
     });

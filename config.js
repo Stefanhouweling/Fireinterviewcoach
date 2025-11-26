@@ -67,7 +67,7 @@ const APP_CONFIG = {
   
   // Footer
   footer: {
-    copyright: "© {2025} {Interview CoachAI}. All rights reserved.",
+    copyright: "© 2025 Interview CoachAI. All rights reserved.",
     termsLink: "Terms of Service",
     privacyLink: "Privacy Policy",
     disclaimer: "{appName} is a practice tool only and does not guarantee job offers or employment."

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Load configuration file for easy text updates -->
+  <script src="config.js"></script>
   <meta charset="UTF-8" />
   <title>Fire Interview Coach</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -958,7 +960,7 @@
           </div>
           <div class="question-controls">
             <button id="nextQuestionBtn" type="button">
-              🎤 Next Question
+              <!-- Text loaded from config.js -->
             </button>
             <button id="repeatQuestionBtn" class="secondary" type="button">
               🔁 Repeat
@@ -1133,15 +1135,13 @@
   <!-- Footer with Legal Links -->
   <footer style="text-align: center; padding: 30px 20px; margin-top: auto; border-top: 1px solid rgba(239, 68, 68, 0.2); color: #94a3b8; font-size: 0.9em; width: 100%; clear: both; display: block; flex-shrink: 0;">
     <div style="max-width: 1200px; margin: 0 auto;">
-      <p style="margin-bottom: 10px; color: #94a3b8;">© 2024 Fire Interview Coach. All rights reserved.</p>
+      <p style="margin-bottom: 10px; color: #94a3b8;" id="footerCopyright"><!-- Loaded from config.js --></p>
       <p style="margin: 0;">
-        <a href="terms-of-service.html" style="color: #fca5a5; text-decoration: none; margin: 0 15px; transition: color 0.2s;">Terms of Service</a>
+        <a href="terms-of-service.html" style="color: #fca5a5; text-decoration: none; margin: 0 15px; transition: color 0.2s;" id="footerTermsLink"><!-- Loaded from config.js --></a>
         <span style="color: rgba(239, 68, 68, 0.5);">|</span>
-        <a href="privacy-policy.html" style="color: #fca5a5; text-decoration: none; margin: 0 15px; transition: color 0.2s;">Privacy Policy</a>
+        <a href="privacy-policy.html" style="color: #fca5a5; text-decoration: none; margin: 0 15px; transition: color 0.2s;" id="footerPrivacyLink"><!-- Loaded from config.js --></a>
       </p>
-      <p style="margin-top: 10px; font-size: 0.85em; color: #64748b;">
-        Fire Interview Coach is a practice tool only and does not guarantee job offers or employment.
-      </p>
+      <p style="margin-top: 10px; font-size: 0.85em; color: #64748b;" id="footerDisclaimer"><!-- Loaded from config.js --></p>
     </div>
   </footer>
 </div>

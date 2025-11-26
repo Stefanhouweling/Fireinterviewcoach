@@ -355,7 +355,9 @@ ABSOLUTELY FORBIDDEN QUESTION TYPES:
 - "What would you do if..." (hypothetical)
 - Any question about past experiences or future scenarios
 
-REQUIRED: The question MUST be a direct knowledge question asking about a specific fact. Use the city research data to find the actual facts and ask about them.`;
+REQUIRED: The question MUST be a direct knowledge question asking about a specific fact. Use the city research data to find the actual facts and ask about them.
+
+IMPORTANT: Only ask knowledge questions about facts that are available in the city research data. If the research data doesn't contain specific information (e.g., "Information not found"), do NOT ask about that topic. Ask about facts that ARE available in the research.`;
       } else {
         questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) focused EXCLUSIVELY on the category: "${selectedCategory}".${personalizationContext}
 

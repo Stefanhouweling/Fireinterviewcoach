@@ -540,7 +540,41 @@ Provide a comprehensive but concise summary (300-500 words) that covers the most
 const locationCache = new Map();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
-// Static lists for instant results (common states/provinces and cities)
+// Load comprehensive country/state/city data from countries-states-cities-database
+// Using the public JSON files from: https://github.com/dr5hn/countries-states-cities-database
+let countriesData = null;
+let statesData = null;
+let citiesData = null;
+
+// Load data on startup (lightweight, fast)
+async function loadLocationData() {
+  try {
+    // Fetch from the public JSON files (CDN or GitHub raw)
+    const baseUrl = 'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master';
+    
+    console.log('Loading location data from countries-states-cities-database...');
+    
+    const [countriesRes, statesRes, citiesRes] = await Promise.all([
+      fetchModule(`${baseUrl}/json/countries.json`),
+      fetchModule(`${baseUrl}/json/states.json`),
+      fetchModule(`${baseUrl}/json/cities.json`)
+    ]);
+    
+    countriesData = await countriesRes.json();
+    statesData = await statesRes.json();
+    citiesData = await citiesRes.json();
+    
+    console.log(`✓ Loaded ${countriesData.length} countries, ${statesData.length} states, ${citiesData.length} cities`);
+  } catch (error) {
+    console.error('Failed to load location data, falling back to static lists:', error);
+    // Fall back to static lists if API fails
+  }
+}
+
+// Load data on server start
+loadLocationData();
+
+// Static lists for instant results (fallback if API data not loaded yet)
 const US_STATES = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
   'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
@@ -683,20 +717,25 @@ app.post('/api/search-location', async (req, res) => {
 
     const queryLower = query.toLowerCase();
     
-    // ALWAYS check static list FIRST for instant results (no API delay)
-    let staticResults = searchStaticList(query, type, country);
-    
-    // For cities, filter by state/province if provided
-    if (type === 'city' && stateProvince && staticResults.length > 0) {
-      staticResults = staticResults.filter(item => 
-        item.stateProvince && item.stateProvince.toLowerCase() === stateProvince.toLowerCase()
-      );
+    // ALWAYS check comprehensive database FIRST for instant results (no API delay)
+    // Use comprehensive database if loaded, otherwise fall back to static lists
+    let searchResults = [];
+    if (countriesData && statesData && citiesData) {
+      searchResults = searchLocationDatabase(query, type, country, stateProvince);
+    } else {
+      // Fallback to static lists if database not loaded yet
+      searchResults = searchStaticList(query, type, country);
+      if (type === 'city' && stateProvince && searchResults.length > 0) {
+        searchResults = searchResults.filter(item => 
+          item.stateProvince && item.stateProvince.toLowerCase() === stateProvince.toLowerCase()
+        );
+      }
     }
     
-    // If static list has results, return immediately (INSTANT - no cache, no API)
-    if (staticResults.length > 0) {
-      console.log(`✓ Static list: ${staticResults.length} instant results for "${query}" (${type})`);
-      return res.json({ suggestions: staticResults });
+    // If we have results, return immediately (INSTANT - no cache, no API)
+    if (searchResults.length > 0) {
+      console.log(`✓ Database search: ${searchResults.length} instant results for "${query}" (${type})`);
+      return res.json({ suggestions: searchResults });
     }
     
     // Only check cache for Nominatim results (not static - those are always instant)

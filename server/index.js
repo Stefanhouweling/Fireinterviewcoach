@@ -276,26 +276,103 @@ ${profileResumeText}`;
       }
     }
 
-    // Determine question strategy based on mode
+    // Determine question strategy based on mode, with heavy emphasis on personalization
     let questionStrategy = "";
+    const questionTypeToUse = questionType || (Math.random() < 0.5 ? 'behavioral' : 'situational');
+    const difficultyToUse = difficulty || (() => {
+      const rand = Math.random();
+      if (rand < 0.3) return 'easy';
+      if (rand < 0.7) return 'medium';
+      return 'hard';
+    })();
+    
+    // Build personalization context
+    let personalizationContext = "";
+    if (profileName) {
+      personalizationContext += `\n- Candidate's name: ${profileName} (address them by name naturally in about 30-40% of questions)`;
+    }
+    if (profileDepartmentName) {
+      personalizationContext += `\n- Department: ${profileDepartmentName} (reference this department naturally when relevant)`;
+    }
+    if (profileCity) {
+      personalizationContext += `\n- City: ${profileCity}${profileStateProvince ? `, ${profileStateProvince}` : ''}${profileCountry ? `, ${profileCountry}` : ''} (reference city-specific challenges or context when appropriate)`;
+    }
+    if (profileJobType) {
+      personalizationContext += `\n- Position: ${profileJobType}`;
+    }
+    if (profileResumeAnalysis) {
+      personalizationContext += `\n- Resume highlights: ${profileResumeAnalysis.experience || 'N/A'} experience, Certifications: ${Array.isArray(profileResumeAnalysis.certifications) ? profileResumeAnalysis.certifications.slice(0, 3).join(", ") : 'None'}, Key skills: ${Array.isArray(profileResumeAnalysis.skills) ? profileResumeAnalysis.skills.slice(0, 5).join(", ") : 'General'}`;
+    }
+    if (profileCityResearch) {
+      personalizationContext += `\n- City/Department research available: Use specific details from this research to make questions feel authentic and personalized to this exact department and location.`;
+    }
+    
     if (practiceMode === "specific" && selectedCategory) {
       if (selectedCategory === "Resume-Based") {
-        questionStrategy = `Generate a question SPECIFICALLY based on the candidate's resume. Reference their actual experience, certifications, or background mentioned in the resume. However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
+        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) SPECIFICALLY personalized to this candidate's resume and background.${personalizationContext}
+
+CRITICAL PERSONALIZATION REQUIREMENTS:
+- Reference their actual experience, certifications, or specific skills from their resume
+- Use their name naturally (${profileName ? profileName : 'if provided'})
+- Connect the question to their background while still testing general firefighter competencies
+- Make it feel like the panel researched their resume and is asking a tailored question
+- Example: If they have EMR certification, ask about a medical scenario. If they have construction experience, reference that in a safety question.
+
+However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
       } else if (selectedCategory === "City & Department Specific") {
-        questionStrategy = `Generate a question SPECIFICALLY about the city and department the candidate is applying to. Use the city research and department information to create questions that reference:
-- The specific department name and its history
-- City-specific challenges, demographics, or initiatives
-- The fire chief's name or department leadership
-- Local union information or department structure
-- City planning or emergency services initiatives
-Make the question feel personalized to THIS specific department and city while still testing general firefighter competencies. Examples: "Working for the ${profileDepartmentName || '[Department Name]'} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..." or "Given the challenges in ${profileCity || '[City]'}, how would you handle...".`;
+        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) SPECIFICALLY personalized to the city and department this candidate is applying to.${personalizationContext}
+
+CRITICAL PERSONALIZATION REQUIREMENTS:
+- Reference the specific department name "${profileDepartmentName || '[Department Name]'}" naturally
+- Use city-specific information from the research (fire chief's name, department history, local challenges, union info, city planning)
+- Address the candidate by name (${profileName ? profileName : 'if provided'}) when appropriate
+- Make it feel like a real panel member who knows this department well is asking
+- Examples: "Working for the ${profileDepartmentName || '[Department Name]'} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..." or "Given the challenges in ${profileCity || '[City]'}, how would you handle..."
+
+Use the city research data to incorporate authentic, specific details that make the question feel personalized to THIS exact department and city while still testing general firefighter competencies.`;
       } else {
-        questionStrategy = `Generate a question focused on the category: "${selectedCategory}". Make it relevant to this specific area while still being a general situational question.`;
+        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) focused on the category: "${selectedCategory}".${personalizationContext}
+
+CRITICAL PERSONALIZATION REQUIREMENTS:
+- Personalize it using the candidate's profile information above
+- Reference their name (${profileName ? profileName : 'if provided'}), department, city, or resume when relevant
+- Make it feel tailored to this specific candidate while still testing the "${selectedCategory}" competency area
+- Make it relevant to this specific area while still being a general situational question that tests judgment.`;
       }
     } else if (practiceMode === "simulation") {
-      questionStrategy = `Generate a RANDOM question from any category. Vary the topics to simulate a real interview where questions come from different areas. Mix general questions with occasional resume-based questions (about 20% resume-based, 80% general) if a resume is provided.`;
+      questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) for an interview simulation.${personalizationContext}
+
+CRITICAL PERSONALIZATION REQUIREMENTS:
+- HEAVILY personalize this question using ALL available profile information
+- Use the candidate's name (${profileName ? profileName : 'if provided'}) naturally in about 30-40% of questions
+- Reference their department "${profileDepartmentName || '[if provided]'}" when relevant
+- Reference their city "${profileCity || '[if provided]'}" and use city research details when appropriate
+- Reference their resume background (experience, certifications, skills) naturally when it fits
+- Make it feel like a real panel member who has reviewed their application is asking
+
+${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format asking about past experience.' : 'Use "How would you handle..." format asking about a hypothetical situation.'} 
+
+Vary the topics to simulate a real interview where questions come from different areas. Mix personalized questions (about 60-70% personalized to their profile, 30-40% general) if profile information is available.`;
     } else {
-      questionStrategy = `Generate a question mixing general firefighter competencies with occasional resume references (about 20% resume-based, 80% general) if a resume is provided.`;
+      questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) mixing general firefighter competencies with heavy personalization.${personalizationContext}
+
+CRITICAL PERSONALIZATION REQUIREMENTS:
+- Use ALL available profile information to personalize this question
+- Reference their name, department, city, and resume naturally
+- Make it feel tailored to this specific candidate
+- About 60-70% personalized to their profile, 30-40% general if profile information is available.`;
+    }
+    
+    // Add question bank reference as inspiration if available
+    let bankReferenceText = "";
+    if (questionBankReference) {
+      bankReferenceText = `\n\nQUESTION BANK REFERENCE (use as inspiration, but create a NEW, PERSONALIZED question):
+- Type: ${questionBankReference.type}
+- Difficulty: ${questionBankReference.difficulty}
+- Category: ${questionBankReference.category}
+- Example question style: "${questionBankReference.question}"
+
+IMPORTANT: Do NOT copy this question. Use it as inspiration for the TYPE and STYLE of question, but create a completely new, personalized question that incorporates the candidate's profile information above.`;
     }
 
     const response = await openai.chat.completions.create({

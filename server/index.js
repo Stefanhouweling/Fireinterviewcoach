@@ -287,7 +287,7 @@ CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or
 
 Keep the response concise and easy to skim. Avoid long paragraphs. Use short sentences and compact sections.
 
-STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and **bold labels**, NOT star symbols):
+STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bold labels with double asterisks, NOT star symbols):
 
 ## Answer Summary & Score
 - **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]  
@@ -322,8 +322,8 @@ If this is a HYPOTHETICAL (future) question, DO NOT use STAR. Instead, describe 
 - Keep language natural, plain, and realistic for a firefighter candidate.]
 
 Rules:
-- Use markdown bullets (`-`) with **bold labels**, e.g., `- **Positive 1:** ...`.
-- Do NOT use star symbols (★) or plain asterisks for formatting.
+- Use markdown bullets (dash) with bold labels, e.g., "- **Positive 1:** ...".
+- Do NOT use star symbols or plain asterisks for formatting.
 - Keep each bullet to 1–2 short sentences.
 - Avoid walls of text – this should feel light, skimmable, and coach-like.
 - Be encouraging but very specific and honest about what needs to improve.`

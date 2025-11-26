@@ -3717,6 +3717,12 @@ Return ONLY the category and question.`
     const modalContent = document.getElementById("aiModalContent");
     if (!modalContent) return;
     
+    // Helper function to convert markdown bold (**text**) to HTML bold
+    function convertMarkdownBold(str) {
+      // Replace **text** with <strong>text</strong>
+      return str.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    }
+    
     // Parse markdown-style formatting
     const lines = text.split("\n");
     let html = "";
@@ -3727,20 +3733,20 @@ Return ONLY the category and question.`
       // Main sections (##)
       if (trimmed.startsWith("## ")) {
         const sectionTitle = trimmed.substring(3);
-        html += `<h4>${sectionTitle}</h4>`;
+        html += `<h4>${convertMarkdownBold(sectionTitle)}</h4>`;
       }
       // Bullet points
       else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         const content = trimmed.substring(2);
-        html += `<div class="bullet-point">• ${content}</div>`;
+        html += `<div class="bullet-point">• ${convertMarkdownBold(content)}</div>`;
       }
       // Regular paragraphs
       else if (trimmed.length > 0) {
         // Check if it's a score line
         if (trimmed.match(/^\d+\/10/)) {
-          html += `<div class="score-highlight">${trimmed}</div>`;
+          html += `<div class="score-highlight">${convertMarkdownBold(trimmed)}</div>`;
         } else {
-          html += `<div>${trimmed}</div>`;
+          html += `<div>${convertMarkdownBold(trimmed)}</div>`;
         }
       }
       // Empty lines

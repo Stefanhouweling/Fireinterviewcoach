@@ -2806,11 +2806,8 @@ Return ONLY the category and question.`
 
         if (response.ok) {
           console.log("[ANALYSIS] API response received successfully");
-          // Complete progress bar
-          if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+          // Complete progress bar in modal
           clearInterval(modalProgressInterval);
-          if (progressBar) progressBar.style.width = "100%";
-          if (progressPercent) progressPercent.textContent = "100%";
           if (modalProgressBar) modalProgressBar.style.width = "100%";
           if (modalProgressPercent) modalProgressPercent.textContent = "100%";
           console.log("[PROGRESS] Progress bar completed to 100%");
@@ -2820,32 +2817,35 @@ Return ONLY the category and question.`
           console.log("[ANALYSIS] AI feedback received, length:", aiFeedback ? aiFeedback.length : 0);
           
           if (aiFeedback) {
-            console.log("[FEEDBACK] Formatting AI feedback for display...");
-            formatAIFeedback(fireTipsEl, aiFeedback, true);
+            console.log("[FEEDBACK] Formatting AI feedback for modal display...");
+            // Update modal content directly with formatted feedback
             formatAIFeedbackForModal(aiFeedback);
             console.log("[FEEDBACK] Feedback formatted and displayed in modal");
             
+            // Hide the "View Detailed AI Feedback" button - not needed anymore
             const viewBtn = document.getElementById("viewAIFeedbackBtn");
             if (viewBtn) {
-              viewBtn.style.display = "block";
-              console.log("[FEEDBACK] View feedback button shown");
+              viewBtn.style.display = "none";
+              console.log("[FEEDBACK] View feedback button hidden (not needed)");
             }
             
             addFollowupButton();
             console.log("[FEEDBACK] Followup button added");
             
-            // Modal is already open, content has been updated by formatAIFeedbackForModal
-            console.log("[MODAL] Modal should now show full AI feedback");
+            // Modal is already open and showing full feedback
+            console.log("[MODAL] Modal now shows full AI feedback");
           } else {
             console.warn("[ANALYSIS] No feedback in response:", data);
+            // Show error in modal
+            if (modalContent) {
+              modalContent.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: #fca5a5;">
+                  <div style="font-size: 1.2rem; margin-bottom: 10px;">⚠️ No Feedback Received</div>
+                  <div style="font-size: 0.9rem; color: #94a3b8;">The analysis completed but no feedback was returned. Please try again.</div>
+                </div>
+              `;
+            }
           }
-          
-          // Hide progress bar after a short delay
-          setTimeout(() => {
-            if (progressContainer) progressContainer.style.display = "none";
-            if (progressBar) progressBar.style.width = "0%";
-            if (progressPercent) progressPercent.textContent = "0%";
-          }, 500);
         } else {
           console.error("[API] Backend error response:", response.status, response.statusText);
           if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
@@ -2859,11 +2859,9 @@ Return ONLY the category and question.`
         if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
         clearInterval(modalProgressInterval);
         console.error("[ERROR] Backend analysis error:", err);
-        if (progressContainer) progressContainer.style.display = "none";
-        if (progressBar) progressBar.style.width = "0%";
-        if (progressPercent) progressPercent.textContent = "0%";
         
-        // Show error in modal
+        // Show error in modal (modal is already open)
+        const modalContent = document.getElementById("aiModalContent");
         if (modalContent) {
           modalContent.innerHTML = `
             <div style="text-align: center; padding: 40px 20px; color: #fca5a5;">

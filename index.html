@@ -959,7 +959,7 @@
           </div>
           <div class="question-controls">
             <button id="nextQuestionBtn" type="button">
-              <!-- Text loaded from config.js -->
+              🎤 Next Question
             </button>
             <button id="repeatQuestionBtn" class="secondary" type="button">
               🔁 Repeat
@@ -1024,6 +1024,10 @@
             <span id="micStatusText"><!-- Loaded from config.js --></span>
           </div>
         </div>
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">
+          After each question is read aloud, recording will start automatically. Just begin speaking, then click
+          <strong>Finish Answering Question</strong> when you’re done.
+        </p>
         <div class="transcript" id="transcriptBox">
           Your live transcript will show here if your browser supports speech recognition. You can also type edits manually.
         </div>
@@ -1947,6 +1951,8 @@
           
           renderQuestion(currentQuestion);
           speakQuestionWithCaptions(currentQuestion.template);
+          // Auto-start recording based on the user's Next Question click (browser-friendly)
+          startAnswerRecording(true);
         }
     } catch (err) {
       console.error("Question generation error:", err);
@@ -1955,6 +1961,8 @@
       questionCount++;
       renderQuestion(currentQuestion);
       speakQuestionWithCaptions(currentQuestion.template);
+      // Auto-start recording even when we fall back to a static question
+      startAnswerRecording(true);
     } finally {
       nextQuestionBtn.disabled = false;
       nextQuestionBtn.textContent = APP_CONFIG ? APP_CONFIG.buttons.nextQuestion : "🎤 Next Question";
@@ -2665,9 +2673,10 @@ Return ONLY the category and question.`
     transcriptBox.contentEditable = "true";
   }
 
-  startAnswerBtn.addEventListener("click", () => {
+  // Helper to start answer recording, used by both the button and auto-start from Next Question
+  function startAnswerRecording(fromAuto = false) {
     if (!recognition) {
-      transcriptBox.focus();
+      if (transcriptBox) transcriptBox.focus();
       return;
     }
     if (recognizing) return;
@@ -2675,17 +2684,36 @@ Return ONLY the category and question.`
     // Reset transcript tracking
     lastAnswerTranscript = "";
     liveTranscriptText = "";
-    transcriptBox.textContent = "";
+    if (transcriptBox) transcriptBox.textContent = "";
     motionSamples = [];
     
     // Reset recognition results
     if (recognition.abort) {
-      recognition.abort();
+      try {
+        recognition.abort();
+      } catch (e) {
+        console.warn("Error aborting recognition before restart:", e);
+      }
     }
     
-    recognition.start();
-    startAnswerBtn.disabled = true;
-    stopAnswerBtn.disabled = false;
+    recognizing = true;
+    try {
+      recognition.start();
+      if (startAnswerBtn) startAnswerBtn.disabled = true;
+      if (stopAnswerBtn) stopAnswerBtn.disabled = false;
+      if (fromAuto && micStatusText) {
+        micStatusText.textContent = "Listening… wait for the question to finish, then answer in your own words.";
+      }
+    } catch (e) {
+      console.error("Failed to start recognition:", e);
+      recognizing = false;
+      if (startAnswerBtn) startAnswerBtn.disabled = false;
+      if (stopAnswerBtn) stopAnswerBtn.disabled = true;
+    }
+  }
+
+  startAnswerBtn.addEventListener("click", () => {
+    startAnswerRecording(false);
   });
 
   stopAnswerBtn.addEventListener("click", () => {

@@ -1972,20 +1972,6 @@
     }
     
     // Always use backend - no local fallback needed
-    // This code path should not be reached
-    return questionBank[questionCount % questionBank.length];
-      if (!resumeKeywords.length) {
-        return questionBank[questionCount % questionBank.length];
-      }
-      const resumeWords = new Set(resumeKeywords.map((k) => k.word.toLowerCase()));
-      const scored = questionBank.map((q) => {
-        const overlap = q.tags.filter((t) => resumeWords.has(t.toLowerCase())).length;
-        return { q, score: overlap + Math.random() * 0.1 };
-      });
-      scored.sort((a, b) => b.score - a.score);
-      return scored[0].q;
-    }
-
     try {
       const resumeContext = resumeAnalysis 
         ? `Resume Analysis: ${JSON.stringify(resumeAnalysis)}`

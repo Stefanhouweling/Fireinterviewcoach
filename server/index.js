@@ -630,9 +630,14 @@ function searchLocationDatabase(query, type, country, stateProvince) {
     results = filteredStates
       .filter(state => {
         const stateName = (state.name || '').toLowerCase();
-        // Only include if it actually contains the query
-        if (!stateName.includes(queryLower)) {
+        // Strict check: must actually contain the query string
+        const contains = stateName.includes(queryLower);
+        if (!contains) {
           return false;
+        }
+        // Debug: log matches
+        if (queryLower === 'br') {
+          console.log(`  Checking "${stateName}" for "br": ${contains ? 'MATCH' : 'NO MATCH'}`);
         }
         return true;
       })
@@ -644,6 +649,9 @@ function searchLocationDatabase(query, type, country, stateProvince) {
           relevance = 1; // Highest priority: starts with query
         } else if (stateLower.includes(queryLower)) {
           relevance = 2; // Medium priority: contains query
+        } else {
+          // This shouldn't happen due to filter, but just in case
+          return null;
         }
         
         // Get country name
@@ -662,6 +670,7 @@ function searchLocationDatabase(query, type, country, stateProvince) {
           relevance: relevance
         };
       })
+      .filter(item => item !== null) // Remove any null items
       .sort((a, b) => {
         if (a.relevance !== b.relevance) {
           return a.relevance - b.relevance;
@@ -895,6 +904,9 @@ app.post('/api/search-location', async (req, res) => {
     if (countriesData && statesData && citiesData) {
       searchResults = searchLocationDatabase(query, type, country, stateProvince);
       console.log(`✓ Database search: ${searchResults.length} results for "${query}" (${type})`);
+      if (searchResults.length > 0) {
+        console.log(`  First result: ${searchResults[0].name}`);
+      }
     } else {
       // Fallback to static lists if database not loaded yet
       console.log(`⚠ Database not loaded, using static lists for "${query}" (${type})`);
@@ -903,6 +915,9 @@ app.post('/api/search-location', async (req, res) => {
         searchResults = searchResults.filter(item => 
           item.stateProvince && item.stateProvince.toLowerCase() === stateProvince.toLowerCase()
         );
+      }
+      if (searchResults.length > 0) {
+        console.log(`  Static list first result: ${searchResults[0].name}`);
       }
     }
     

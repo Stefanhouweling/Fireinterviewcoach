@@ -761,13 +761,6 @@
       style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(148, 163, 184, 0.3);background:#1e293b;color:#fff;font-size:0.9rem;">
   </div>
   
-  <div style="margin-bottom: 12px;">
-    <label style="display:block;margin-bottom:4px;font-size:0.85rem;color:#cbd5e1;font-weight:500;">ElevenLabs API Key (for natural voice - optional but recommended)</label>
-    <input type="password" id="elevenLabsKeyInput"
-      placeholder="Your ElevenLabs API key..."
-      style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(148, 163, 184, 0.3);background:#1e293b;color:#fff;font-size:0.9rem;">
-    <p style="margin:4px 0 0 0;font-size:0.7rem;color:#9ca3af;">Get your key from <a href="https://elevenlabs.io" target="_blank" style="color:#fbbf24;">elevenlabs.io</a> - provides ChatGPT-like natural voice</p>
-  </div>
   
   <button id="apiKeySaveBtn"
     style="margin-top:8px;padding:10px 16px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;font-weight:600;width:100%;">
@@ -1224,11 +1217,9 @@
   // Use backend by default, allow local keys for development
   let USE_BACKEND = true;  // Set to false to use local API keys
   let OPENAI_KEY = null;
-  let ELEVENLABS_KEY = null;
 
   document.getElementById("apiKeySaveBtn").addEventListener("click", () => {
     const openaiKey = document.getElementById("apiKeyInput").value.trim();
-    const elevenLabsKey = document.getElementById("elevenLabsKeyInput").value.trim();
     const status = document.getElementById("apiKeyStatus");
     const apiKeyBox = document.getElementById("apiKeyBox");
 
@@ -2057,23 +2048,20 @@ Return ONLY the category and question.`
       subtitleEl.style.display = "block";
     }
 
-    // Use ElevenLabs if backend is enabled OR local API key is available (best quality, ChatGPT-like voice)
-    if (USE_BACKEND || ELEVENLABS_KEY) {
-      console.log(USE_BACKEND ? "Using backend ElevenLabs TTS..." : "Using local ElevenLabs TTS...");
+    // Use OpenAI TTS if backend is enabled (high quality, natural voice)
+    if (USE_BACKEND) {
+      console.log("Using backend OpenAI TTS...");
       try {
-        await speakWithElevenLabs(text, subtitleEl);
-        console.log("ElevenLabs TTS completed successfully");
+        await speakWithOpenAITTS(text, subtitleEl);
+        console.log("OpenAI TTS completed successfully");
         return;
       } catch (err) {
-        // Silently fall back to browser TTS - don't spam console with errors
-        if (err.message !== "ELEVENLABS_FREE_TIER_DISABLED") {
-          console.error("ElevenLabs TTS error:", err.message || err);
-        }
+        console.error("OpenAI TTS error:", err.message || err);
         console.log("Falling back to browser TTS");
         // Fall through to browser TTS as fallback
       }
     } else {
-      console.log("No ElevenLabs key and backend not enabled, using browser TTS");
+      console.log("Backend not enabled, using browser TTS");
     }
     
     // Fallback to browser TTS

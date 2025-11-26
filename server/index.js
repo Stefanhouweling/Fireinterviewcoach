@@ -433,8 +433,14 @@ IMPORTANT: This is a NEW, UNRELATED question. Do NOT make it a follow-up to prev
 The question must be highly personalized and feel authentic to this specific candidate's application.
 
 Requirements:
-- Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
+${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !== "City & Department Specific" ? `- CRITICAL: The question MUST be about "${selectedCategory}" category. The category in your response MUST be exactly "${selectedCategory}". Do not use a different category.
+- Stay strictly within the "${selectedCategory}" competency area. Do NOT generate questions about other categories.
+` : practiceMode === "simulation" ? `- Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
 - Keep it broad and applicable to all candidates, not overly specific to their resume
+- Ensure diversity: Cover different topics and areas. If many questions have been asked, explore new categories/topics. Vary between: chain of command, ethics, conflict resolution, safety, teamwork, leadership, decision-making, communication, stress management, equipment, training, etc.
+` : `- Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
+- Keep it broad and applicable to all candidates, not overly specific to their resume
+`}
 - Examples of good questions:
   * "How would you handle a situation if you felt you weren't treated fairly?"
   * "How would you handle a leader where you question their leadership, would you still respect them?"
@@ -442,10 +448,11 @@ Requirements:
   * Resume-based example: "Given your experience with [specific certification/experience from resume], how would you approach a situation where you need to apply that knowledge under pressure?"
 - Test: chain of command, ethics, judgment, decision-making, conflict resolution
 - CRITICAL: The question MUST be completely different from any question already asked (see list above)
-- Ensure diversity: Cover different topics and areas. If many questions have been asked, explore new categories/topics. Vary between: chain of command, ethics, conflict resolution, safety, teamwork, leadership, decision-making, communication, stress management, equipment, training, etc.
-- If resume is provided and mode allows, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates
+${practiceMode === "simulation" ? `- If resume is provided and mode allows, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates
 - Rotate through different question types: hypothetical scenarios, ethical dilemmas, chain of command situations, team dynamics, safety protocols, etc.
+` : ''}
 - Format: "Category: [category]\nQuestion: [question text]"
+${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !== "City & Department Specific" ? `\nCRITICAL: The category in your response MUST be exactly "${selectedCategory}". Do not use a different category name.` : ''}
 
 Return ONLY the category and question in that format.`
         }

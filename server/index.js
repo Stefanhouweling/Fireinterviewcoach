@@ -165,7 +165,9 @@ Make the question feel personalized to THIS specific department and city while s
 
 ${questionStrategy}
 
-${resumeContext}${conversationContext}${diversityContext}${onboardingContext}${nameContext}
+${resumeContext}${diversityContext}${onboardingContext}${nameContext}
+
+IMPORTANT: This is a NEW, UNRELATED question. Do NOT make it a follow-up to previous questions. Generate a completely fresh question from a different topic/angle.
 
 Requirements:
 - Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")

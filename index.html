@@ -1160,6 +1160,59 @@
 </div>
 
 <script>
+  // ========== LOAD CONFIGURATION TEXT ==========
+  // Update all text elements from config.js
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof APP_CONFIG !== 'undefined') {
+      // Update buttons
+      const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+      if (nextQuestionBtn) nextQuestionBtn.textContent = APP_CONFIG.buttons.nextQuestion;
+      
+      const startAnswerBtn = document.getElementById('startAnswerBtn');
+      if (startAnswerBtn) startAnswerBtn.textContent = APP_CONFIG.buttons.answerQuestion;
+      
+      const stopAnswerBtn = document.getElementById('stopAnswerBtn');
+      if (stopAnswerBtn) stopAnswerBtn.textContent = APP_CONFIG.buttons.finishAnswering;
+      
+      const repeatQuestionBtn = document.getElementById('repeatQuestionBtn');
+      if (repeatQuestionBtn) repeatQuestionBtn.textContent = APP_CONFIG.buttons.repeatQuestion;
+      
+      // Update footer
+      const footerCopyright = document.getElementById('footerCopyright');
+      if (footerCopyright) {
+        footerCopyright.textContent = APP_CONFIG.footer.copyright
+          .replace('{year}', APP_CONFIG.copyrightYear)
+          .replace('{company}', APP_CONFIG.companyName);
+      }
+      
+      const footerTermsLink = document.getElementById('footerTermsLink');
+      if (footerTermsLink) footerTermsLink.textContent = APP_CONFIG.footer.termsLink;
+      
+      const footerPrivacyLink = document.getElementById('footerPrivacyLink');
+      if (footerPrivacyLink) footerPrivacyLink.textContent = APP_CONFIG.footer.privacyLink;
+      
+      const footerDisclaimer = document.getElementById('footerDisclaimer');
+      if (footerDisclaimer) {
+        footerDisclaimer.textContent = APP_CONFIG.footer.disclaimer
+          .replace('{appName}', APP_CONFIG.appName);
+      }
+      
+      // Update modal titles
+      const aiModalTitle = document.querySelector('.ai-modal-header h3');
+      if (aiModalTitle) aiModalTitle.textContent = APP_CONFIG.modals.aiFeedback;
+      
+      // Update status text
+      const micStatusText = document.getElementById('micStatusText');
+      if (micStatusText) micStatusText.textContent = APP_CONFIG.status.micIdle;
+      
+      // Update question instruction text
+      const questionTextEl = document.getElementById('questionText');
+      if (questionTextEl && questionTextEl.textContent.includes('Click')) {
+        questionTextEl.innerHTML = APP_CONFIG.instructions.getStarted;
+      }
+    }
+  });
+
   // ========== TERMS & PRIVACY ACCEPTANCE ==========
   const termsModal = document.getElementById("termsModal");
   const acceptTermsCheckbox = document.getElementById("acceptTerms");

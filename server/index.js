@@ -626,6 +626,7 @@ app.post('/api/search-location', async (req, res) => {
       const data = await response.json();
     
     // Transform Nominatim results to our format
+    const queryLower = query.toLowerCase();
     const suggestions = data.map(item => {
       const address = item.address || {};
       
@@ -638,36 +639,64 @@ app.post('/api/search-location', async (req, res) => {
           name: cityName,
           stateProvince: stateProvince,
           country: countryName,
-          fullLocation: [cityName, stateProvince, countryName].filter(Boolean).join(', ')
+          fullLocation: [cityName, stateProvince, countryName].filter(Boolean).join(', '),
+          relevance: cityName.toLowerCase().startsWith(queryLower) ? 1 : (cityName.toLowerCase().includes(queryLower) ? 2 : 3)
         };
       } else {
         // type === 'state'
         const stateName = address.state || address.province || address.region || item.display_name.split(',')[0];
         const countryName = address.country || '';
         
+        // Calculate relevance score (lower is better)
+        const stateLower = stateName.toLowerCase();
+        let relevance = 3; // Default: low relevance
+        if (stateLower.startsWith(queryLower)) {
+          relevance = 1; // Exact start match - highest priority
+        } else if (stateLower.includes(queryLower)) {
+          relevance = 2; // Contains query - medium priority
+        }
+        
         return {
           name: stateName,
           country: countryName,
-          fullLocation: [stateName, countryName].filter(Boolean).join(', ')
+          fullLocation: [stateName, countryName].filter(Boolean).join(', '),
+          relevance: relevance
         };
       }
     }).filter(item => {
       // Filter by country if specified
       if (country && item.country) {
-        return item.country.toLowerCase().includes(country.toLowerCase()) || 
-               country.toLowerCase().includes(item.country.toLowerCase());
+        const countryMatch = item.country.toLowerCase().includes(country.toLowerCase()) || 
+                            country.toLowerCase().includes(item.country.toLowerCase());
+        if (!countryMatch) return false;
       }
+      
+      // Filter out results that don't match the query at all
+      const nameLower = item.name.toLowerCase();
+      if (!nameLower.includes(queryLower)) {
+        return false;
+      }
+      
       return true;
+    }).sort((a, b) => {
+      // Sort by relevance (lower number = more relevant)
+      if (a.relevance !== b.relevance) {
+        return a.relevance - b.relevance;
+      }
+      // If same relevance, sort alphabetically
+      return a.name.localeCompare(b.name);
     });
 
-    // Remove duplicates based on name and country
+    // Remove duplicates based on name and country, and remove relevance score before returning
     const uniqueSuggestions = [];
     const seen = new Set();
     for (const suggestion of suggestions) {
       const key = `${suggestion.name}|${suggestion.country}`;
       if (!seen.has(key)) {
         seen.add(key);
-        uniqueSuggestions.push(suggestion);
+        // Remove relevance score before adding (it's only for sorting)
+        const { relevance, ...cleanSuggestion } = suggestion;
+        uniqueSuggestions.push(cleanSuggestion);
       }
     }
 

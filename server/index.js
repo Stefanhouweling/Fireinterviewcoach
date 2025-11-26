@@ -519,12 +519,15 @@ ${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !=
 `}
 - Examples of good questions:
 ${selectedCategory === "City & Department Specific" ? `  * KNOWLEDGE QUESTIONS (REQUIRED for this category - use city research data):
-    * "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?"
-    * "What is the local union number for ${profileDepartmentName || 'the fire department'} in ${profileCity || 'this city'}?"
-    * "How many members does ${profileDepartmentName || 'the department'} currently have?"
-    * "Who is the mayor of ${profileCity || 'this city'}?"
-    * "When was ${profileDepartmentName || 'this department'} first established as a career department?"
-    * "What community programs does ${profileDepartmentName || 'this department'} participate in?"
+    * Leadership: "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?" "Who are the deputy chiefs?"
+    * Union: "What is the local union number for ${profileDepartmentName || 'the fire department'}?" "Who is the union president?"
+    * Department Size: "How many members does ${profileDepartmentName || 'the department'} have?" "How many fire stations does ${profileDepartmentName || 'the department'} operate?"
+    * City Leadership: "Who is the mayor of ${profileCity || 'this city'}?" "What are the mayor's priorities for emergency services?"
+    * History: "When was ${profileDepartmentName || 'this department'} established?" "What significant milestones has ${profileDepartmentName || 'this department'} achieved?"
+    * Programs: "What community programs does ${profileDepartmentName || 'this department'} participate in?" "What fire prevention programs does ${profileDepartmentName || 'this department'} offer?"
+    * City Context: "What are the main industries in ${profileCity || 'this city'}?" "What is the population of ${profileCity || 'this city'}?"
+    * Equipment: "What specialized equipment does ${profileDepartmentName || 'this department'} have?" "What technical rescue capabilities does ${profileDepartmentName || 'this department'} have?"
+    * Values: "What are the core values of ${profileDepartmentName || 'this department'}?" "What is the mission statement of ${profileDepartmentName || 'this department'}?"
   * FORBIDDEN: "How would you handle..." or "Tell us about a time..." (these are behavioral/situational, NOT knowledge questions)` : `  * Behavioral/Situational questions:
     * "How would you handle a situation if you felt you weren't treated fairly?"
     * "How would you handle a leader where you question their leadership, would you still respect them?"
@@ -994,9 +997,52 @@ If you cannot provide a current, verified fact, return "NOT FOUND".`
       }
     }
     
+    // Format verified facts by category for better organization
+    const formatVerifiedFacts = (facts) => {
+      const categories = {
+        'leadership': [],
+        'union': [],
+        'department_size': [],
+        'city_info': [],
+        'history': [],
+        'programs': [],
+        'equipment': [],
+        'other': []
+      };
+      
+      Object.entries(facts).forEach(([key, value]) => {
+        if (key.includes('chief') || key.includes('mayor') || key.includes('committee')) {
+          categories.leadership.push(`${key}: ${value}`);
+        } else if (key.includes('union')) {
+          categories.union.push(`${key}: ${value}`);
+        } else if (key.includes('number') || key.includes('members') || key.includes('stations') || key.includes('budget')) {
+          categories.department_size.push(`${key}: ${value}`);
+        } else if (key.includes('population') || key.includes('industries')) {
+          categories.city_info.push(`${key}: ${value}`);
+        } else if (key.includes('established') || key.includes('history')) {
+          categories.history.push(`${key}: ${value}`);
+        } else if (key.includes('programs') || key.includes('mission')) {
+          categories.programs.push(`${key}: ${value}`);
+        } else if (key.includes('equipment') || key.includes('capabilities')) {
+          categories.equipment.push(`${key}: ${value}`);
+        } else {
+          categories.other.push(`${key}: ${value}`);
+        }
+      });
+      
+      let formatted = 'VERIFIED FACTS FROM WEB SEARCH (USE THESE - DO NOT USE TRAINING DATA):\n\n';
+      Object.entries(categories).forEach(([cat, items]) => {
+        if (items.length > 0) {
+          const catName = cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+          formatted += `${catName}:\n${items.map(item => `  - ${item}`).join('\n')}\n\n`;
+        }
+      });
+      
+      return formatted.trim();
+    };
+    
     const verifiedFactsText = Object.keys(verifiedFacts).length > 0 
-      ? `VERIFIED FACTS FROM WEB SEARCH (USE THESE - DO NOT USE TRAINING DATA):
-${Object.entries(verifiedFacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+      ? `${formatVerifiedFacts(verifiedFacts)}
 
 CRITICAL: These are the ONLY facts you should use. If a fact is not listed above, state "Information not found" rather than using your training data.`
       : `WARNING: Web search verification failed. You MUST state "Information not found - web search unavailable" for any facts you cannot verify. DO NOT use outdated training data.`;

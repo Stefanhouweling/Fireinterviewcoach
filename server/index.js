@@ -582,7 +582,7 @@ Example format:
   { "name": "California", "country": "United States", "fullLocation": "California, United States" }
 ]
 
-Return ONLY the JSON array, no other text.`;
+Return a JSON object with a "suggestions" key containing the array. Example: {"suggestions": [...]}`;
     } else {
       return res.status(400).json({ error: 'Invalid type. Must be "city" or "state"' });
     }
@@ -592,7 +592,7 @@ Return ONLY the JSON array, no other text.`;
       messages: [
         {
           role: "system",
-          content: "You are a location search assistant. You provide accurate, real-world location names in JSON format. Always return valid JSON arrays."
+          content: "You are a location search assistant. You provide accurate, real-world location names in JSON format. CRITICAL: You must ALWAYS return ONLY a valid JSON array, nothing else. No explanations, no markdown, just the JSON array."
         },
         {
           role: "user",
@@ -600,7 +600,8 @@ Return ONLY the JSON array, no other text.`;
         }
       ],
       temperature: 0.3,
-      max_tokens: 500
+      max_tokens: 500,
+      response_format: { type: "json_object" } // Force JSON response
     });
 
     const content = response.choices[0].message.content.trim();
@@ -608,24 +609,51 @@ Return ONLY the JSON array, no other text.`;
     // Try to parse JSON from the response
     let suggestions = [];
     try {
-      // Remove any markdown code blocks if present
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        suggestions = JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(content);
+      
+      // Handle both formats: direct array or object with suggestions key
+      if (Array.isArray(parsed)) {
+        suggestions = parsed;
+      } else if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
+        suggestions = parsed.suggestions;
       } else {
-        suggestions = JSON.parse(content);
+        // Try to extract array from content if it's wrapped in text
+        const jsonMatch = content.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          suggestions = JSON.parse(jsonMatch[0]);
+        } else {
+          console.warn('Unexpected response format:', parsed);
+          suggestions = [];
+        }
+      }
+      
+      // Validate suggestions format
+      if (!Array.isArray(suggestions)) {
+        console.warn('Suggestions is not an array, attempting to fix...');
+        suggestions = [];
       }
     } catch (e) {
       console.error('Failed to parse location suggestions:', e);
       console.error('Response content:', content);
-      // Fallback: try to extract city/state names from text
-      suggestions = [];
+      // Fallback: try to extract array from content
+      try {
+        const jsonMatch = content.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          suggestions = JSON.parse(jsonMatch[0]);
+        }
+      } catch (e2) {
+        console.error('Fallback parsing also failed:', e2);
+        suggestions = [];
+      }
     }
 
+    console.log(`Returning ${suggestions.length} suggestions for ${type} query: "${query}"`);
     res.json({ suggestions: suggestions.slice(0, 8) });
   } catch (error) {
     console.error('Error searching location:', error);
-    res.status(500).json({ error: 'Failed to search location', message: error.message });
+    console.error('Error stack:', error.stack);
+    // Return empty suggestions instead of error to prevent UI breakage
+    res.json({ suggestions: [], error: error.message });
   }
 });
 

@@ -1552,6 +1552,8 @@
           });
           
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error('City search API error:', response.status, errorText);
             throw new Error(`Search failed: ${response.status}`);
           }
           
@@ -1559,7 +1561,12 @@
           const suggestions = data.suggestions || [];
           
           if (suggestions.length === 0) {
-            citySuggestions.innerHTML = '<div class="suggestion-loading">No cities found</div>';
+            if (data.error) {
+              console.error('Backend error:', data.error);
+              citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Try typing manually.</div>';
+            } else {
+              citySuggestions.innerHTML = '<div class="suggestion-loading">No cities found</div>';
+            }
             return;
           }
           
@@ -1594,7 +1601,19 @@
           });
         } catch (error) {
           console.error("City search error:", error);
-          citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+          console.error("Error details:", {
+            message: error.message,
+            stack: error.stack,
+            query: query,
+            country: countrySelect ? countrySelect.value : "none"
+          });
+          
+          // Check if it's a network error
+          if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Cannot connect to server. Check your connection.</div>';
+          } else {
+            citySuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+          }
         }
       }, 300); // 300ms debounce
     });
@@ -1645,6 +1664,8 @@
           });
           
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error('State search API error:', response.status, errorText);
             throw new Error(`Search failed: ${response.status}`);
           }
           
@@ -1652,7 +1673,12 @@
           const suggestions = data.suggestions || [];
           
           if (suggestions.length === 0) {
-            stateSuggestions.innerHTML = '<div class="suggestion-loading">No states/provinces found</div>';
+            if (data.error) {
+              console.error('Backend error:', data.error);
+              stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search unavailable. Try typing manually.</div>';
+            } else {
+              stateSuggestions.innerHTML = '<div class="suggestion-loading">No states/provinces found</div>';
+            }
             return;
           }
           
@@ -1681,7 +1707,19 @@
           });
         } catch (error) {
           console.error("State search error:", error);
-          stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+          console.error("Error details:", {
+            message: error.message,
+            stack: error.stack,
+            query: query,
+            country: countrySelect ? countrySelect.value : "none"
+          });
+          
+          // Check if it's a network error
+          if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Cannot connect to server. Check your connection.</div>';
+          } else {
+            stateSuggestions.innerHTML = '<div class="suggestion-loading" style="color: #ef4444;">Search failed. Try typing manually.</div>';
+          }
         }
       }, 300); // 300ms debounce
     });

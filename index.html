@@ -871,7 +871,96 @@
   </div>
 </div>
 
-<div class="app">
+<!-- Onboarding Modal -->
+<div id="onboardingModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10001; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); overflow-y: auto;">
+  <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 40px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h2 style="color: #ef4444; font-size: 2em; margin-bottom: 10px;">🎯 Let's Get Started</h2>
+      <p style="color: #cbd5e1; font-size: 1.1em;">Help us personalize your interview practice</p>
+    </div>
+    
+    <form id="onboardingForm" style="display: flex; flex-direction: column; gap: 20px;">
+      <!-- Resume Upload (Optional) -->
+      <div>
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+          1. Upload Resume <span style="color: #94a3b8; font-weight: 400;">(Optional)</span>
+        </label>
+        <label class="file-label" style="display: flex; align-items: center; gap: 8px; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+          <span class="icon">📄</span>
+          <span style="flex: 1; color: #cbd5e1;">Upload resume (.txt / PDF)</span>
+          <input type="file" id="onboardingResumeInput" accept=".txt,.pdf,.doc,.docx,.rtf" style="display: none;" />
+        </label>
+        <div id="onboardingResumeStatus" style="margin-top: 8px; font-size: 0.85rem; color: #94a3b8; min-height: 20px;"></div>
+      </div>
+
+      <!-- Location Selection -->
+      <div>
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+          2. What City are you applying to? <span style="color: #ef4444;">*</span>
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Country</label>
+            <select id="onboardingCountry" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer;">
+              <option value="">Select Country</option>
+              <option value="United States">United States</option>
+              <option value="Canada">Canada</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Australia">Australia</option>
+              <option value="New Zealand">New Zealand</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">State/Province</label>
+            <input type="text" id="onboardingStateProvince" placeholder="Enter state/province" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+          </div>
+        </div>
+        <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">City</label>
+          <input type="text" id="onboardingCity" placeholder="Enter city name" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+        </div>
+      </div>
+
+      <!-- Job Type Selection -->
+      <div>
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+          3. What are you applying for? <span style="color: #ef4444;">*</span>
+        </label>
+        <select id="onboardingJobType" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer;">
+          <option value="">Select Position Type</option>
+          <option value="Fire">Fire</option>
+          <option value="Police">Police</option>
+          <option value="Paramedic">Paramedic</option>
+          <option value="First Responder">First Responder</option>
+          <option value="Dispatcher">Dispatcher</option>
+        </select>
+      </div>
+
+      <!-- Department Name -->
+      <div>
+        <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">
+          4. Department Name <span style="color: #ef4444;">*</span>
+        </label>
+        <input type="text" id="onboardingDepartmentName" placeholder="e.g., Abbotsford Fire Department" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">This will be used to personalize your interview questions</p>
+      </div>
+
+      <!-- Submit Button -->
+      <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
+        <button type="submit" id="onboardingSubmitBtn" style="padding: 14px 28px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">
+          Start Practice Session
+        </button>
+      </div>
+      
+      <p style="text-align: center; margin-top: 10px; color: #94a3b8; font-size: 0.85em;">
+        <span style="color: #ef4444;">*</span> Required fields
+      </p>
+    </form>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display: none;">
   <header>
     <div class="title" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
       <!-- Logo Only - Scaled to Fit Banner -->
@@ -1225,6 +1314,12 @@
   // Check if user has already accepted terms
   const termsAccepted = localStorage.getItem("termsAccepted") === "true";
   const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
+  const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+  
+  // Hide main app by default
+  if (mainApp) {
+    mainApp.style.display = "none";
+  }
   
   // Show modal if terms not accepted
   if (!termsAccepted || !privacyAccepted) {
@@ -1232,20 +1327,24 @@
       termsModal.style.display = "flex";
       // Disable all interactions until accepted
       document.body.style.overflow = "hidden";
-      
-      // Disable main content
-      const mainContent = document.querySelector(".container");
-      if (mainContent) {
-        mainContent.style.pointerEvents = "none";
-        mainContent.style.opacity = "0.3";
-        mainContent.style.filter = "blur(2px)";
-      }
       console.log("Terms modal displayed - terms not yet accepted");
     } else {
       console.error("Terms modal element not found!");
     }
+  } else if (!onboardingComplete) {
+    // Terms accepted but onboarding not complete - show onboarding modal
+    const onboardingModal = document.getElementById("onboardingModal");
+    if (onboardingModal) {
+      onboardingModal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+      console.log("Onboarding modal displayed - onboarding not yet complete");
+    }
   } else {
-    console.log("Terms already accepted - modal not shown");
+    // Both terms and onboarding complete - show main app
+    if (mainApp) {
+      mainApp.style.display = "block";
+    }
+    console.log("Terms and onboarding already complete - showing main app");
   }
   
   // Update accept button state
@@ -1279,18 +1378,27 @@
         localStorage.setItem("privacyAccepted", "true");
         localStorage.setItem("termsAcceptedDate", new Date().toISOString());
         
-        // Hide modal and enable page
+        // Hide terms modal
         if (termsModal) {
           termsModal.style.display = "none";
         }
-        document.body.style.overflow = "auto";
         
-        // Enable main content
-        const mainContentEl = document.querySelector(".container");
-        if (mainContentEl) {
-          mainContentEl.style.pointerEvents = "auto";
-          mainContentEl.style.opacity = "1";
-          mainContentEl.style.filter = "none";
+        // Check if onboarding is complete
+        const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+        if (!onboardingComplete) {
+          // Show onboarding modal
+          const onboardingModal = document.getElementById("onboardingModal");
+          if (onboardingModal) {
+            onboardingModal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+          }
+        } else {
+          // Show main app
+          const mainApp = document.getElementById("mainApp");
+          if (mainApp) {
+            mainApp.style.display = "block";
+          }
+          document.body.style.overflow = "auto";
         }
         
         console.log("Terms and Privacy Policy accepted");
@@ -1304,6 +1412,225 @@
       if (e.target === termsModal) {
         // Optionally show a message that they must accept
         alert("You must accept the Terms of Service and Privacy Policy to use Fire Interview Coach.");
+      }
+    });
+  }
+
+  // ========== ONBOARDING MODAL ==========
+  const onboardingModal = document.getElementById("onboardingModal");
+  const onboardingForm = document.getElementById("onboardingForm");
+  const onboardingResumeInput = document.getElementById("onboardingResumeInput");
+  const onboardingResumeStatus = document.getElementById("onboardingResumeStatus");
+  const mainApp = document.getElementById("mainApp");
+  
+  // Check if onboarding is already complete
+  const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+  if (onboardingComplete) {
+    // Load saved onboarding data
+    const savedData = localStorage.getItem("onboardingData");
+    if (savedData) {
+      try {
+        onboardingData = JSON.parse(savedData);
+        console.log("Loaded onboarding data:", onboardingData);
+      } catch (e) {
+        console.error("Failed to parse saved onboarding data:", e);
+      }
+    }
+    // Show main app if terms are accepted
+    const termsAccepted = localStorage.getItem("termsAccepted") === "true";
+    const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
+    if (termsAccepted && privacyAccepted && mainApp) {
+      mainApp.style.display = "block";
+      // If resume was loaded during onboarding, display it
+      if (resumeText && resumeText.length > 10 && resumeSummaryEl) {
+        if (resumeAnalysis) {
+          formatResumeSummary(resumeSummaryEl, resumeAnalysis, resumeText);
+        } else {
+          // Re-analyze if we have text but no analysis
+          parseResumeWithAI(resumeText).catch(err => {
+            console.error("Failed to re-analyze resume:", err);
+            resumeSummaryEl.innerHTML = `<div style="color: #94a3b8; font-size: 0.9rem; padding: 20px;">📄 Resume loaded (${resumeText.length} characters). Analysis pending.</div>`;
+          });
+        }
+      }
+    }
+  } else {
+    // Show onboarding modal if terms are accepted but onboarding is not
+    const termsAccepted = localStorage.getItem("termsAccepted") === "true";
+    const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
+    if (termsAccepted && privacyAccepted && onboardingModal) {
+      onboardingModal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+  }
+  
+  // Handle resume upload in onboarding
+  if (onboardingResumeInput) {
+    onboardingResumeInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      onboardingResumeStatus.textContent = "Reading resume file...";
+      onboardingResumeStatus.style.color = "#94a3b8";
+      
+      try {
+        // Check if it's a PDF
+        if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+          if (typeof pdfjsLib === "undefined") {
+            onboardingResumeStatus.textContent = "PDF.js library is loading... Please wait.";
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (typeof pdfjsLib === "undefined") {
+              onboardingResumeStatus.textContent = "PDF.js failed to load. Please refresh.";
+              onboardingResumeStatus.style.color = "#ef4444";
+              return;
+            }
+          }
+          
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          
+          let fullText = "";
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(" ");
+            fullText += pageText + " ";
+          }
+          
+          resumeText = fullText.replace(/\s+/g, " ").trim();
+          
+          if (!resumeText || resumeText.length < 10) {
+            onboardingResumeStatus.textContent = "Could not extract text from PDF. Try a .txt file.";
+            onboardingResumeStatus.style.color = "#ef4444";
+            return;
+          }
+          
+          onboardingResumeStatus.textContent = `✓ Resume loaded (${resumeText.length} characters)`;
+          onboardingResumeStatus.style.color = "#10b981";
+        } else {
+          // Text file
+          const text = await file.text();
+          resumeText = text.replace(/\s+/g, " ").trim();
+          
+          if (!resumeText || resumeText.length < 10) {
+            onboardingResumeStatus.textContent = "Resume file appears to be empty.";
+            onboardingResumeStatus.style.color = "#ef4444";
+            return;
+          }
+          
+          onboardingResumeStatus.textContent = `✓ Resume loaded (${resumeText.length} characters)`;
+          onboardingResumeStatus.style.color = "#10b981";
+        }
+        
+        // Parse resume with AI if we have text
+        if (resumeText && resumeText.length > 10) {
+          onboardingResumeStatus.textContent = "🤖 Analyzing resume with AI...";
+          try {
+            const analysis = await parseResumeWithAI(resumeText);
+            if (analysis) {
+              resumeAnalysis = analysis;
+              onboardingResumeStatus.textContent = `✓ Resume analyzed successfully`;
+            }
+          } catch (e) {
+            console.error("Resume analysis error:", e);
+            onboardingResumeStatus.textContent = `✓ Resume loaded (analysis skipped)`;
+          }
+        }
+      } catch (error) {
+        console.error("Resume upload error:", error);
+        onboardingResumeStatus.textContent = "Error loading resume: " + error.message;
+        onboardingResumeStatus.style.color = "#ef4444";
+      }
+    });
+  }
+  
+  // Handle onboarding form submission
+  if (onboardingForm) {
+    onboardingForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const country = document.getElementById("onboardingCountry").value;
+      const stateProvince = document.getElementById("onboardingStateProvince").value;
+      const city = document.getElementById("onboardingCity").value.trim();
+      const jobType = document.getElementById("onboardingJobType").value;
+      const departmentName = document.getElementById("onboardingDepartmentName").value.trim();
+      
+      // Validate required fields
+      if (!country || !city || !jobType || !departmentName) {
+        alert("Please fill in all required fields (marked with *)");
+        return;
+      }
+      
+      // Save onboarding data
+      onboardingData = {
+        country,
+        stateProvince,
+        city,
+        jobType,
+        departmentName,
+        cityResearch: null // Will be populated by backend
+      };
+      
+      localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
+      localStorage.setItem("onboardingComplete", "true");
+      
+      // Show loading state
+      const submitBtn = document.getElementById("onboardingSubmitBtn");
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Researching city information...";
+      submitBtn.disabled = true;
+      
+      try {
+        // Call backend to research city information
+        const response = await fetch(`${BACKEND_URL}/api/research-city`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            country,
+            stateProvince,
+            city,
+            jobType,
+            departmentName
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Backend error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        onboardingData.cityResearch = data.research;
+        localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
+        
+        console.log("City research completed:", data.research);
+        
+        // Hide onboarding modal and show main app
+        if (onboardingModal) {
+          onboardingModal.style.display = "none";
+        }
+        if (mainApp) {
+          mainApp.style.display = "block";
+        }
+        document.body.style.overflow = "auto";
+        
+        // Resume will be processed by the main app when it loads
+        // The resumeText and resumeAnalysis variables are already set
+      } catch (error) {
+        console.error("City research error:", error);
+        // Still proceed even if research fails
+        if (onboardingModal) {
+          onboardingModal.style.display = "none";
+        }
+        if (mainApp) {
+          mainApp.style.display = "block";
+        }
+        document.body.style.overflow = "auto";
+        alert("Onboarding complete, but city research failed. You can still use the app.");
+      } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
       }
     });
   }
@@ -1497,6 +1824,16 @@
   // API configuration removed - always using backend service
 
   // ========== BASIC DATA & STATE ==========
+  
+  // Onboarding data
+  let onboardingData = {
+    country: "",
+    stateProvince: "",
+    city: "",
+    jobType: "",
+    departmentName: "",
+    cityResearch: null // Will be populated by backend
+  };
 
   const questionBank = [
     {
@@ -1998,7 +2335,8 @@
             askedQuestions: allAskedQuestions,
             askedCategories: askedCategoriesList,
             practiceMode: practiceMode,
-            selectedCategory: selectedCategory
+            selectedCategory: selectedCategory,
+            onboardingData: onboardingData
           })
         });
         

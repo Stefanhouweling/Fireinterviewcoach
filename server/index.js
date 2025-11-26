@@ -25,13 +25,14 @@ app.get('/', (req, res) => {
     service: 'Fire Interview Coach API',
     status: 'running',
     version: '1.0.0',
-    endpoints: {
+      endpoints: {
       health: '/health',
       question: 'POST /api/question',
       followup: 'POST /api/followup',
       analyze: 'POST /api/analyze-answer',
       parseResume: 'POST /api/parse-resume',
-      tts: 'POST /api/tts'
+      tts: 'POST /api/tts',
+      researchCity: 'POST /api/research-city'
     },
     message: 'API is running. Use the endpoints above to interact with the service.'
   });
@@ -45,7 +46,7 @@ app.get('/health', (req, res) => {
 // POST /api/question - Generate a new interview question
 app.post('/api/question', async (req, res) => {
   try {
-    const { resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "" } = req.body;
+    const { resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "", onboardingData = null } = req.body;
 
     // Build comprehensive resume context
     let resumeContext = "";
@@ -99,6 +100,30 @@ ${resumeText}`;
       ? `\n\nCRITICAL - Questions already asked in this session (DO NOT repeat these):\n${askedQuestions.slice(-10).map((q, i) => `${i + 1}. ${q}`).join("\n")}\n\nCategories already covered: ${askedCategories.join(", ") || "None"}\n\nYou MUST generate a completely different question that hasn't been asked yet.${categoryRotationHint}`
       : `\n\nNo questions have been asked yet in this session. Start with any one of the base categories: ${baseCategories.join(", ")}. Make the category explicit.`;
 
+    // Build onboarding context (city, department, job type)
+    let onboardingContext = "";
+    if (onboardingData) {
+      const { city, stateProvince, country, jobType, departmentName, cityResearch } = onboardingData;
+      const locationString = stateProvince 
+        ? `${city}, ${stateProvince}, ${country}`
+        : `${city}, ${country}`;
+      
+      onboardingContext = `\n\nDEPARTMENT & LOCATION CONTEXT (USE THIS TO PERSONALIZE QUESTIONS):
+- Position Type: ${jobType}
+- Department: ${departmentName}
+- Location: ${locationString}`;
+      
+      if (cityResearch) {
+        onboardingContext += `\n\nCity/Department Research:\n${cityResearch}\n\nIMPORTANT: Incorporate specific, accurate information from this research into your questions when relevant. For example:
+- Reference the department name: "Working for the ${departmentName} is a stressful job, tell us about a time..."
+- Reference city-specific challenges or initiatives from the research
+- Reference the fire chief's name or department history when appropriate
+- Make questions feel personalized to this specific department and city while still testing general competencies`;
+      } else {
+        onboardingContext += `\n\nIMPORTANT: When generating questions, incorporate the department name "${departmentName}" and location context naturally. For example: "Working for the ${departmentName} is a stressful job, tell us about a time..." or "Given the challenges in ${city}, how would you handle...". Make questions feel personalized to this specific department while still testing general competencies.`;
+      }
+    }
+
     // Determine question strategy based on mode
     let questionStrategy = "";
     if (practiceMode === "specific" && selectedCategory) {
@@ -122,11 +147,11 @@ ${resumeText}`;
         },
         {
           role: "user",
-          content: `Generate a single firefighter interview question.
+          content: `Generate a single ${onboardingData?.jobType || 'firefighter'} interview question.
 
 ${questionStrategy}
 
-${resumeContext}${conversationContext}${diversityContext}
+${resumeContext}${conversationContext}${diversityContext}${onboardingContext}
 
 Requirements:
 - Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
@@ -427,6 +452,85 @@ app.post('/api/tts', async (req, res) => {
   } catch (error) {
     console.error('Error with OpenAI TTS:', error);
     res.status(500).json({ error: 'TTS failed', message: error.message });
+  }
+});
+
+// POST /api/research-city - Research city-specific information for personalized questions
+app.post('/api/research-city', async (req, res) => {
+  try {
+    const { country, stateProvince, city, jobType, departmentName } = req.body;
+
+    if (!country || !city || !jobType || !departmentName) {
+      return res.status(400).json({ error: 'Missing required fields: country, city, jobType, departmentName' });
+    }
+
+    const locationString = stateProvince 
+      ? `${city}, ${stateProvince}, ${country}`
+      : `${city}, ${country}`;
+
+    console.log(`Researching city information for: ${locationString}, ${jobType}, ${departmentName}`);
+
+    const researchPrompt = `You are a research assistant helping to prepare personalized interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
+
+Research and provide accurate, specific information about this department and city that would be relevant for interview questions. Focus on:
+
+1. Department History & Background:
+   - When was the ${departmentName} first established as a career department?
+   - What is the local union number for this department?
+   - Who is the current fire chief (or equivalent leader) of ${departmentName}?
+   - Any notable history or milestones
+
+2. City/Department Planning:
+   - What is the city's 5-year plan (or strategic plan) related to emergency services?
+   - Any recent major initiatives, expansions, or changes in the department?
+   - Community demographics or unique challenges
+
+3. Department-Specific Information:
+   - Station locations or number of stations
+   - Department size (number of personnel)
+   - Special programs or services offered
+   - Any unique protocols or standards
+
+4. Local Context:
+   - Geographic or environmental factors that affect operations
+   - Community relationships or partnerships
+   - Any recent significant incidents or events
+
+IMPORTANT: 
+- Be accurate and specific. If you cannot find certain information, state "Information not readily available" rather than guessing.
+- Focus on information that would be relevant for interview questions (e.g., "Working for the ${departmentName} is a stressful job, tell us about a time...")
+- Format your response as a structured summary that can be easily incorporated into interview questions.
+
+Provide a comprehensive but concise summary (300-500 words) that covers the most relevant and verifiable information.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a research assistant that provides accurate, specific information about fire departments, police departments, and emergency services. You help gather factual information that can be used to personalize interview questions."
+        },
+        {
+          role: "user",
+          content: researchPrompt
+        }
+      ],
+      temperature: 0.3, // Lower temperature for more factual responses
+      max_tokens: 1000
+    });
+
+    const research = response.choices[0].message.content;
+
+    res.json({
+      success: true,
+      research: research,
+      location: locationString,
+      departmentName: departmentName,
+      jobType: jobType
+    });
+  } catch (error) {
+    console.error('Error researching city:', error);
+    res.status(500).json({ error: 'Failed to research city information', message: error.message });
   }
 });
 

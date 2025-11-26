@@ -578,13 +578,46 @@ Return ONLY the category and question.`
 // POST /api/analyze-answer - Analyze candidate's answer
 app.post('/api/analyze-answer', async (req, res) => {
   try {
-    const { question, answer, motionScore, resumeAnalysis, resumeText, conversationHistory = [] } = req.body;
+    const { question, answer, motionScore, resumeAnalysis, resumeText, conversationHistory = [], cityResearch, category } = req.body;
+
+    // Check if this is a knowledge-testing question (City & Department Specific)
+    const isKnowledgeQuestion = category === "City & Department Specific" ||
+                                question.toLowerCase().match(/^(who is|what is|how many|when was|what are)/) ||
+                                question.toLowerCase().includes('who is the') ||
+                                question.toLowerCase().includes('what is the') ||
+                                question.toLowerCase().includes('how many') ||
+                                question.toLowerCase().includes('when was');
 
     const resumeContext = resumeAnalysis 
       ? `Resume Analysis: ${JSON.stringify(resumeAnalysis)}`
       : resumeText 
         ? `Resume (full): ${resumeText}`
         : "No resume provided";
+    
+    // Build knowledge verification context if this is a knowledge question
+    let knowledgeVerificationContext = "";
+    if (isKnowledgeQuestion && cityResearch) {
+      knowledgeVerificationContext = `\n\nCRITICAL: This is a KNOWLEDGE-TESTING question. You MUST verify the candidate's answer against the research data provided below.
+
+CITY/DEPARTMENT RESEARCH DATA (use this to verify the answer):
+${cityResearch}
+
+VERIFICATION REQUIREMENTS:
+1. Check if the candidate's answer is CORRECT or INCORRECT based on the research data
+2. If incorrect, provide the CORRECT answer from the research data
+3. If partially correct, specify what was correct and what was missing/incorrect
+4. If they missed important details, list what they missed
+5. Provide specific factual corrections, not just general feedback
+
+The feedback MUST include:
+- Whether the answer was correct, incorrect, or partially correct
+- The correct answer (if they got it wrong or missed details)
+- What specific facts they missed (if any)
+- How accurate their knowledge is of the city/department`;
+    } else if (isKnowledgeQuestion && !cityResearch) {
+      // If it's a knowledge question but we don't have research, note this in feedback
+      knowledgeVerificationContext = `\n\nNOTE: This appears to be a knowledge-testing question, but research data is not available to verify the answer. Provide general feedback on the answer's completeness and structure.`;
+    }
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -597,29 +630,46 @@ app.post('/api/analyze-answer', async (req, res) => {
           role: "user",
           content: "You are an expert firefighter interview coach. Your goal is to help candidates develop better answers.\n\n" +
             "Interview Question: " + question + "\n" +
-            "Question Category: General\n\n" +
+            `Question Category: ${category || 'General'}\n\n` +
             "Candidate's Answer:\n" +
             "\"" + String(answer).replace(/"/g, '\\"') + "\"\n\n" +
             "Body Language Score (higher = more movement/fidgeting): " + (motionScore ?? "unknown") + "\n" +
-            resumeContext + "\n\n" +
+            resumeContext + knowledgeVerificationContext + "\n\n" +
+            (isKnowledgeQuestion ? 
+            "CRITICAL: This is a KNOWLEDGE-TESTING question. You MUST:\n" +
+            "1. Verify the candidate's answer against the research data provided\n" +
+            "2. State clearly if the answer was CORRECT, INCORRECT, or PARTIALLY CORRECT\n" +
+            "3. If incorrect or partially correct, provide the CORRECT answer from the research data\n" +
+            "4. List any specific facts they missed\n" +
+            "5. Score based on accuracy: 10/10 = completely correct with all details, lower scores for incorrect or incomplete answers\n\n" :
             "CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or HYPOTHETICAL question (future scenario).\n\n" +
             "- BEHAVIORAL questions: \"Tell me about a time when...\", \"Describe a situation where...\", \"Give me an example of...\"\n" +
             "  → Use STAR method (Situation-Task-Action-Result) for these.\n\n" +
             "- HYPOTHETICAL questions: \"How would you...\", \"What would you do if...\", \"How would you approach...\"\n" +
-            "  → DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.\n\n" +
+            "  → DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.\n\n") +
             "Keep the response concise and easy to skim. Avoid long paragraphs. Use short sentences and compact sections.\n\n" +
             "STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bold labels with double asterisks, NOT star symbols):\n\n" +
             "## Answer Summary & Score\n" +
+            (isKnowledgeQuestion ?
+            "- **Summary:** [1–2 short sentences summarizing what they said, and whether it was correct or incorrect]\n" +
+            "- **Correctness:** [State clearly: CORRECT, INCORRECT, or PARTIALLY CORRECT. If incorrect/partial, provide the correct answer from research data]\n" +
+            "- **Score:** [X/10 – based on accuracy. 10/10 = completely correct with all details, lower for incorrect/incomplete answers]\n" :
             "- **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]\n" +
-            "- **Score:** [X/10 – very short explanation of why, and what would make it a 10/10]\n\n" +
-            "## What You Did Well\n" +
-            "- **Positive 1:** [Short, specific positive point]\n" +
+            "- **Score:** [X/10 – very short explanation of why, and what would make it a 10/10]\n") +
+            "\n\n## What You Did Well\n" +
+            "- **Positive 1:** [Short, specific positive point]" +
+            (isKnowledgeQuestion ? " (e.g., 'Got the fire chief's name correct' or 'Knew the union number')" : "") + "\n" +
             "- **Positive 2:** [Short, specific positive point]\n" +
             "- **Positive 3 (optional):** [Only if there is a clear extra strength]\n\n" +
             "## What To Improve Next\n" +
-            "- **Focus 1:** [Very practical change they can make next time]\n" +
+            "- **Focus 1:** " + (isKnowledgeQuestion ? "[If incorrect: 'The correct answer is [correct answer from research].' If missed details: 'You missed [specific fact].']" : "[Very practical change they can make next time]") + "\n" +
             "- **Focus 2:** [Another clear tweak or addition]\n" +
             "- **Focus 3 (optional):** [Only if it adds real value]\n\n" +
+            (isKnowledgeQuestion ? 
+            "## Correct Answer (from Research Data)\n" +
+            "Provide the complete, correct answer based on the research data:\n" +
+            "- **Correct Answer:** [The full, accurate answer from the research data]\n" +
+            "- **Additional Details:** [Any relevant context or additional facts they should know]\n\n" :
             "## STAR or Approach Overview\n" +
             "If this is a BEHAVIORAL (past) question, use STAR in a very compact way:\n" +
             "- **Situation:** [1 short sentence: how they should set the scene]\n" +
@@ -634,7 +684,7 @@ app.post('/api/analyze-answer', async (req, res) => {
             "Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:\n" +
             "- 1 short opening sentence that orients the panel.\n" +
             "- 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.\n" +
-            "- Keep language natural, plain, and realistic for a firefighter candidate.\n\n" +
+            "- Keep language natural, plain, and realistic for a firefighter candidate.\n\n") +
             "Rules:\n" +
             "- Use markdown bullets (dash) with bold labels using double asterisks, e.g., use dash followed by space and double asterisks for bold.\n" +
             "- Do NOT use star symbols or plain asterisks for formatting.\n" +

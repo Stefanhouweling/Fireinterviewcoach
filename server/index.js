@@ -4,6 +4,8 @@ const cors = require('cors');
 const OpenAI = require('openai');
 // Use node-fetch for external API calls (Nominatim)
 const fetchModule = require('node-fetch');
+// Import question bank
+const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questionBank');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -117,10 +119,21 @@ app.get('/api/user-profile/:sessionId', (req, res) => {
   }
 });
 
+// GET /api/question-stats - Get question bank statistics
+app.get('/api/question-stats', (req, res) => {
+  try {
+    const stats = getQuestionStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Error getting question stats:', error);
+    res.status(500).json({ error: 'Failed to get question stats', message: error.message });
+  }
+});
+
 // POST /api/question - Generate a new interview question
 app.post('/api/question', async (req, res) => {
   try {
-    const { sessionId, resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "", onboardingData = null } = req.body;
+    const { sessionId, resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "", onboardingData = null, questionType = null, difficulty = null, useQuestionBank = true } = req.body;
     
     // Get or create user profile
     let userProfile = null;

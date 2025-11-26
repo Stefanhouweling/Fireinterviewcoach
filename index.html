@@ -2839,7 +2839,10 @@
             askedCategories: askedCategoriesList,
             practiceMode: practiceMode,
             selectedCategory: selectedCategory,
-            onboardingData: onboardingData
+            onboardingData: onboardingData,
+            questionType: document.getElementById('questionTypeSelect')?.value || null,
+            difficulty: document.getElementById('difficultySelect')?.value || null,
+            useQuestionBank: true
           })
         });
         

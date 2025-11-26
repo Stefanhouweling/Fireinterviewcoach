@@ -600,8 +600,7 @@ Return a JSON object with a "suggestions" key containing the array. Example: {"s
         }
       ],
       temperature: 0.3,
-      max_tokens: 500,
-      response_format: { type: "json_object" } // Force JSON response
+      max_tokens: 500
     });
 
     const content = response.choices[0].message.content.trim();

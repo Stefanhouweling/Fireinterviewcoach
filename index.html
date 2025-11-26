@@ -1817,34 +1817,56 @@
   }
 
   async function parseResumeWithAI(text) {
-    // Use backend if enabled
     // Always use backend
-    {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/parse-resume`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ resumeText: text })
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          resumeAnalysis = data.analysis;
-          formatResumeSummary(resumeSummaryEl, resumeAnalysis, resumeText);
-          return;
-        } else {
-          throw new Error(`Backend error: ${response.status}`);
-        }
-      } catch (err) {
-        console.error("Backend resume parsing error:", err);
-        // Fall through to local
+    try {
+      console.log("[RESUME] Starting resume parsing, text length:", text ? text.length : 0);
+      const response = await fetch(`${BACKEND_URL}/api/parse-resume`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ resumeText: text })
+      });
+      
+      console.log("[RESUME] Backend response status:", response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[RESUME] Received analysis data:", data);
+        resumeAnalysis = data.analysis;
+        formatResumeSummary(resumeSummaryEl, resumeAnalysis, resumeText);
+        return;
+      } else {
+        const errorText = await response.text();
+        console.error("[RESUME] Backend error response:", response.status, errorText);
+        throw new Error(`Backend error: ${response.status} - ${errorText}`);
       }
+    } catch (err) {
+      console.error("[RESUME] Resume parsing error:", err);
+      console.error("[RESUME] Error details:", {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      });
+      
+      // Show user-friendly error message
+      if (resumeSummaryEl) {
+        resumeSummaryEl.innerHTML = `
+          <div style="color: #fca5a5; padding: 16px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);">
+            <div style="font-weight: 600; margin-bottom: 8px;">⚠️ Resume Analysis Failed</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1;">
+              ${err.message || "Unable to analyze resume. Please check your connection and try again."}
+            </div>
+            <div style="margin-top: 12px; font-size: 0.85rem; color: #94a3b8;">
+              You can still use the app - questions will be generated without resume context.
+            </div>
+          </div>
+        `;
+      }
+      
+      // Fallback: show raw resume text
+      formatResumeSummary(resumeSummaryEl, null, resumeText);
     }
-    
-    // Always use backend - no local mode
-    formatResumeSummary(resumeSummaryEl, null, resumeText);
   }
 
   function extractResumeKeywords(text) {

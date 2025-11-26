@@ -1061,16 +1061,21 @@
       return;
     }
     
-    // Save keys
-    OPENAI_KEY = openaiKey || null;
-    ELEVENLABS_KEY = elevenLabsKey || null;
+    // Save keys (trim to remove any whitespace)
+    OPENAI_KEY = openaiKey ? openaiKey.trim() : null;
+    ELEVENLABS_KEY = elevenLabsKey ? elevenLabsKey.trim() : null;
     
     // Debug logging
     const keysStatus = {
-      openai: OPENAI_KEY ? "✓ Set" : "✗ Not set",
-      elevenlabs: ELEVENLABS_KEY ? "✓ Set" : "✗ Not set"
+      openai: OPENAI_KEY ? `✓ Set (${OPENAI_KEY.length} chars)` : "✗ Not set",
+      elevenlabs: ELEVENLABS_KEY ? `✓ Set (${ELEVENLABS_KEY.length} chars)` : "✗ Not set"
     };
     console.log("API Keys saved:", JSON.stringify(keysStatus));
+    
+    // Additional debug for ElevenLabs key
+    if (ELEVENLABS_KEY) {
+      console.log("ElevenLabs key preview:", ELEVENLABS_KEY.substring(0, 8) + "..." + ELEVENLABS_KEY.substring(ELEVENLABS_KEY.length - 4));
+    }
     
     const savedKeys = [];
     if (OPENAI_KEY) savedKeys.push("OpenAI");
@@ -1790,13 +1795,21 @@ Return ONLY the category and question.`
     // You can change this to any ElevenLabs voice ID you prefer
     const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel - natural, conversational female voice
     
+    // Validate API key
+    if (!ELEVENLABS_KEY || ELEVENLABS_KEY.trim() === "") {
+      throw new Error("ElevenLabs API key is not set");
+    }
+    
+    console.log("ElevenLabs API key length:", ELEVENLABS_KEY.length);
+    console.log("ElevenLabs API key starts with:", ELEVENLABS_KEY.substring(0, 4) + "...");
+    
     try {
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
         method: "POST",
         headers: {
           "Accept": "audio/mpeg",
           "Content-Type": "application/json",
-          "xi-api-key": ELEVENLABS_KEY
+          "xi-api-key": ELEVENLABS_KEY.trim()
         },
         body: JSON.stringify({
           text: text,
@@ -1817,7 +1830,11 @@ Return ONLY the category and question.`
         try {
           const errorJson = JSON.parse(errorText);
           if (errorJson.detail && errorJson.detail.message) {
-            errorMessage += ` - ${errorJson.detail.message}`;
+            errorMessage = errorJson.detail.message;
+            // Provide helpful guidance for common errors
+            if (errorJson.detail.status === "invalid_api_key") {
+              errorMessage += " - Please check that your API key is correct and try saving it again.";
+            }
           } else {
             errorMessage += ` - ${errorText}`;
           }

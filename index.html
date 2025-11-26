@@ -1706,13 +1706,9 @@
         renderResumeTags();
         
         // AI-powered resume analysis
-        if (USE_BACKEND || OPENAI_KEY) {
-          resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
-          await parseResumeWithAI(resumeText);
-        } else {
-          // Show basic summary if no AI available
-          formatResumeSummary(resumeSummaryEl, null, resumeText);
-        }
+        // Always use backend for AI analysis
+        resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
+        await parseResumeWithAI(resumeText);
       } catch (err) {
         console.error("PDF parsing error:", err);
         resumeSummaryEl.textContent =
@@ -1735,13 +1731,9 @@
         renderResumeTags();
         
         // AI-powered resume analysis
-        if (USE_BACKEND || OPENAI_KEY) {
-          resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
-          await parseResumeWithAI(resumeText);
-        } else {
-          // Show basic summary if no AI available
-          formatResumeSummary(resumeSummaryEl, null, resumeText);
-        }
+        // Always use backend for AI analysis
+        resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
+        await parseResumeWithAI(resumeText);
       };
 
       reader.readAsText(file);
@@ -1835,19 +1827,8 @@
       }
     }
     
-    // Local mode
-    if (!OPENAI_KEY) {
-      formatResumeSummary(resumeSummaryEl, null, resumeText);
-      return;
-    }
-    
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + "REMOVED" // Always use backend instead
-        },
+    // Always use backend - no local mode
+    formatResumeSummary(resumeSummaryEl, null, resumeText);
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: [
@@ -2053,9 +2034,9 @@ Return a JSON object with this structure:
       }
     }
     
-    // Generate initial question based on resume (local mode or fallback)
-    if (!OPENAI_KEY) {
-      // Fallback to static questions
+    // Always use backend - no local fallback needed
+    // This code path should not be reached
+    return questionBank[questionCount % questionBank.length];
       if (!resumeKeywords.length) {
         return questionBank[questionCount % questionBank.length];
       }
@@ -2261,10 +2242,9 @@ Return ONLY the category and question.`
       }
     }
 
-    // Local mode or fallback
-    if (!OPENAI_KEY) {
-      return questionBank[questionCount % questionBank.length];
-    }
+    // Always use backend - no local fallback
+    // This code path should not be reached
+    return questionBank[questionCount % questionBank.length];
 
     try {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -2355,8 +2335,6 @@ Return ONLY the category and question.`
         console.log("Falling back to browser TTS");
         // Fall through to browser TTS as fallback
       }
-    } else {
-      console.log("Backend not enabled, using browser TTS");
     }
     
     // Fallback to browser TTS

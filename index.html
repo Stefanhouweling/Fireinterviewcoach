@@ -825,6 +825,42 @@
             </button>
           </div>
         </div>
+        
+        <!-- Practice Mode Toggle -->
+        <div style="padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; margin: 12px; border: 1px solid rgba(239, 68, 68, 0.2);">
+          <label style="display: block; margin-bottom: 8px; font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">Practice Mode:</label>
+          <div style="display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
+              <input type="radio" name="practiceMode" id="simulationMode" value="simulation" checked style="margin-right: 6px; accent-color: #ef4444;">
+              <span>🎲 Interview Simulation (Random)</span>
+            </label>
+            <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
+              <input type="radio" name="practiceMode" id="specificMode" value="specific" style="margin-right: 6px; accent-color: #ef4444;">
+              <span>🎯 User-Specific Practice</span>
+            </label>
+          </div>
+          
+          <!-- Category Selector (shown only in User-Specific mode) -->
+          <div id="categorySelector" style="display: none; margin-top: 8px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: #cbd5e1;">Focus Category:</label>
+            <select id="categorySelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; cursor: pointer;">
+              <option value="">All Categories (Mixed)</option>
+              <option value="Chain of Command">Chain of Command</option>
+              <option value="Ethics & Integrity">Ethics & Integrity</option>
+              <option value="Safety & Accountability">Safety & Accountability</option>
+              <option value="Teamwork & Collaboration">Teamwork & Collaboration</option>
+              <option value="Conflict Resolution">Conflict Resolution</option>
+              <option value="Decision Making">Decision Making</option>
+              <option value="Communication">Communication</option>
+              <option value="Stress Management">Stress Management</option>
+              <option value="Leadership">Leadership</option>
+              <option value="Medical / EMR">Medical / EMR</option>
+              <option value="Technical – Fireground">Technical – Fireground</option>
+              <option value="Resume-Based">Resume-Based Questions</option>
+            </select>
+          </div>
+        </div>
+        
         <div class="question-text" id="questionText">
           Click <strong>Next Question</strong> to begin. AI will generate personalized questions based on your resume and conversation history.
         </div>

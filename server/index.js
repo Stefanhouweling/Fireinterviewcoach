@@ -435,6 +435,8 @@ IMPORTANT: Do NOT copy this question. Use it as inspiration for the TYPE and STY
 8. Ensure questions are UNIQUE and cover diverse topics/areas
 9. Vary between behavioral ("Tell us about a time...") and situational ("How would you handle...") questions
 
+CRITICAL EXCEPTION: If the category is "City & Department Specific", you MUST generate KNOWLEDGE-TESTING questions (Who/What/When/How many) about specific facts, NOT behavioral or situational questions. For this category only, ask about factual information like fire chief's name, union number, department size, mayor's name, etc.
+
 CRITICAL: Personalization is KEY. The questions should feel like they were crafted specifically for this candidate after reviewing their complete application package. Use ALL available profile information to create authentic, personalized questions that still test general firefighter competencies.`
         },
         {

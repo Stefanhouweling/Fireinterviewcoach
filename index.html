@@ -2292,6 +2292,45 @@
   
   // Voice preference for TTS
   let selectedVoicePreference = null;
+  
+  // Generate or retrieve session ID for user profile
+  function getSessionId() {
+    let sessionId = localStorage.getItem('userSessionId');
+    if (!sessionId) {
+      sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('userSessionId', sessionId);
+    }
+    return sessionId;
+  }
+  
+  // Update user profile on backend
+  async function updateUserProfile() {
+    const sessionId = getSessionId();
+    try {
+      await fetch(`${BACKEND_URL}/api/user-profile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          sessionId: sessionId,
+          name: onboardingData.name,
+          city: onboardingData.city,
+          stateProvince: onboardingData.stateProvince,
+          country: onboardingData.country,
+          departmentName: onboardingData.departmentName,
+          jobType: onboardingData.jobType,
+          voicePreference: onboardingData.voicePreference,
+          resumeText: resumeText || null,
+          resumeAnalysis: resumeAnalysis || null,
+          cityResearch: onboardingData.cityResearch || null
+        })
+      });
+    } catch (error) {
+      console.error('Failed to update user profile:', error);
+      // Non-critical, continue without profile update
+    }
+  }
 
   const questionBank = [
     {
@@ -2785,6 +2824,7 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
+            sessionId: getSessionId(),
             resumeText: resumeText,
             resumeAnalysis: resumeAnalysis,
             history: conversationHistory,

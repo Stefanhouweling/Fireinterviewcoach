@@ -45,10 +45,142 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Fire Interview Coach API is running' });
 });
 
+// POST /api/user-profile - Create or update user profile
+app.post('/api/user-profile', async (req, res) => {
+  try {
+    const { sessionId, name, city, stateProvince, country, departmentName, jobType, voicePreference, resumeText, resumeAnalysis, cityResearch } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+    
+    const profile = updateUserProfile(sessionId, {
+      name: name || null,
+      city: city || null,
+      stateProvince: stateProvince || null,
+      country: country || null,
+      departmentName: departmentName || null,
+      jobType: jobType || null,
+      voicePreference: voicePreference || null,
+      resumeText: resumeText || null,
+      resumeAnalysis: resumeAnalysis || null,
+      cityResearch: cityResearch || null
+    });
+    
+    res.json({ 
+      success: true, 
+      profile: {
+        sessionId: profile.sessionId,
+        name: profile.name,
+        city: profile.city,
+        stateProvince: profile.stateProvince,
+        country: profile.country,
+        departmentName: profile.departmentName,
+        jobType: profile.jobType,
+        voicePreference: profile.voicePreference,
+        hasResume: !!profile.resumeText,
+        hasCityResearch: !!profile.cityResearch,
+        updatedAt: profile.updatedAt
+      }
+    });
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ error: 'Failed to update user profile', message: error.message });
+  }
+});
+
+// GET /api/user-profile/:sessionId - Get user profile
+app.get('/api/user-profile/:sessionId', (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const profile = getUserProfile(sessionId);
+    
+    res.json({
+      sessionId: profile.sessionId,
+      name: profile.name,
+      city: profile.city,
+      stateProvince: profile.stateProvince,
+      country: profile.country,
+      departmentName: profile.departmentName,
+      jobType: profile.jobType,
+      voicePreference: profile.voicePreference,
+      hasResume: !!profile.resumeText,
+      hasCityResearch: !!profile.cityResearch,
+      conversationCount: profile.conversationHistory.length,
+      askedQuestionsCount: profile.askedQuestions.length,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt
+    });
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    res.status(500).json({ error: 'Failed to get user profile', message: error.message });
+  }
+});
+
 // POST /api/question - Generate a new interview question
 app.post('/api/question', async (req, res) => {
   try {
-    const { resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "", onboardingData = null } = req.body;
+    const { sessionId, resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "", onboardingData = null } = req.body;
+    
+    // Get or create user profile
+    let userProfile = null;
+    if (sessionId) {
+      userProfile = getUserProfile(sessionId);
+      
+      // Update profile with latest data if provided
+      if (onboardingData) {
+        updateUserProfile(sessionId, {
+          name: onboardingData.name || userProfile.name,
+          city: onboardingData.city || userProfile.city,
+          stateProvince: onboardingData.stateProvince || userProfile.stateProvince,
+          country: onboardingData.country || userProfile.country,
+          departmentName: onboardingData.departmentName || userProfile.departmentName,
+          jobType: onboardingData.jobType || userProfile.jobType,
+          voicePreference: onboardingData.voicePreference || userProfile.voicePreference,
+          cityResearch: onboardingData.cityResearch || userProfile.cityResearch
+        });
+        userProfile = getUserProfile(sessionId); // Refresh
+      }
+      
+      if (resumeText) {
+        updateUserProfile(sessionId, { resumeText });
+        userProfile = getUserProfile(sessionId);
+      }
+      
+      if (resumeAnalysis) {
+        updateUserProfile(sessionId, { resumeAnalysis });
+        userProfile = getUserProfile(sessionId);
+      }
+      
+      // Update conversation history
+      if (history && history.length > 0) {
+        updateUserProfile(sessionId, { conversationHistory: history });
+        userProfile = getUserProfile(sessionId);
+      }
+      
+      // Update asked questions and categories
+      if (askedQuestions.length > 0 || askedCategories.length > 0) {
+        updateUserProfile(sessionId, { 
+          askedQuestions: askedQuestions,
+          askedCategories: askedCategories
+        });
+        userProfile = getUserProfile(sessionId);
+      }
+    }
+    
+    // Use profile data if available, otherwise fall back to request data
+    const profileName = userProfile?.name || onboardingData?.name || null;
+    const profileCity = userProfile?.city || onboardingData?.city || null;
+    const profileStateProvince = userProfile?.stateProvince || onboardingData?.stateProvince || null;
+    const profileCountry = userProfile?.country || onboardingData?.country || null;
+    const profileDepartmentName = userProfile?.departmentName || onboardingData?.departmentName || null;
+    const profileJobType = userProfile?.jobType || onboardingData?.jobType || null;
+    const profileCityResearch = userProfile?.cityResearch || onboardingData?.cityResearch || null;
+    const profileResumeText = userProfile?.resumeText || resumeText || null;
+    const profileResumeAnalysis = userProfile?.resumeAnalysis || resumeAnalysis || null;
+    const profileHistory = userProfile?.conversationHistory || history || [];
+    const profileAskedQuestions = userProfile?.askedQuestions || askedQuestions || [];
+    const profileAskedCategories = userProfile?.askedCategories || askedCategories || [];
 
     // Build comprehensive resume context
     let resumeContext = "";
@@ -98,37 +230,38 @@ ${resumeText}`;
       ? `\n\nCategory rotation hint: The following base categories have NOT been used yet in this session: ${unusedCategories.join(", ")}.\nFor THIS next question, choose ONE of these unused categories and clearly state it as the category.`
       : `\n\nCategory rotation hint: All base categories have been used at least once.\nYou may reuse categories, but vary the scenario and angle significantly from earlier questions.`;
 
-    const diversityContext = askedQuestions.length > 0
-      ? `\n\nCRITICAL - Questions already asked in this session (DO NOT repeat these):\n${askedQuestions.slice(-10).map((q, i) => `${i + 1}. ${q}`).join("\n")}\n\nCategories already covered: ${askedCategories.join(", ") || "None"}\n\nYou MUST generate a completely different question that hasn't been asked yet.${categoryRotationHint}`
+    const diversityContext = profileAskedQuestions.length > 0
+      ? `\n\nCRITICAL - Questions already asked in this session (DO NOT repeat these):\n${profileAskedQuestions.slice(-10).map((q, i) => `${i + 1}. ${q}`).join("\n")}\n\nCategories already covered: ${profileAskedCategories.join(", ") || "None"}\n\nYou MUST generate a completely different question that hasn't been asked yet.${categoryRotationHint}`
       : `\n\nNo questions have been asked yet in this session. Start with any one of the base categories: ${baseCategories.join(", ")}. Make the category explicit.`;
 
-    // Build onboarding context (city, department, job type)
-    let onboardingContext = "";
-    if (onboardingData) {
-      const { city, stateProvince, country, jobType, departmentName, cityResearch } = onboardingData;
-      const locationString = stateProvince 
-        ? `${city}, ${stateProvince}, ${country}`
-        : `${city}, ${country}`;
+    // Build comprehensive user profile context (city, department, job type, name, etc.)
+    let userProfileContext = "";
+    if (profileCity || profileDepartmentName || profileJobType || profileName) {
+      const locationString = profileStateProvince 
+        ? `${profileCity}, ${profileStateProvince}, ${profileCountry}`
+        : `${profileCity}, ${profileCountry}`;
       
-      onboardingContext = `\n\nDEPARTMENT & LOCATION CONTEXT (USE THIS TO PERSONALIZE QUESTIONS):
-- Position Type: ${jobType}
-- Department: ${departmentName}
-- Location: ${locationString}`;
+      userProfileContext = `\n\nCOMPREHENSIVE USER PROFILE (USE THIS TO CREATE HIGHLY PERSONALIZED QUESTIONS):
+- Candidate Name: ${profileName || "Not provided"}
+- Position Type: ${profileJobType || "Not specified"}
+- Department: ${profileDepartmentName || "Not specified"}
+- Location: ${locationString || "Not specified"}`;
       
-      if (cityResearch) {
-        onboardingContext += `\n\nCity/Department Research:\n${cityResearch}\n\nIMPORTANT: Incorporate specific, accurate information from this research into your questions when relevant. For example:
-- Reference the department name: "Working for the ${departmentName} is a stressful job, tell us about a time..."
+      if (profileCityResearch) {
+        userProfileContext += `\n\nCity/Department Research:\n${profileCityResearch}\n\nIMPORTANT: Incorporate specific, accurate information from this research into your questions when relevant. For example:
+- Reference the department name: "Working for the ${profileDepartmentName} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..."
 - Reference city-specific challenges or initiatives from the research
 - Reference the fire chief's name or department history when appropriate
 - Make questions feel personalized to this specific department and city while still testing general competencies`;
-      } else {
-        onboardingContext += `\n\nIMPORTANT: When generating questions, incorporate the department name "${departmentName}" and location context naturally. For example: "Working for the ${departmentName} is a stressful job, tell us about a time..." or "Given the challenges in ${city}, how would you handle...". Make questions feel personalized to this specific department while still testing general competencies.`;
+      } else if (profileDepartmentName || profileCity) {
+        userProfileContext += `\n\nIMPORTANT: When generating questions, incorporate the department name "${profileDepartmentName}" and location context naturally. For example: "Working for the ${profileDepartmentName} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..." or "Given the challenges in ${profileCity}, how would you handle...". Make questions feel personalized to this specific department while still testing general competencies.`;
+      }
+      
+      // Add name context if available
+      if (profileName) {
+        userProfileContext += `\n\nIMPORTANT: The candidate's name is ${profileName}. Occasionally address them by name in questions to make it more personal and realistic (e.g., "${profileName}, tell us about a time..." or "${profileName}, how would you..."). Use the name naturally, not in every question - mix it in about 30% of the time.`;
       }
     }
-
-    // Get candidate name from onboarding data
-    const candidateName = onboardingData?.name || null;
-    const nameContext = candidateName ? `\n\nIMPORTANT: The candidate's name is ${candidateName}. Occasionally address them by name in questions to make it more personal and realistic (e.g., "${candidateName}, tell us about a time..." or "${candidateName}, how would you..."). Use the name naturally, not in every question - mix it in about 30% of the time.` : "";
 
     // Determine question strategy based on mode
     let questionStrategy = "";
@@ -161,13 +294,15 @@ Make the question feel personalized to THIS specific department and city while s
         },
         {
           role: "user",
-          content: `Generate a single ${onboardingData?.jobType || 'firefighter'} interview question.
+          content: `Generate a single ${profileJobType || 'firefighter'} interview question.
 
 ${questionStrategy}
 
-${resumeContext}${diversityContext}${onboardingContext}${nameContext}
+${resumeContext}${diversityContext}${userProfileContext}
 
 IMPORTANT: This is a NEW, UNRELATED question. Do NOT make it a follow-up to previous questions. Generate a completely fresh question from a different topic/angle.
+
+Use the comprehensive user profile above to create highly personalized questions that reference their specific department, city, and background when relevant, while still testing general firefighter competencies.
 
 Requirements:
 - Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
@@ -553,6 +688,43 @@ Provide a comprehensive but concise summary (300-500 words) that covers the most
 // Simple in-memory cache for location searches (expires after 1 hour)
 const locationCache = new Map();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+// User profiles - stores comprehensive user information for personalized questions
+// In production, this would be stored in a database (e.g., MongoDB, PostgreSQL)
+// For now, using in-memory storage with session-based keys
+const userProfiles = new Map();
+
+// Helper function to get or create user profile
+function getUserProfile(sessionId) {
+  if (!userProfiles.has(sessionId)) {
+    userProfiles.set(sessionId, {
+      sessionId: sessionId,
+      name: null,
+      city: null,
+      stateProvince: null,
+      country: null,
+      departmentName: null,
+      jobType: null,
+      voicePreference: null,
+      resumeText: null,
+      resumeAnalysis: null,
+      cityResearch: null,
+      conversationHistory: [],
+      askedQuestions: [],
+      askedCategories: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+  return userProfiles.get(sessionId);
+}
+
+// Helper function to update user profile
+function updateUserProfile(sessionId, updates) {
+  const profile = getUserProfile(sessionId);
+  Object.assign(profile, updates, { updatedAt: new Date().toISOString() });
+  return profile;
+}
 
 // Load comprehensive country/state/city data from countries-states-cities-database
 // Using the public JSON files from: https://github.com/dr5hn/countries-states-cities-database

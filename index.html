@@ -803,10 +803,12 @@
             For a full build, use a backend parser. This demo reads simple text.
           </span>
         </div>
-        <div class="resume-summary" id="resumeSummary">
-          No resume loaded yet. Upload a file to extract keywords like “POC firefighter”, “EMR”, “construction”, etc.
+        <div class="resume-summary" id="resumeSummary" style="padding: 16px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); min-height: 120px;">
+          <div style="color: #94a3b8; font-size: 0.9rem; text-align: center; padding: 20px;">
+            No resume loaded yet. Upload a file to get personalized questions based on your experience.
+          </div>
         </div>
-        <div class="resume-tags" id="resumeTags"></div>
+        <div class="resume-tags" id="resumeTags" style="margin-top: 12px;"></div>
       </div>
 
       <!-- Question / mic card -->
@@ -1622,14 +1624,7 @@ Return a JSON object with this structure:
           
           // Validate and format the response
           if (resumeAnalysis) {
-            const experience = resumeAnalysis.experience || resumeAnalysis.yearsOfExperience || "N/A";
-            const certifications = resumeAnalysis.certifications || [];
-            const focusAreas = resumeAnalysis.interviewFocus || resumeAnalysis.focusAreas || [];
-            
-            resumeSummaryEl.textContent = 
-              `AI Analysis: ${experience} experience. ` +
-              `Certifications: ${certifications.length > 0 ? certifications.join(", ") : "None listed"}. ` +
-              `Focus areas: ${focusAreas.length > 0 ? focusAreas.slice(0, 3).join(", ") : "General"}`;
+            formatResumeSummary(resumeSummaryEl, resumeAnalysis, resumeText);
           } else {
             throw new Error("Empty analysis result");
           }

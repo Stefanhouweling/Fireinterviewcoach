@@ -8,8 +8,8 @@ const APP_CONFIG = {
   // App Information
   appName: "Fire Interview Coach",
   appTagline: "AI-Powered Interview Practice for Firefighters",
-  copyrightYear: "2024",
-  companyName: "Fire Interview Coach",
+  copyrightYear: "2025",
+  companyName: "Fire Interview CoachAI",
   
   // Header & Navigation
   headerTitle: "Fire Interview Coach",

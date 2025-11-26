@@ -904,34 +904,31 @@ app.post('/api/search-location', async (req, res) => {
 
     const queryLower = query.toLowerCase();
     
-    // ALWAYS check comprehensive database FIRST for instant results (no API delay)
-    // Use comprehensive database if loaded, otherwise fall back to static lists
-    let searchResults = [];
+    // ALWAYS use static lists FIRST (instant, no loading time, covers US/Canada)
+    console.log(`Searching for ${type} with query: "${query}"${country ? ` in ${country}` : ''}`);
+    let searchResults = searchStaticList(query, type, country);
     
-    // Try comprehensive database first
-    if (countriesData && statesData && citiesData) {
-      searchResults = searchLocationDatabase(query, type, country, stateProvince);
-      console.log(`✓ Database search: ${searchResults.length} results for "${query}" (${type})`);
-      if (searchResults.length > 0) {
-        console.log(`  First result: ${searchResults[0].name}`);
-      }
-    } else {
-      // Fallback to static lists if database not loaded yet
-      console.log(`⚠ Database not loaded, using static lists for "${query}" (${type})`);
-      searchResults = searchStaticList(query, type, country);
-      if (type === 'city' && stateProvince && searchResults.length > 0) {
-        searchResults = searchResults.filter(item => 
-          item.stateProvince && item.stateProvince.toLowerCase() === stateProvince.toLowerCase()
-        );
-      }
-      if (searchResults.length > 0) {
-        console.log(`  Static list first result: ${searchResults[0].name}`);
-      }
+    // For cities, filter by state/province if provided
+    if (type === 'city' && stateProvince && searchResults.length > 0) {
+      searchResults = searchResults.filter(item => 
+        item.stateProvince && item.stateProvince.toLowerCase() === stateProvince.toLowerCase()
+      );
     }
     
-    // If we have results, return immediately (INSTANT - no cache, no API)
+    console.log(`✓ Static list: ${searchResults.length} results for "${query}" (${type})`);
     if (searchResults.length > 0) {
+      console.log(`  Results: ${searchResults.map(r => r.name).join(', ')}`);
       return res.json({ suggestions: searchResults });
+    }
+    
+    // Only if static list has no results, try comprehensive database (if loaded)
+    if (countriesData && statesData && citiesData) {
+      console.log(`Static list empty, trying database for "${query}" (${type})`);
+      searchResults = searchLocationDatabase(query, type, country, stateProvince);
+      if (searchResults.length > 0) {
+        console.log(`✓ Database search: ${searchResults.length} results`);
+        return res.json({ suggestions: searchResults });
+      }
     }
     
     // Only check cache for Nominatim results (not static - those are always instant)

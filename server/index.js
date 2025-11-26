@@ -769,6 +769,11 @@ function searchStaticList(query, type, country) {
   const queryLower = query.toLowerCase();
   let results = [];
   
+  // Skip static lists for non-US/Canada countries - let them fall through to Nominatim
+  if (country && country !== 'United States' && country !== 'Canada') {
+    return []; // Return empty to fall through to Nominatim
+  }
+  
   if (type === 'state') {
     let list = [];
     if (country === 'United States') {
@@ -776,7 +781,7 @@ function searchStaticList(query, type, country) {
     } else if (country === 'Canada') {
       list = CANADIAN_PROVINCES;
     } else {
-      // If no country or other country, search both
+      // If no country specified, search both US and Canada
       list = [...US_STATES, ...CANADIAN_PROVINCES];
     }
     
@@ -832,7 +837,7 @@ function searchStaticList(query, type, country) {
         return clean;
       });
   } else if (type === 'city') {
-    // Search common cities
+    // Search common cities (only for US/Canada)
     const allCities = [];
     Object.entries(COMMON_CITIES).forEach(([state, cities]) => {
       cities.forEach(city => {
@@ -844,6 +849,7 @@ function searchStaticList(query, type, country) {
       .filter(item => {
         const cityLower = item.city.toLowerCase();
         const matchesQuery = cityLower.includes(queryLower);
+        // Only match if country is US/Canada or not specified
         const matchesCountry = !country || item.country === country;
         return matchesQuery && matchesCountry;
       })

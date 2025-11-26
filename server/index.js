@@ -630,7 +630,11 @@ function searchLocationDatabase(query, type, country, stateProvince) {
     results = filteredStates
       .filter(state => {
         const stateName = (state.name || '').toLowerCase();
-        return stateName.includes(queryLower);
+        // Only include if it actually contains the query
+        if (!stateName.includes(queryLower)) {
+          return false;
+        }
+        return true;
       })
       .map(state => {
         const stateName = state.name || '';
@@ -661,6 +665,10 @@ function searchLocationDatabase(query, type, country, stateProvince) {
       .sort((a, b) => {
         if (a.relevance !== b.relevance) {
           return a.relevance - b.relevance;
+        }
+        // If same relevance, prioritize shorter names (more specific matches)
+        if (a.name.length !== b.name.length) {
+          return a.name.length - b.name.length;
         }
         return a.name.localeCompare(b.name);
       })
@@ -746,6 +754,10 @@ function searchLocationDatabase(query, type, country, stateProvince) {
         if (a.relevance !== b.relevance) {
           return a.relevance - b.relevance;
         }
+        // If same relevance, prioritize shorter names (more specific matches)
+        if (a.name.length !== b.name.length) {
+          return a.name.length - b.name.length;
+        }
         return a.name.localeCompare(b.name);
       })
       .slice(0, 8)
@@ -777,7 +789,12 @@ function searchStaticList(query, type, country) {
     results = list
       .filter(state => {
         const stateLower = state.toLowerCase();
-        return stateLower.includes(queryLower);
+        // Strict check: must actually contain the query string
+        const contains = stateLower.includes(queryLower);
+        if (!contains) {
+          return false;
+        }
+        return true;
       })
       .map(state => {
         const stateLower = state.toLowerCase();
@@ -873,10 +890,14 @@ app.post('/api/search-location', async (req, res) => {
     // ALWAYS check comprehensive database FIRST for instant results (no API delay)
     // Use comprehensive database if loaded, otherwise fall back to static lists
     let searchResults = [];
+    
+    // Try comprehensive database first
     if (countriesData && statesData && citiesData) {
       searchResults = searchLocationDatabase(query, type, country, stateProvince);
+      console.log(`✓ Database search: ${searchResults.length} results for "${query}" (${type})`);
     } else {
       // Fallback to static lists if database not loaded yet
+      console.log(`⚠ Database not loaded, using static lists for "${query}" (${type})`);
       searchResults = searchStaticList(query, type, country);
       if (type === 'city' && stateProvince && searchResults.length > 0) {
         searchResults = searchResults.filter(item => 
@@ -887,7 +908,6 @@ app.post('/api/search-location', async (req, res) => {
     
     // If we have results, return immediately (INSTANT - no cache, no API)
     if (searchResults.length > 0) {
-      console.log(`✓ Database search: ${searchResults.length} instant results for "${query}" (${type})`);
       return res.json({ suggestions: searchResults });
     }
     

@@ -1148,7 +1148,8 @@
 </div>
 
 <!-- AI Feedback Modal - Outside app container for proper fixed positioning -->
-<div id="aiModalOverlay" class="ai-modal-overlay" style="display: none !important;">
+<!-- AI Feedback Modal - Outside app container for proper fixed positioning -->
+<div id="aiModalOverlay" class="ai-modal-overlay">
   <div class="ai-modal">
     <div class="ai-modal-header">
       <h3>🤖 AI Interview Coach Feedback</h3>
@@ -2858,10 +2859,12 @@ Return ONLY the category and question.`
   const viewAIFeedbackBtn = document.getElementById("viewAIFeedbackBtn");
   
   function openAIModal() {
-    if (aiModalOverlay) {
-      aiModalOverlay.classList.add("active");
+    const modal = document.getElementById("aiModalOverlay");
+    if (modal) {
+      modal.classList.add("active");
+      modal.style.display = "flex"; // Force display
       document.body.style.overflow = "hidden"; // Prevent background scrolling
-      console.log("AI Modal opened");
+      console.log("AI Modal opened - display set to flex");
     } else {
       console.error("aiModalOverlay element not found!");
     }

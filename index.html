@@ -1037,10 +1037,10 @@
         <div id="followupButtonContainer" style="margin-top: 12px;"></div>
         <div class="question-controls" style="margin-top: 10px;">
           <button id="startAnswerBtn" class="secondary" type="button">
-            ▶ Start Answer (mic)
+            🎤 Answer Question
           </button>
           <button id="stopAnswerBtn" class="secondary" type="button" disabled>
-            ⏹ Stop
+            ✅ Finish Answering Question
           </button>
           <div class="status">
             <span class="status-dot off" id="micStatusDot"></span>
@@ -1084,6 +1084,56 @@
         </div>
       </div>
 
+      <!-- Feedback card - moved under camera -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Feedback on This Answer
+          </div>
+        </div>
+        
+        <!-- Progress bar for AI analysis -->
+        <div id="aiProgressContainer" style="display: none; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.85rem; color: #cbd5e1;">🤖 AI Analyzing...</span>
+            <span id="aiProgressPercent" style="font-size: 0.85rem; color: #f97316; font-weight: 600;">0%</span>
+          </div>
+          <div style="width: 100%; height: 8px; background: rgba(15, 23, 42, 0.6); border-radius: 4px; overflow: hidden;">
+            <div id="aiProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #f97316, #ef4444); border-radius: 4px; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);"></div>
+          </div>
+        </div>
+        
+        <div class="feedback-grid">
+          <div class="feedback-block">
+            <h4>Content & Structure <span id="contentScore" class="score-pill low">–</span></h4>
+            <p id="contentFeedback">
+              After you finish answering, feedback will appear here automatically.
+            </p>
+          </div>
+          <div class="feedback-block">
+            <h4>Voice & Filler Words <span id="voiceScore" class="score-pill low">–</span></h4>
+            <p id="voiceFeedback">
+              "Um, uh, like…" will be detected and summarized here based on your transcript.
+            </p>
+          </div>
+          <div class="feedback-block">
+            <h4>Body Language (Camera) <span id="bodyScore" class="score-pill low">–</span></h4>
+            <p id="bodyFeedback">
+              Movement and stability from the webcam feed will be scored as "steady / moderate / fidgety".
+            </p>
+          </div>
+          <div class="feedback-block">
+            <h4>Fire-Specific Tips / AI Coach</h4>
+            <p id="fireTips">
+              We'll highlight if you're hitting key themes: safety, teamwork, accountability, medical care, community, and learning from mistakes.
+            </p>
+            <button id="viewAIFeedbackBtn" type="button" style="margin-top: 8px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); color: #fca5a5; cursor: pointer; font-size: 0.85rem; display: none;">
+              📖 View Detailed AI Feedback
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Meta / instructions -->
       <div class="card">
         <div class="card-header">
@@ -1093,8 +1143,8 @@
           <li>Upload your resume so questions can reference your real experience (EMR, volunteer FF, construction, etc).</li>
           <li>Start the camera. Position yourself as if you’re in a real panel interview.</li>
           <li>Click <strong>Next Question</strong>. The question will appear on screen and be read aloud.</li>
-          <li>Click <strong>Start Answer</strong>, respond out loud, then click <strong>Stop</strong>.</li>
-          <li>Review or edit the transcript. Then hit <strong>Analyze Answer</strong> for local + AI feedback.</li>
+          <li>Click <strong>Answer Question</strong>, respond out loud, then click <strong>Finish Answering Question</strong>.</li>
+          <li>Your feedback will appear automatically when you finish answering.</li>
         </ul>
         <p class="small-note">
           For live department use, you’d host this somewhere and keep keys on a backend. This version is designed for you to run privately.
@@ -3061,7 +3111,13 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
       analyzeBtn.disabled = false;
       analyzeBtn.textContent = "🤖 Analyze Answer";
     }
-  });
+  }
+  
+  // Keep the button click handler for manual analysis if needed
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  if (analyzeBtn) {
+    analyzeBtn.addEventListener("click", triggerAnalysis);
+  }
 
   // Format AI feedback with proper HTML structure (for small preview)
   function formatAIFeedback(container, text, showPreview = false) {

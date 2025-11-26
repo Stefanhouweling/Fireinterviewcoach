@@ -1093,22 +1093,6 @@
         </div>
       </div>
 
-      <!-- Meta / instructions -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">How to Use This Prototype</div>
-        </div>
-        <ul style="margin: 0; padding-left: 18px; font-size: 0.75rem; color: #9ca3af; line-height: 1.5;">
-          <li>Upload your resume so questions can reference your real experience (EMR, volunteer FF, construction, etc).</li>
-          <li>Start the camera. Position yourself as if you’re in a real panel interview.</li>
-          <li>Click <strong>Next Question</strong>. The question will appear on screen and be read aloud.</li>
-          <li>Click <strong>Answer Question</strong>, respond out loud, then click <strong>Finish Answering Question</strong>.</li>
-          <li>Your feedback will appear automatically when you finish answering.</li>
-        </ul>
-        <p class="small-note">
-          For live department use, you’d host this somewhere and keep keys on a backend. This version is designed for you to run privately.
-        </p>
-      </div>
     </section>
   </main>
 </div>
@@ -2736,6 +2720,9 @@ Return ONLY the category and question.`
             }
             
             addFollowupButton();
+            
+            // Automatically open the AI feedback modal
+            openAIModal();
           }
           
           // Hide progress bar after a short delay
@@ -2927,6 +2914,9 @@ Use clear markdown formatting with ## for main sections and - for bullet points.
         
         // Add followup button near the question area (more visible)
         addFollowupButton();
+        
+        // Automatically open the AI feedback modal
+        openAIModal();
       } else {
         // keep the local tips if AI fails
       }

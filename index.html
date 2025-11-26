@@ -2852,14 +2852,18 @@ Return ONLY the category and question.`
             if (progressPercent) progressPercent.textContent = "0%";
           }, 500);
         } else {
+          console.error("[API] Backend error response:", response.status, response.statusText);
           if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
           clearInterval(modalProgressInterval);
+          const errorText = await response.text();
+          console.error("[API] Error response body:", errorText);
           throw new Error(`Backend error: ${response.status}`);
         }
       } catch (err) {
+        console.error("[ERROR] Analysis failed:", err);
         if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
         clearInterval(modalProgressInterval);
-        console.error("Backend analysis error:", err);
+        console.error("[ERROR] Backend analysis error:", err);
         if (progressContainer) progressContainer.style.display = "none";
         if (progressBar) progressBar.style.width = "0%";
         if (progressPercent) progressPercent.textContent = "0%";

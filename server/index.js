@@ -858,8 +858,8 @@ Research and provide SPECIFIC, FACTUAL information about this department and cit
 CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge:
 
 1. FIRE DEPARTMENT LEADERSHIP & STRUCTURE (CRITICAL - MUST INCLUDE):
-   - Fire chief's FULL NAME and title
-   - Deputy chiefs or assistant chiefs (names if available)
+   - Fire chief's FULL NAME and title (VERIFY THE EXACT NAME - do not add extra initials or letters)
+   - Deputy chiefs or assistant chiefs (names if available - verify exact spelling)
    - Department structure and hierarchy
    - Number of members/staff (exact number if available, or approximate)
    - Number of fire stations and their locations
@@ -880,7 +880,7 @@ CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge:
    - Response areas or coverage zones
 
 4. CITY LEADERSHIP (CRITICAL - MUST INCLUDE):
-   - Mayor's FULL NAME
+   - Mayor's FULL NAME (VERIFY THE EXACT NAME - do not add extra initials or letters)
    - Mayor's key priorities, especially related to emergency services
    - City council members (especially those on public safety committees)
    - City manager or chief administrative officer
@@ -899,12 +899,15 @@ CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge:
    - Any unique aspects, challenges, or strengths of this specific department
    - Department's relationship with city government
 
-IMPORTANT: 
+CRITICAL ACCURACY REQUIREMENTS: 
 - Provide SPECIFIC NAMES, NUMBERS, and FACTS whenever possible
+- For names: Use EXACT names as they appear in official sources. Do NOT add extra initials, letters, or characters (e.g., if you see "Erick Peterson", use exactly that - do not add "B. R. H." or other letters)
+- Verify all names before including them - check spelling and do not add extra characters
 - If information is not available, clearly state "Information not found" for that specific item
 - Focus on information that would be publicly available and that a well-prepared candidate should know
 - Format clearly with headings so specific facts can be easily extracted for knowledge-testing questions
 - This research will be used to generate questions that TEST the candidate's knowledge, not behavioral questions
+- Accuracy is ESSENTIAL - incorrect information will cause candidates to be marked wrong even when they give correct answers
 
 Provide a structured summary (400-600 words) with clear sections for each category above.`;
 
@@ -913,7 +916,25 @@ Provide a structured summary (400-600 words) with clear sections for each catego
       messages: [
         {
           role: "system",
-          content: "You are a research assistant that provides accurate, specific information about fire departments, police departments, and emergency services. You help gather factual information that can be used to personalize interview questions."
+          content: `You are a research assistant that provides ACCURATE, VERIFIABLE information about fire departments, police departments, and emergency services.
+
+CRITICAL ACCURACY REQUIREMENTS:
+1. For names: Use EXACT names as they appear in official sources. Do NOT add extra initials, letters, or characters.
+   - If you see "Erick Peterson", use exactly "Erick Peterson" - NOT "Erick B. R. H. Peterson" or "Dan B. R. H. Hurst"
+   - If you see "Dan Hurst", use exactly "Dan Hurst" - do not add extra letters
+   - Only include middle initials if they are actually part of the official name
+
+2. Verify all information before including it. If you are uncertain, state "Information not found" rather than guessing.
+
+3. Cross-reference information when possible to ensure accuracy.
+
+4. For numbers: Provide exact numbers when available, or clearly state "approximately X" if exact numbers are not available.
+
+5. If information conflicts between sources, note the discrepancy and state which source you're using.
+
+6. Accuracy is CRITICAL - incorrect information will cause interview candidates to be marked wrong even when they give correct answers.
+
+Your research will be used to verify candidate answers in interviews, so every fact must be accurate and verifiable.`
         },
         {
           role: "user",

@@ -803,6 +803,10 @@ function searchStaticList(query, type, country) {
         if (!contains) {
           return false;
         }
+        // Debug logging for "br" query
+        if (queryLower === 'br' && country === 'Canada') {
+          console.log(`  Filter: "${state}" (${stateLower}) contains "br": ${contains}`);
+        }
         return true;
       })
       .map(state => {
@@ -812,6 +816,10 @@ function searchStaticList(query, type, country) {
           relevance = 1; // Highest priority: starts with query
         } else if (stateLower.includes(queryLower)) {
           relevance = 2; // Medium priority: contains query
+        }
+        // Debug logging for "br" query
+        if (queryLower === 'br' && country === 'Canada') {
+          console.log(`  Map: "${state}" -> relevance ${relevance}`);
         }
         return {
           name: state,

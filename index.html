@@ -888,9 +888,6 @@
     style="margin-top:8px;padding:10px 16px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;font-weight:600;width:100%;">
     Save Keys for This Session
   </button>
-  <p id="apiKeyStatus" style="font-size:0.75rem;color:#93c5fd;margin-top:8px;"></p>
-</div>
-
 <div class="app">
   <header>
     <div class="title" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
@@ -1829,66 +1826,6 @@
     
     // Always use backend - no local mode
     formatResumeSummary(resumeSummaryEl, null, resumeText);
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert at analyzing firefighter resumes. Extract structured information in JSON format."
-            },
-            {
-              role: "user",
-              content: `Analyze this firefighter resume and extract:
-- Years of experience
-- Certifications (EMR, POC, etc.)
-- Specialized skills (medical, technical, leadership)
-- Relevant work history
-- Key achievements
-- Areas that would be interesting for interview questions
-
-Resume text (full text - analyze completely):
-${text}
-
-Return a JSON object with this structure:
-{
-  "experience": "X years",
-  "certifications": ["cert1", "cert2"],
-  "skills": ["skill1", "skill2"],
-  "workHistory": ["job1", "job2"],
-  "achievements": ["achievement1"],
-  "interviewFocus": ["area1", "area2"]
-}`
-            }
-          ],
-          response_format: { type: "json_object" }
-        })
-      });
-      
-      const data = await response.json();
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        try {
-          const content = data.choices[0].message.content;
-          resumeAnalysis = typeof content === "string" ? JSON.parse(content) : content;
-          
-          // Validate and format the response
-          if (resumeAnalysis) {
-            formatResumeSummary(resumeSummaryEl, resumeAnalysis, resumeText);
-          } else {
-            throw new Error("Empty analysis result");
-          }
-        } catch (parseErr) {
-          console.error("Error parsing AI response:", parseErr, data);
-          // Fallback: show basic summary
-          formatResumeSummary(resumeSummaryEl, null, resumeText);
-        }
-      } else {
-        throw new Error("No response from AI");
-      }
-    } catch (err) {
-      console.error("AI resume parsing error:", err);
-      // Show basic summary on error
-      formatResumeSummary(resumeSummaryEl, null, resumeText);
-    }
   }
 
   function extractResumeKeywords(text) {
@@ -2121,7 +2058,7 @@ Return ONLY the category and question in that format.`
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": "Bearer " + "REMOVED" // Always use backend instead
+              "Authorization": "Bearer REMOVED" // Always use backend instead
             },
             body: JSON.stringify({
               model: "gpt-4o-mini",

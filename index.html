@@ -680,6 +680,12 @@
   </style>
   <!-- PDF.js for PDF text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    // Configure PDF.js worker to fix deprecation warning
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
 </head>
 <body>
 
@@ -1794,7 +1800,7 @@ Return ONLY the category and question.`
         },
         body: JSON.stringify({
           text: text,
-          model_id: "eleven_monolingual_v1", // or "eleven_multilingual_v2" for multilingual
+          model_id: "eleven_turbo_v2_5", // Newer model available on free tier
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
@@ -1807,7 +1813,18 @@ Return ONLY the category and question.`
       if (!response.ok) {
         const errorText = await response.text();
         console.error("ElevenLabs API error response:", errorText);
-        throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+        let errorMessage = `ElevenLabs API error: ${response.status}`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.detail && errorJson.detail.message) {
+            errorMessage += ` - ${errorJson.detail.message}`;
+          } else {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch (e) {
+          errorMessage += ` - ${errorText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const audioBlob = await response.blob();

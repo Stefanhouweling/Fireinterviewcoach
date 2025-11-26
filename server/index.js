@@ -853,22 +853,29 @@ app.post('/api/research-city', async (req, res) => {
 
     const researchPrompt = `You are a research assistant helping to prepare KNOWLEDGE-BASED interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
 
-Research and provide SPECIFIC, FACTUAL information about this department and city. This information will be used to test candidates' knowledge of the city and department during interviews.
+CRITICAL SEARCH REQUIREMENTS:
+- ALWAYS include "${city}, ${stateProvince || ''} ${country}" in EVERY search query you perform
+- ALWAYS specify "current" or "2024" or "2025" to ensure you get the most up-to-date information
+- Example searches: "current fire chief ${city} ${stateProvince || ''} ${country}", "mayor ${city} ${country} 2024", "${departmentName} union number ${city} ${country}"
+- Do NOT search for general information without the specific city and country context
+- Verify information is CURRENT and up-to-date
 
-CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge:
+Research and provide SPECIFIC, FACTUAL, CURRENT information about this department and city. This information will be used to test candidates' knowledge of the city and department during interviews.
+
+CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge. All information must be CURRENT (as of 2024-2025):
 
 1. FIRE DEPARTMENT LEADERSHIP & STRUCTURE (CRITICAL - MUST INCLUDE):
-   - Fire chief's FULL NAME and title (VERIFY THE EXACT NAME - do not add extra initials or letters)
-   - Deputy chiefs or assistant chiefs (names if available - verify exact spelling)
+   - CURRENT Fire chief's FULL NAME and title for ${departmentName} in ${city}, ${country} (VERIFY THE EXACT NAME - do not add extra initials or letters)
+   - CURRENT Deputy chiefs or assistant chiefs for ${departmentName} in ${city}, ${country} (names if available - verify exact spelling)
    - Department structure and hierarchy
-   - Number of members/staff (exact number if available, or approximate)
+   - CURRENT Number of members/staff for ${departmentName} in ${city}, ${country} (exact number if available, or approximate)
    - Number of fire stations and their locations
    - Department's organizational structure
 
 2. UNION INFORMATION (CRITICAL - MUST INCLUDE):
-   - Local union number for ${departmentName} (e.g., "IAFF Local 1234")
-   - Union name and full designation
-   - Union president or leadership (if available)
+   - CURRENT Local union number for ${departmentName} in ${city}, ${country} (e.g., "IAFF Local 1234")
+   - Union name and full designation for ${city}, ${country}
+   - CURRENT Union president or leadership for ${city}, ${country} (if available)
    - Union affiliation (e.g., IAFF - International Association of Fire Fighters)
 
 3. DEPARTMENT DETAILS (CRITICAL):
@@ -880,10 +887,10 @@ CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge:
    - Response areas or coverage zones
 
 4. CITY LEADERSHIP (CRITICAL - MUST INCLUDE):
-   - Mayor's FULL NAME (VERIFY THE EXACT NAME - do not add extra initials or letters)
-   - Mayor's key priorities, especially related to emergency services
-   - City council members (especially those on public safety committees)
-   - City manager or chief administrative officer
+   - CURRENT Mayor's FULL NAME for ${city}, ${country} (VERIFY THE EXACT NAME - do not add extra initials or letters)
+   - CURRENT Mayor's key priorities for ${city}, ${country}, especially related to emergency services
+   - CURRENT City council members for ${city}, ${country} (especially those on public safety committees)
+   - CURRENT City manager or chief administrative officer for ${city}, ${country}
 
 5. CITY INFORMATION:
    - City demographics and population
@@ -916,7 +923,14 @@ Provide a structured summary (400-600 words) with clear sections for each catego
       messages: [
         {
           role: "system",
-          content: `You are a research assistant that provides ACCURATE, VERIFIABLE information about fire departments, police departments, and emergency services.
+          content: `You are a research assistant that provides ACCURATE, VERIFIABLE, CURRENT information about fire departments, police departments, and emergency services.
+
+CRITICAL SEARCH REQUIREMENTS:
+- ALWAYS include the specific city and country in EVERY search query
+- ALWAYS specify "current" or the current year (2024/2025) in searches to get up-to-date information
+- Example: When searching for fire chief, use "current fire chief [city] [country]" not just "fire chief"
+- Example: When searching for mayor, use "mayor [city] [country] 2024" not just "mayor"
+- Do NOT perform generic searches without location context
 
 CRITICAL ACCURACY REQUIREMENTS:
 1. For names: Use EXACT names as they appear in official sources. Do NOT add extra initials, letters, or characters.
@@ -934,7 +948,9 @@ CRITICAL ACCURACY REQUIREMENTS:
 
 6. Accuracy is CRITICAL - incorrect information will cause interview candidates to be marked wrong even when they give correct answers.
 
-Your research will be used to verify candidate answers in interviews, so every fact must be accurate and verifiable.`
+7. Always verify information is CURRENT (2024-2025). Do not use outdated information.
+
+Your research will be used to verify candidate answers in interviews, so every fact must be accurate, current, and verifiable.`
         },
         {
           role: "user",

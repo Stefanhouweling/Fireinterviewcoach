@@ -675,30 +675,36 @@ function searchStaticList(query, type, country) {
 // POST /api/search-location - Location search with static lists (instant) + Nominatim fallback
 app.post('/api/search-location', async (req, res) => {
   try {
-    const { query, type, country } = req.body; // type: 'city' or 'state'
+    const { query, type, country, stateProvince } = req.body; // type: 'city' or 'state'
 
     if (!query || query.length < 2) {
       return res.json({ suggestions: [] });
     }
 
-    // Check cache first
-    const cacheKey = `${type}:${query.toLowerCase()}:${country || ''}`;
+    const queryLower = query.toLowerCase();
+    
+    // ALWAYS check static list FIRST for instant results (no API delay)
+    let staticResults = searchStaticList(query, type, country);
+    
+    // For cities, filter by state/province if provided
+    if (type === 'city' && stateProvince && staticResults.length > 0) {
+      staticResults = staticResults.filter(item => 
+        item.stateProvince && item.stateProvince.toLowerCase() === stateProvince.toLowerCase()
+      );
+    }
+    
+    // If static list has results, return immediately (INSTANT - no cache, no API)
+    if (staticResults.length > 0) {
+      console.log(`✓ Static list: ${staticResults.length} instant results for "${query}" (${type})`);
+      return res.json({ suggestions: staticResults });
+    }
+    
+    // Only check cache for Nominatim results (not static - those are always instant)
+    const cacheKey = `${type}:${queryLower}:${country || ''}:${stateProvince || ''}`;
     const cached = locationCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
       console.log(`Cache hit for: ${cacheKey}`);
       return res.json({ suggestions: cached.data });
-    }
-
-    // Try static list first for instant results
-    const staticResults = searchStaticList(query, type, country);
-    if (staticResults.length > 0) {
-      console.log(`Static list returned ${staticResults.length} results for ${type} query: "${query}"`);
-      // Cache static results
-      locationCache.set(cacheKey, {
-        data: staticResults,
-        timestamp: Date.now()
-      });
-      return res.json({ suggestions: staticResults });
     }
 
     console.log(`Static list empty, searching Nominatim for ${type} with query: "${query}"${country ? ` in ${country}` : ''}`);

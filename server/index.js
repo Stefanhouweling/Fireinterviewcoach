@@ -540,7 +540,94 @@ Provide a comprehensive but concise summary (300-500 words) that covers the most
 const locationCache = new Map();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
-// POST /api/search-location - Location search using OpenStreetMap Nominatim API (free, no API key)
+// Static lists for instant results (common states/provinces and cities)
+const US_STATES = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
+  'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
+  'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',
+  'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina',
+  'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+  'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+];
+
+const CANADIAN_PROVINCES = [
+  'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+  'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
+  'Quebec', 'Saskatchewan', 'Yukon'
+];
+
+// Common cities by state/province (for instant results)
+const COMMON_CITIES = {
+  'California': ['Los Angeles', 'San Francisco', 'San Diego', 'Sacramento', 'San Jose', 'Oakland', 'Fresno', 'Long Beach'],
+  'Texas': ['Houston', 'Dallas', 'Austin', 'San Antonio', 'Fort Worth', 'El Paso', 'Arlington', 'Corpus Christi'],
+  'Florida': ['Miami', 'Tampa', 'Orlando', 'Jacksonville', 'Fort Lauderdale', 'Tallahassee', 'St. Petersburg', 'Hialeah'],
+  'New York': ['New York City', 'Buffalo', 'Rochester', 'Albany', 'Syracuse', 'Yonkers', 'Utica', 'New Rochelle'],
+  'Illinois': ['Chicago', 'Aurora', 'Naperville', 'Joliet', 'Rockford', 'Elgin', 'Springfield', 'Peoria'],
+  'Pennsylvania': ['Philadelphia', 'Pittsburgh', 'Allentown', 'Erie', 'Reading', 'Scranton', 'Bethlehem', 'Lancaster'],
+  'Ohio': ['Columbus', 'Cleveland', 'Cincinnati', 'Toledo', 'Akron', 'Dayton', 'Parma', 'Canton'],
+  'British Columbia': ['Vancouver', 'Victoria', 'Surrey', 'Burnaby', 'Richmond', 'Abbotsford', 'Coquitlam', 'Kelowna'],
+  'Ontario': ['Toronto', 'Ottawa', 'Mississauga', 'Brampton', 'Hamilton', 'London', 'Markham', 'Windsor'],
+  'Alberta': ['Calgary', 'Edmonton', 'Red Deer', 'Lethbridge', 'St. Albert', 'Medicine Hat', 'Grande Prairie', 'Airdrie'],
+  'Quebec': ['Montreal', 'Quebec City', 'Laval', 'Gatineau', 'Longueuil', 'Sherbrooke', 'Saguenay', 'Levis']
+};
+
+// Helper function to search static lists first (instant results)
+function searchStaticList(query, type, country) {
+  const queryLower = query.toLowerCase();
+  let results = [];
+  
+  if (type === 'state') {
+    let list = [];
+    if (country === 'United States') {
+      list = US_STATES;
+    } else if (country === 'Canada') {
+      list = CANADIAN_PROVINCES;
+    } else {
+      // If no country or other country, search both
+      list = [...US_STATES, ...CANADIAN_PROVINCES];
+    }
+    
+    results = list
+      .filter(state => state.toLowerCase().includes(queryLower))
+      .map(state => ({
+        name: state,
+        country: US_STATES.includes(state) ? 'United States' : 'Canada',
+        fullLocation: `${state}, ${US_STATES.includes(state) ? 'United States' : 'Canada'}`,
+        relevance: state.toLowerCase().startsWith(queryLower) ? 1 : 2
+      }))
+      .sort((a, b) => a.relevance - b.relevance || a.name.localeCompare(b.name))
+      .slice(0, 8);
+  } else if (type === 'city') {
+    // Search common cities
+    const allCities = [];
+    Object.entries(COMMON_CITIES).forEach(([state, cities]) => {
+      cities.forEach(city => {
+        allCities.push({ city, state, country: US_STATES.includes(state) ? 'United States' : 'Canada' });
+      });
+    });
+    
+    results = allCities
+      .filter(item => {
+        const matchesQuery = item.city.toLowerCase().includes(queryLower);
+        const matchesCountry = !country || item.country === country;
+        const matchesState = true; // We'll filter by state if provided later
+        return matchesQuery && matchesCountry && matchesState;
+      })
+      .map(item => ({
+        name: item.city,
+        stateProvince: item.state,
+        country: item.country,
+        fullLocation: `${item.city}, ${item.state}, ${item.country}`,
+        relevance: item.city.toLowerCase().startsWith(queryLower) ? 1 : 2
+      }))
+      .sort((a, b) => a.relevance - b.relevance || a.name.localeCompare(b.name))
+      .slice(0, 8);
+  }
+  
+  return results;
+}
+
+// POST /api/search-location - Location search with static lists (instant) + Nominatim fallback
 app.post('/api/search-location', async (req, res) => {
   try {
     const { query, type, country } = req.body; // type: 'city' or 'state'
@@ -557,7 +644,19 @@ app.post('/api/search-location', async (req, res) => {
       return res.json({ suggestions: cached.data });
     }
 
-    console.log(`Searching for ${type} with query: "${query}"${country ? ` in ${country}` : ''}`);
+    // Try static list first for instant results
+    const staticResults = searchStaticList(query, type, country);
+    if (staticResults.length > 0) {
+      console.log(`Static list returned ${staticResults.length} results for ${type} query: "${query}"`);
+      // Cache static results
+      locationCache.set(cacheKey, {
+        data: staticResults,
+        timestamp: Date.now()
+      });
+      return res.json({ suggestions: staticResults });
+    }
+
+    console.log(`Static list empty, searching Nominatim for ${type} with query: "${query}"${country ? ` in ${country}` : ''}`);
 
     // Use OpenStreetMap Nominatim API (free, no API key required)
     // Documentation: https://nominatim.org/release-docs/develop/api/Search/
@@ -565,8 +664,12 @@ app.post('/api/search-location', async (req, res) => {
     let searchQuery = query;
     
     if (type === 'city') {
-      // Optimize: search for cities/towns/villages, prioritize by country
-      if (country) {
+      // Optimize: search for cities/towns/villages, prioritize by state and country
+      if (stateProvince && country) {
+        searchQuery = `${query}, ${stateProvince}, ${country}`;
+      } else if (stateProvince) {
+        searchQuery = `${query}, ${stateProvince}`;
+      } else if (country) {
         searchQuery = `${query}, ${country}`;
       }
     } else if (type === 'state') {

@@ -1539,6 +1539,7 @@
       citySearchTimeout = setTimeout(async () => {
         try {
           const country = countrySelect ? countrySelect.value : "";
+          const stateProvince = stateInput ? stateInput.value.trim() : "";
           const response = await fetch(`${BACKEND_URL}/api/search-location`, {
             method: "POST",
             headers: {
@@ -1547,7 +1548,8 @@
             body: JSON.stringify({
               query: query,
               type: "city",
-              country: country || undefined
+              country: country || undefined,
+              stateProvince: stateProvince || undefined
             })
           });
           

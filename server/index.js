@@ -47,11 +47,24 @@ app.post('/api/question', async (req, res) => {
   try {
     const { resumeText, resumeAnalysis, history, askedQuestions = [], askedCategories = [], practiceMode = "simulation", selectedCategory = "" } = req.body;
 
-    const resumeContext = resumeAnalysis 
-      ? `Resume Analysis: ${JSON.stringify(resumeAnalysis)}`
-      : resumeText 
-        ? `Resume Text (first 2000 chars): ${resumeText.slice(0, 2000)}`
-        : "No resume provided";
+    // Build comprehensive resume context
+    let resumeContext = "";
+    if (resumeAnalysis) {
+      const analysis = resumeAnalysis;
+      resumeContext = `Resume Summary:
+- Experience: ${analysis.experience || analysis.yearsOfExperience || "N/A"}
+- Certifications: ${Array.isArray(analysis.certifications) ? analysis.certifications.join(", ") : "None listed"}
+- Key Skills: ${Array.isArray(analysis.skills) ? analysis.skills.slice(0, 5).join(", ") : "General"}
+- Work History Highlights: ${Array.isArray(analysis.workHistory) ? analysis.workHistory.slice(0, 3).join("; ") : "N/A"}
+- Interview Focus Areas: ${Array.isArray(analysis.interviewFocus) ? analysis.interviewFocus.join(", ") : "General competencies"}
+
+Full Resume Analysis: ${JSON.stringify(resumeAnalysis)}`;
+    } else if (resumeText) {
+      resumeContext = `Resume Text (full text for context):
+${resumeText}`;
+    } else {
+      resumeContext = "No resume provided";
+    }
     
     const conversationContext = history && history.length > 0
       ? `\n\nPrevious questions asked:\n${history.slice(-3).map((item, i) => 

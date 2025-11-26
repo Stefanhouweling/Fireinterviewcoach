@@ -1123,18 +1123,6 @@
 
 <button id="showConsoleBtn" style="position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; color: #fff; font-size: 20px; cursor: pointer; z-index: 9998; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center;">🐛</button>
 
-<!-- AI Feedback Modal -->
-<div id="aiModalOverlay" class="ai-modal-overlay">
-  <div class="ai-modal">
-    <div class="ai-modal-header">
-      <h3>🤖 AI Interview Coach Feedback</h3>
-      <button class="ai-modal-close" id="closeAIModal" type="button">×</button>
-    </div>
-    <div class="ai-modal-content" id="aiModalContent">
-      <!-- AI feedback will be inserted here -->
-    </div>
-  </div>
-
   <!-- Footer with Legal Links -->
   <footer style="text-align: center; padding: 30px 20px; margin-top: auto; border-top: 1px solid rgba(239, 68, 68, 0.2); color: #94a3b8; font-size: 0.9em; width: 100%; clear: both; display: block; flex-shrink: 0;">
     <div style="max-width: 1200px; margin: 0 auto;">
@@ -1149,6 +1137,19 @@
       </p>
     </div>
   </footer>
+</div>
+
+<!-- AI Feedback Modal - Outside app container for proper fixed positioning -->
+<div id="aiModalOverlay" class="ai-modal-overlay">
+  <div class="ai-modal">
+    <div class="ai-modal-header">
+      <h3>🤖 AI Interview Coach Feedback</h3>
+      <button class="ai-modal-close" id="closeAIModal" type="button">×</button>
+    </div>
+    <div class="ai-modal-content" id="aiModalContent">
+      <!-- AI feedback will be inserted here -->
+    </div>
+  </div>
 </div>
 
 <script>

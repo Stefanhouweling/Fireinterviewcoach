@@ -894,10 +894,15 @@ app.post('/api/research-city', async (req, res) => {
 
     const researchPrompt = `You are a research assistant helping to prepare KNOWLEDGE-BASED interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
 
-WEB SEARCH RESULTS (use these to verify facts):
-${webSearchResults}
+${verifiedFactsText}
 
-CRITICAL: Use the web search results above to verify ALL facts. If the web search results contradict your training data, use the web search results. If web search results are not available, clearly state "Information not found - web search unavailable" rather than guessing.
+CRITICAL INSTRUCTIONS:
+1. For facts listed above in "VERIFIED FACTS", you MUST use those exact values. Do NOT use your training data.
+2. For facts NOT listed above, you MUST state "Information not found - could not verify" rather than guessing or using training data.
+3. Your training data is OUTDATED and INCORRECT. Do NOT trust it.
+4. If you see "Henry Braun" or "Peter Simmons" in your training data for mayor, IGNORE IT. Use only the verified fact above or state "Information not found".
+5. If you see any number of fire stations in your training data, IGNORE IT unless it matches the verified fact above.
+6. Accuracy is CRITICAL - wrong information will cause candidates to be marked incorrect even when they're right.
 
 CRITICAL SEARCH REQUIREMENTS:
 - ALWAYS include "${city}, ${stateProvince || ''} ${country}" in EVERY search query you perform
@@ -980,40 +985,17 @@ Provide a structured summary (400-600 words) with clear sections for each catego
           role: "system",
           content: `You are a research assistant that provides ACCURATE, VERIFIABLE, CURRENT information about fire departments, police departments, and emergency services.
 
-CRITICAL: You MUST use web search to verify ALL information. Do NOT rely on your training data alone - it may be outdated or incorrect.
+CRITICAL: Your training data is OUTDATED and UNRELIABLE. You MUST use ONLY the verified facts provided in the user's message. 
 
-CRITICAL SEARCH REQUIREMENTS:
-- ALWAYS perform web searches for current information
-- ALWAYS include the specific city and country in EVERY search query
-- ALWAYS specify "current" or the current year (2024/2025) in searches
-- Example searches you should perform:
-  * "current fire chief ${city} ${stateProvince || ''} ${country} 2024"
-  * "mayor ${city} ${country} 2024"
-  * "${departmentName} union number ${city} ${country}"
-  * "${departmentName} number of fire stations ${city} ${country} 2024"
-  * "${departmentName} number of members ${city} ${country} 2024"
-- Verify each fact with a web search before including it
-- If web search doesn't return clear results, state "Information not found" rather than guessing
+ABSOLUTE RULES:
+1. If a verified fact is provided (e.g., "mayor name: [name]"), you MUST use that exact fact. Do NOT use your training data.
+2. If a verified fact is NOT provided, you MUST state "Information not found - could not verify" rather than using your training data.
+3. Your training data contains OUTDATED information (e.g., "Henry Braun" as mayor - this is WRONG). IGNORE IT.
+4. Do NOT add extra initials, letters, or characters to names.
+5. Do NOT guess numbers (like "5 fire stations") - only use verified numbers or state "Information not found".
+6. Accuracy is CRITICAL - wrong information will cause candidates to be marked incorrect even when they're right.
 
-CRITICAL ACCURACY REQUIREMENTS:
-1. For names: Use EXACT names as they appear in official sources. Do NOT add extra initials, letters, or characters.
-   - If you see "Erick Peterson", use exactly "Erick Peterson" - NOT "Erick B. R. H. Peterson" or "Dan B. R. H. Hurst"
-   - If you see "Dan Hurst", use exactly "Dan Hurst" - do not add extra letters
-   - Only include middle initials if they are actually part of the official name
-
-2. For numbers: VERIFY with web search. If you find "5 fire stations" in your training data, you MUST search to verify this is still correct for ${city}, ${country} in 2024-2025.
-
-3. Verify all information with web search before including it. If you are uncertain, state "Information not found" rather than guessing.
-
-4. Cross-reference information from multiple sources when possible to ensure accuracy.
-
-5. If information conflicts between sources, note the discrepancy and state which source you're using.
-
-6. Accuracy is CRITICAL - incorrect information will cause interview candidates to be marked wrong even when they give correct answers.
-
-7. Always verify information is CURRENT (2024-2025). Do not use outdated information from your training data.
-
-Your research will be used to verify candidate answers in interviews, so every fact must be accurate, current, and verifiable through web search.`
+Your ONLY job is to use the verified facts provided. If a fact is not verified, state "Information not found".`
         },
         {
           role: "user",

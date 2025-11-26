@@ -1022,7 +1022,7 @@
           </button>
           <div class="status">
             <span class="status-dot off" id="micStatusDot"></span>
-            <span id="micStatusText">Mic idle</span>
+            <span id="micStatusText"><!-- Loaded from config.js --></span>
           </div>
         </div>
         <div class="transcript" id="transcriptBox">
@@ -1857,7 +1857,7 @@
 
   nextQuestionBtn.addEventListener("click", async () => {
     nextQuestionBtn.disabled = true;
-    nextQuestionBtn.textContent = "🤖 Generating question...";
+    nextQuestionBtn.textContent = APP_CONFIG ? APP_CONFIG.status.generatingQuestion : "🤖 Generating question...";
       try {
         currentQuestion = await generateAIQuestion();
         if (currentQuestion) {
@@ -1883,7 +1883,7 @@
       speakQuestionWithCaptions(currentQuestion.template);
     } finally {
       nextQuestionBtn.disabled = false;
-      nextQuestionBtn.textContent = "🎤 Next Question";
+      nextQuestionBtn.textContent = APP_CONFIG ? APP_CONFIG.buttons.nextQuestion : "🎤 Next Question";
     }
   });
 
@@ -2698,7 +2698,7 @@ Return ONLY the category and question.`
     // ====== POPUP + AI LOADING BAR ======
     if (analyzeBtn) {
       analyzeBtn.disabled = true;
-      analyzeBtn.textContent = "🤖 Analyzing with AI...";
+      analyzeBtn.textContent = APP_CONFIG ? APP_CONFIG.status.analyzing : "🤖 Analyzing with AI...";
     }
 
     // Open the AI modal immediately

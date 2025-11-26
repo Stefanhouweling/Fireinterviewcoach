@@ -1204,10 +1204,18 @@
   }
 
   // ========== API CONFIGURATION ==========
-  // Backend API URL - change this to your deployed backend URL in production
-  const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3001'  // Local development
-    : 'https://your-backend-url.com';  // Production - UPDATE THIS!
+  // Backend API URL - automatically detects environment
+  // For production: Update this to your Render backend URL (e.g., https://fire-interview-coach-api.onrender.com)
+  const BACKEND_URL = (() => {
+    const hostname = window.location.hostname;
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3001';
+    }
+    // Production - UPDATE THIS with your actual Render backend URL
+    // Example: 'https://fire-interview-coach-api.onrender.com'
+    return 'https://YOUR-BACKEND-URL.onrender.com';  // ⚠️ UPDATE THIS AFTER DEPLOYING BACKEND
+  })();
   
   // Use backend by default, allow local keys for development
   let USE_BACKEND = true;  // Set to false to use local API keys

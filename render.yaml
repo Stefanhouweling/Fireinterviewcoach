@@ -1,11 +1,28 @@
 services:
+  # Backend API Service
   - type: web
+    name: fire-interview-coach-api
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        sync: false  # Render will set this automatically
+      - key: OPENAI_API_KEY
+        sync: false  # Set this in Render dashboard
+      - key: ELEVENLABS_API_KEY
+        sync: false  # Set this in Render dashboard
+      - key: FRONTEND_URL
+        sync: false  # Set this to your frontend URL after deployment
+
+  # Frontend Static Site
+  - type: static
     name: fire-interview-coach
-    env: static
+    buildCommand: echo "No build needed for static site"
     staticPublishPath: .
-    buildCommand: ""
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
-

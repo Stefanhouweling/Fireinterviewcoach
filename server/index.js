@@ -783,38 +783,62 @@ app.post('/api/research-city', async (req, res) => {
 
     console.log(`Researching city information for: ${locationString}, ${jobType}, ${departmentName}`);
 
-    const researchPrompt = `You are a research assistant helping to prepare personalized interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
+    const researchPrompt = `You are a research assistant helping to prepare KNOWLEDGE-BASED interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
 
-Research and provide accurate, specific information about this department and city that would be relevant for interview questions. Focus on:
+Research and provide SPECIFIC, FACTUAL information about this department and city. This information will be used to test candidates' knowledge of the city and department during interviews.
 
-1. Department History & Background:
-   - When was the ${departmentName} first established as a career department?
-   - What is the local union number for this department?
-   - Who is the current fire chief (or equivalent leader) of ${departmentName}?
-   - Any notable history or milestones
+CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge:
 
-2. City/Department Planning:
-   - What is the city's 5-year plan (or strategic plan) related to emergency services?
-   - Any recent major initiatives, expansions, or changes in the department?
-   - Community demographics or unique challenges
+1. FIRE DEPARTMENT LEADERSHIP & STRUCTURE (CRITICAL - MUST INCLUDE):
+   - Fire chief's FULL NAME and title
+   - Deputy chiefs or assistant chiefs (names if available)
+   - Department structure and hierarchy
+   - Number of members/staff (exact number if available, or approximate)
+   - Number of fire stations and their locations
+   - Department's organizational structure
 
-3. Department-Specific Information:
-   - Station locations or number of stations
-   - Department size (number of personnel)
-   - Special programs or services offered
-   - Any unique protocols or standards
+2. UNION INFORMATION (CRITICAL - MUST INCLUDE):
+   - Local union number for ${departmentName} (e.g., "IAFF Local 1234")
+   - Union name and full designation
+   - Union president or leadership (if available)
+   - Union affiliation (e.g., IAFF - International Association of Fire Fighters)
 
-4. Local Context:
-   - Geographic or environmental factors that affect operations
-   - Community relationships or partnerships
-   - Any recent significant incidents or events
+3. DEPARTMENT DETAILS (CRITICAL):
+   - Department history (when founded, key milestones)
+   - Department values, mission statement, or motto
+   - Recent initiatives, programs, or changes
+   - Community involvement programs
+   - Equipment or apparatus information
+   - Response areas or coverage zones
+
+4. CITY LEADERSHIP (CRITICAL - MUST INCLUDE):
+   - Mayor's FULL NAME
+   - Mayor's key priorities, especially related to emergency services
+   - City council members (especially those on public safety committees)
+   - City manager or chief administrative officer
+
+5. CITY INFORMATION:
+   - City demographics and population
+   - Major industries or economic drivers
+   - Unique challenges facing the city (that affect fire department)
+   - City planning initiatives
+   - Emergency services structure (how fire fits with police, EMS)
+   - Recent city developments or growth
+
+6. DEPARTMENT-SPECIFIC CONTEXT:
+   - How the department fits into the city's emergency services
+   - Department's role in the community
+   - Any unique aspects, challenges, or strengths of this specific department
+   - Department's relationship with city government
 
 IMPORTANT: 
-- Be accurate and specific. If you cannot find certain information, state "Information not readily available" rather than guessing.
-- Focus on information that would be relevant for interview questions (e.g., "Working for the ${departmentName} is a stressful job, tell us about a time...")
-- Format your response as a structured summary that can be easily incorporated into interview questions.
+- Provide SPECIFIC NAMES, NUMBERS, and FACTS whenever possible
+- If information is not available, clearly state "Information not found" for that specific item
+- Focus on information that would be publicly available and that a well-prepared candidate should know
+- Format clearly with headings so specific facts can be easily extracted for knowledge-testing questions
+- This research will be used to generate questions that TEST the candidate's knowledge, not behavioral questions
 
-Provide a comprehensive but concise summary (300-500 words) that covers the most relevant and verifiable information.`;
+Provide a structured summary (400-600 words) with clear sections for each category above.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",

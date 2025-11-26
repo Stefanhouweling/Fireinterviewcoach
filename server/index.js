@@ -918,12 +918,17 @@ app.post('/api/research-city', async (req, res) => {
 
     let verifiedFacts = {};
     
-    console.log(`Starting ${criticalSearches.length} web searches for city research...`);
+    console.log(`\n=== Starting ${criticalSearches.length} web searches for comprehensive city research ===`);
+    console.log(`Researching: ${locationString}, ${departmentName}`);
+    console.log(`Total searches to perform: ${criticalSearches.length}\n`);
     
     // Use OpenAI Responses API with web search to get current, accurate information
-    for (const search of criticalSearches) {
+    // Process all searches sequentially
+    for (let idx = 0; idx < criticalSearches.length; idx++) {
+      const search = criticalSearches[idx];
       try {
-        console.log(`Searching for: ${search.query}`);
+        console.log(`[${idx + 1}/${criticalSearches.length}] Searching for: ${search.fact}`);
+        console.log(`    Query: "${search.query}"`);
         
         // Try OpenAI Responses API with web search first (if available)
         let factResult = null;
@@ -1003,12 +1008,20 @@ If you cannot provide a current, verified fact, return "NOT FOUND".`
           verifiedFacts[search.fact] = factResult;
           console.log(`✓ Found ${search.fact}: ${factResult}${usedWebSearch ? ' (via web search)' : ''}`);
         } else {
-          console.log(`✗ Could not verify: ${search.fact} - ${factResult}`);
+            console.log(`    ✗ Could not verify: ${factResult || 'no result'}`);
         }
       } catch (err) {
-        console.error(`Search error for ${search.fact}:`, err);
+        console.error(`    ✗ ERROR for ${search.fact}:`, err.message);
+      }
+      
+      // Small delay between searches to avoid rate limiting
+      if (idx < criticalSearches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
       }
     }
+    
+    console.log(`\n=== Completed all ${criticalSearches.length} searches ===`);
+    console.log(`Successfully verified ${Object.keys(verifiedFacts).length} facts\n`);
     
     // Format verified facts by category for better organization
     const formatVerifiedFacts = (facts) => {

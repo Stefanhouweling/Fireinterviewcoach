@@ -535,7 +535,7 @@ Provide a comprehensive but concise summary (300-500 words) that covers the most
   }
 });
 
-// POST /api/search-location - AI-powered location search for autocomplete
+// POST /api/search-location - Location search using OpenStreetMap Nominatim API (free, no API key)
 app.post('/api/search-location', async (req, res) => {
   try {
     const { query, type, country } = req.body; // type: 'city' or 'state'
@@ -546,108 +546,110 @@ app.post('/api/search-location', async (req, res) => {
 
     console.log(`Searching for ${type} with query: "${query}"${country ? ` in ${country}` : ''}`);
 
-    let searchPrompt = '';
+    // Use OpenStreetMap Nominatim API (free, no API key required)
+    // Documentation: https://nominatim.org/release-docs/develop/api/Search/
+    
+    let searchQuery = query;
+    let featureType = '';
+    
     if (type === 'city') {
-      searchPrompt = `Given the search query "${query}"${country ? ` in ${country}` : ''}, provide a list of real city names that match or are similar to this query.
-
-Requirements:
-- Return ONLY valid, real city names
-- If country is provided, prioritize cities in that country
-- Include major cities and well-known cities
-- Format: Return a JSON array of objects, each with: { "name": "City Name", "stateProvince": "State/Province Name", "country": "Country Name", "fullLocation": "City, State/Province, Country" }
-- Maximum 8 suggestions
-- Order by relevance (exact matches first, then partial matches)
-
-Example format:
-[
-  { "name": "Abbotsford", "stateProvince": "British Columbia", "country": "Canada", "fullLocation": "Abbotsford, British Columbia, Canada" },
-  { "name": "Abbotsford", "stateProvince": "Wisconsin", "country": "United States", "fullLocation": "Abbotsford, Wisconsin, United States" }
-]
-
-Return ONLY the JSON array, no other text.`;
+      featureType = 'city,town,village';
+      // Add country filter if provided
+      if (country) {
+        searchQuery = `${query}, ${country}`;
+      }
     } else if (type === 'state') {
-      searchPrompt = `Given the search query "${query}"${country ? ` in ${country}` : ''}, provide a list of real state/province names that match or are similar to this query.
-
-Requirements:
-- Return ONLY valid, real state/province/territory names
-- If country is provided, only return states/provinces from that country
-- Include common abbreviations and full names
-- Format: Return a JSON array of objects, each with: { "name": "State/Province Name", "country": "Country Name", "fullLocation": "State/Province, Country" }
-- Maximum 8 suggestions
-- Order by relevance
-
-Example format:
-[
-  { "name": "British Columbia", "country": "Canada", "fullLocation": "British Columbia, Canada" },
-  { "name": "California", "country": "United States", "fullLocation": "California, United States" }
-]
-
-Return a JSON object with a "suggestions" key containing the array. Example: {"suggestions": [...]}`;
+      featureType = 'state,province';
+      // Add country filter if provided
+      if (country) {
+        searchQuery = `${query}, ${country}`;
+      }
     } else {
       return res.status(400).json({ error: 'Invalid type. Must be "city" or "state"' });
     }
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a location search assistant. You provide accurate, real-world location names in JSON format. CRITICAL: You must ALWAYS return ONLY a valid JSON array, nothing else. No explanations, no markdown, just the JSON array."
-        },
-        {
-          role: "user",
-          content: searchPrompt
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 500
+    // Build Nominatim API URL
+    const baseUrl = 'https://nominatim.openstreetmap.org/search';
+    const params = new URLSearchParams({
+      q: searchQuery,
+      format: 'json',
+      addressdetails: '1',
+      limit: '8',
+      dedupe: '1', // Remove duplicates
+      'accept-language': 'en'
+    });
+    
+    // Add feature type filter for better results
+    if (featureType) {
+      params.append('featuretype', featureType);
+    }
+
+    const url = `${baseUrl}?${params.toString()}`;
+    
+    console.log(`Calling Nominatim API: ${url}`);
+
+    // Call Nominatim API with proper headers (required by their usage policy)
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'FireInterviewCoach/1.0 (contact: support@fireinterviewcoach.com)', // Required by Nominatim
+        'Accept': 'application/json'
+      }
     });
 
-    const content = response.choices[0].message.content.trim();
+    if (!response.ok) {
+      throw new Error(`Nominatim API error: ${response.status}`);
+    }
+
+    const data = await response.json();
     
-    // Try to parse JSON from the response
-    let suggestions = [];
-    try {
-      const parsed = JSON.parse(content);
+    // Transform Nominatim results to our format
+    const suggestions = data.map(item => {
+      const address = item.address || {};
       
-      // Handle both formats: direct array or object with suggestions key
-      if (Array.isArray(parsed)) {
-        suggestions = parsed;
-      } else if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
-        suggestions = parsed.suggestions;
+      if (type === 'city') {
+        const cityName = address.city || address.town || address.village || address.municipality || item.display_name.split(',')[0];
+        const stateProvince = address.state || address.province || address.region || '';
+        const countryName = address.country || '';
+        
+        return {
+          name: cityName,
+          stateProvince: stateProvince,
+          country: countryName,
+          fullLocation: [cityName, stateProvince, countryName].filter(Boolean).join(', ')
+        };
       } else {
-        // Try to extract array from content if it's wrapped in text
-        const jsonMatch = content.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          suggestions = JSON.parse(jsonMatch[0]);
-        } else {
-          console.warn('Unexpected response format:', parsed);
-          suggestions = [];
-        }
+        // type === 'state'
+        const stateName = address.state || address.province || address.region || item.display_name.split(',')[0];
+        const countryName = address.country || '';
+        
+        return {
+          name: stateName,
+          country: countryName,
+          fullLocation: [stateName, countryName].filter(Boolean).join(', ')
+        };
       }
-      
-      // Validate suggestions format
-      if (!Array.isArray(suggestions)) {
-        console.warn('Suggestions is not an array, attempting to fix...');
-        suggestions = [];
+    }).filter(item => {
+      // Filter by country if specified
+      if (country && item.country) {
+        return item.country.toLowerCase().includes(country.toLowerCase()) || 
+               country.toLowerCase().includes(item.country.toLowerCase());
       }
-    } catch (e) {
-      console.error('Failed to parse location suggestions:', e);
-      console.error('Response content:', content);
-      // Fallback: try to extract array from content
-      try {
-        const jsonMatch = content.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          suggestions = JSON.parse(jsonMatch[0]);
-        }
-      } catch (e2) {
-        console.error('Fallback parsing also failed:', e2);
-        suggestions = [];
+      return true;
+    });
+
+    // Remove duplicates based on name and country
+    const uniqueSuggestions = [];
+    const seen = new Set();
+    for (const suggestion of suggestions) {
+      const key = `${suggestion.name}|${suggestion.country}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueSuggestions.push(suggestion);
       }
     }
 
-    console.log(`Returning ${suggestions.length} suggestions for ${type} query: "${query}"`);
-    res.json({ suggestions: suggestions.slice(0, 8) });
+    console.log(`Returning ${uniqueSuggestions.length} suggestions for ${type} query: "${query}"`);
+    res.json({ suggestions: uniqueSuggestions.slice(0, 8) });
   } catch (error) {
     console.error('Error searching location:', error);
     console.error('Error stack:', error.stack);

@@ -1260,8 +1260,8 @@
   let practiceMode = "simulation";
   let selectedCategory = "";
   
-  // Initialize practice mode toggle listeners
-  document.addEventListener("DOMContentLoaded", () => {
+  // Initialize practice mode toggle listeners (run immediately, not on DOMContentLoaded)
+  function initializePracticeModeToggle() {
     const simulationModeEl = document.getElementById("simulationMode");
     const specificModeEl = document.getElementById("specificMode");
     const categorySelectorEl = document.getElementById("categorySelector");
@@ -1278,9 +1278,14 @@
       
       specificModeEl.addEventListener("change", () => {
         practiceMode = "specific";
-        if (categorySelectorEl) categorySelectorEl.style.display = "block";
+        if (categorySelectorEl) {
+          categorySelectorEl.style.display = "block";
+          console.log("Category selector shown");
+        }
         console.log("Practice mode: User-Specific Practice");
       });
+    } else {
+      console.warn("Practice mode toggle elements not found");
     }
     
     if (categorySelectEl) {
@@ -1288,8 +1293,18 @@
         selectedCategory = categorySelectEl.value;
         console.log("Selected category:", selectedCategory || "All Categories");
       });
+    } else {
+      console.warn("Category select element not found");
     }
-  });
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePracticeModeToggle);
+  } else {
+    // DOM already loaded
+    initializePracticeModeToggle();
+  }
 
   document.getElementById("apiKeySaveBtn").addEventListener("click", () => {
     const openaiKey = document.getElementById("apiKeyInput").value.trim();

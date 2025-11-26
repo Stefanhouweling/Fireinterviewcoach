@@ -771,50 +771,53 @@
 
 <div class="app">
   <header>
-    <div class="title" style="display: flex; align-items: center; gap: 16px;">
+    <div class="title" style="display: flex; align-items: center; gap: 20px;">
       <!-- Logo -->
-      <div style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; flex-shrink: 0;">
-        <svg width="80" height="80" viewBox="0 0 80 80" style="filter: drop-shadow(0 2px 8px rgba(249, 115, 22, 0.3));">
+      <div style="display: flex; align-items: center; justify-content: center; width: 90px; height: 90px; flex-shrink: 0; position: relative;">
+        <svg width="90" height="90" viewBox="0 0 90 90" style="filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.4));">
           <!-- Maltese Cross Background -->
-          <path d="M40 10 L45 30 L65 30 L50 42 L55 62 L40 50 L25 62 L30 42 L15 30 L35 30 Z" 
+          <path d="M45 12 L50 32 L70 32 L55 44 L60 64 L45 52 L30 64 L35 44 L20 32 L40 32 Z" 
                 fill="none" 
                 stroke="#94a3b8" 
-                stroke-width="2" 
-                stroke-linejoin="round"/>
-          <!-- Flame Icon -->
-          <path d="M40 25 L38 35 L40 38 L42 35 Z M40 25 L42 30 L40 35 L38 30 Z" 
-                fill="#f97316" 
-                stroke="#f97316" 
-                stroke-width="1"/>
-          <!-- Signal/WiFi Lines -->
-          <path d="M40 42 Q45 40 50 42" 
+                stroke-width="2.5" 
+                stroke-linejoin="round"
+                opacity="0.8"/>
+          <!-- Flame Icon (center) -->
+          <g transform="translate(45, 30)">
+            <path d="M0 -5 L-2 5 L0 8 L2 5 Z" fill="#f97316"/>
+            <path d="M0 -5 L-1.5 0 L0 3 L1.5 0 Z" fill="#fb923c"/>
+            <circle cx="0" cy="-2" r="1.5" fill="#fbbf24"/>
+          </g>
+          <!-- Signal/WiFi Lines (below flame) -->
+          <path d="M45 48 Q50 46 55 48" 
                 fill="none" 
                 stroke="#f97316" 
-                stroke-width="2" 
+                stroke-width="2.5" 
                 stroke-linecap="round"/>
-          <path d="M40 45 Q48 42 56 45" 
+          <path d="M45 51 Q53 48 61 51" 
                 fill="none" 
                 stroke="#f97316" 
-                stroke-width="2" 
+                stroke-width="2.5" 
                 stroke-linecap="round"/>
-          <path d="M40 48 Q50 44 60 48" 
+          <path d="M45 54 Q55 50 65 54" 
                 fill="none" 
                 stroke="#f97316" 
-                stroke-width="2" 
+                stroke-width="2.5" 
                 stroke-linecap="round"/>
-          <!-- IH Letters -->
-          <text x="20" y="50" font-family="Arial, sans-serif" font-size="8" fill="#94a3b8" font-weight="bold">IH</text>
-          <!-- Asterisk -->
-          <text x="58" y="50" font-family="Arial, sans-serif" font-size="10" fill="#94a3b8">*</text>
+          <!-- IH Letters (left arm) -->
+          <text x="22" y="55" font-family="Arial, sans-serif" font-size="9" fill="#94a3b8" font-weight="bold" opacity="0.9">I</text>
+          <text x="22" y="65" font-family="Arial, sans-serif" font-size="9" fill="#94a3b8" font-weight="bold" opacity="0.9">H</text>
+          <!-- Asterisk (right arm) -->
+          <text x="63" y="60" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8" opacity="0.9">*</text>
         </svg>
       </div>
       <div style="flex: 1;">
-        <h1 style="margin: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
-          <span style="color: #94a3b8; font-weight: 600;">Interview</span>
-          <span style="color: #94a3b8; font-weight: 600;">Coach</span>
-          <span style="color: #f97316; font-weight: 700; font-size: 1.1em;">AI</span>
+        <h1 style="margin: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; line-height: 1.2;">
+          <span style="color: #64748b; font-weight: 600; font-size: 1.8em;">Interview</span>
+          <span style="color: #64748b; font-weight: 600; font-size: 1.8em;">Coach</span>
+          <span style="color: #f97316; font-weight: 700; font-size: 2em;">AI</span>
         </h1>
-        <p class="subtitle" style="margin-top: 4px;">AI-powered firefighter interview coach. Dynamic questions, real-time analysis, and panel-style followups.</p>
+        <p class="subtitle" style="margin-top: 6px; color: #94a3b8;">AI-powered firefighter interview coach. Dynamic questions, real-time analysis, and panel-style followups.</p>
       </div>
     </div>
     <span class="badge">Prototype • Local Only</span>

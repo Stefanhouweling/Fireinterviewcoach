@@ -2312,14 +2312,15 @@ Return ONLY the category and question.`
       if (event.name === 'word' && subtitleEl) {
         const spokenWords = words.slice(0, currentWordIndex + 1).join(" ");
         const remainingWords = words.slice(currentWordIndex + 1).join(" ");
-        subtitleEl.innerHTML = `<span style="color: #fbbf24;">${spokenWords}</span> ${remainingWords}`;
+        subtitleEl.innerHTML = `<span style="color: #fbbf24;">${spokenWords}</span> <span style="color: #64748b;">${remainingWords}</span>`;
         currentWordIndex++;
       }
     };
     
     utterance.onend = () => {
       if (subtitleEl) {
-        subtitleEl.innerHTML = `<span style="color: #fbbf24;">${text}</span>`;
+        // Hide subtitle when done - question is already displayed in questionText
+        subtitleEl.style.display = "none";
       }
     };
     

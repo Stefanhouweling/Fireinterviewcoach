@@ -870,25 +870,62 @@ let citiesData = null;
 // Load data on startup (lightweight, fast)
 async function loadLocationData() {
   try {
-    // Fetch from the public JSON files (CDN or GitHub raw)
-    const baseUrl = 'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master';
+    // Use jsDelivr CDN which is more reliable than raw.githubusercontent.com
+    // jsDelivr serves the npm package directly and handles large files better
+    const baseUrl = 'https://cdn.jsdelivr.net/npm/countries-states-cities-database@latest/json';
     
     console.log('Loading location data from countries-states-cities-database...');
     
     const [countriesRes, statesRes, citiesRes] = await Promise.all([
-      fetchModule(`${baseUrl}/json/countries.json`),
-      fetchModule(`${baseUrl}/json/states.json`),
-      fetchModule(`${baseUrl}/json/cities.json`)
+      fetchModule(`${baseUrl}/countries.json`, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Fire-Interview-Coach-API/1.0'
+        }
+      }),
+      fetchModule(`${baseUrl}/states.json`, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Fire-Interview-Coach-API/1.0'
+        }
+      }),
+      fetchModule(`${baseUrl}/cities.json`, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Fire-Interview-Coach-API/1.0'
+        }
+      })
     ]);
     
-    countriesData = await countriesRes.json();
-    statesData = await statesRes.json();
-    citiesData = await citiesRes.json();
+    // Check if responses are OK
+    if (!countriesRes.ok || !statesRes.ok || !citiesRes.ok) {
+      throw new Error(`HTTP error: countries=${countriesRes.status}, states=${statesRes.status}, cities=${citiesRes.status}`);
+    }
+    
+    // Get text first to check if it's actually JSON
+    const [countriesText, statesText, citiesText] = await Promise.all([
+      countriesRes.text(),
+      statesRes.text(),
+      citiesRes.text()
+    ]);
+    
+    // Check if we got HTML (error page) instead of JSON
+    if (countriesText.trim().startsWith('<') || statesText.trim().startsWith('<') || citiesText.trim().startsWith('<')) {
+      throw new Error('Received HTML instead of JSON (likely an error page)');
+    }
+    
+    // Parse JSON
+    countriesData = JSON.parse(countriesText);
+    statesData = JSON.parse(statesText);
+    citiesData = JSON.parse(citiesText);
     
     console.log(`✓ Loaded ${countriesData.length} countries, ${statesData.length} states, ${citiesData.length} cities`);
   } catch (error) {
-    console.error('Failed to load location data, falling back to static lists:', error);
-    // Fall back to static lists if API fails
+    console.error('Failed to load location data, falling back to static lists:', error.message || error);
+    // Fall back to static lists if API fails - this is non-critical
+    countriesData = null;
+    statesData = null;
+    citiesData = null;
   }
 }
 

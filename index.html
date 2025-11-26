@@ -2065,7 +2065,10 @@ Return ONLY the category and question.`
         console.log("ElevenLabs TTS completed successfully");
         return;
       } catch (err) {
-        console.error("ElevenLabs TTS error:", err);
+        // Silently fall back to browser TTS - don't spam console with errors
+        if (err.message !== "ELEVENLABS_FREE_TIER_DISABLED") {
+          console.error("ElevenLabs TTS error:", err.message || err);
+        }
         console.log("Falling back to browser TTS");
         // Fall through to browser TTS as fallback
       }
@@ -2181,12 +2184,33 @@ Return ONLY the category and question.`
         } else {
           const errorText = await response.text().catch(() => `Status ${response.status}`);
           console.error(`Backend TTS failed: ${response.status}`, errorText);
+          
+          // Check if it's an ElevenLabs API issue (401/403 usually means API key or free tier issue)
+          if (response.status === 401 || response.status === 403) {
+            try {
+              const errorJson = JSON.parse(errorText);
+              if (errorJson.details) {
+                const details = typeof errorJson.details === 'string' ? JSON.parse(errorJson.details) : errorJson.details;
+                if (details.detail?.status === 'detected_unusual_activity' || details.detail?.message?.includes('Free Tier')) {
+                  console.warn("ElevenLabs free tier disabled - falling back to browser TTS");
+                  throw new Error("ELEVENLABS_FREE_TIER_DISABLED");
+                }
+              }
+            } catch (parseErr) {
+              // If parsing fails, just throw the original error
+            }
+          }
+          
           throw new Error(`TTS failed: ${response.status} - ${errorText}`);
         }
       } catch (err) {
-        console.error("Backend TTS error:", err);
-        console.error("Error message:", err.message);
-        console.error("Error stack:", err.stack);
+        // Don't log full error details if it's just a free tier issue
+        if (err.message === "ELEVENLABS_FREE_TIER_DISABLED") {
+          console.warn("ElevenLabs free tier unavailable - using browser TTS instead");
+        } else {
+          console.error("Backend TTS error:", err);
+          console.error("Error message:", err.message);
+        }
         throw err; // Re-throw to fall back to browser TTS
       }
     }

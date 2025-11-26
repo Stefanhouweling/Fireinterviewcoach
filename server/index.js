@@ -7,6 +7,7 @@ const fetchModule = require('node-fetch');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const DEPLOY_COMMIT = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT || 'unknown';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -22,11 +23,12 @@ app.use(express.json());
 
 // Root route
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     service: 'Fire Interview Coach API',
     status: 'running',
     version: '1.0.0',
-      endpoints: {
+    commit: DEPLOY_COMMIT,
+    endpoints: {
       health: '/health',
       question: 'POST /api/question',
       followup: 'POST /api/followup',
@@ -42,7 +44,7 @@ app.get('/', (req, res) => {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Fire Interview Coach API is running' });
+  res.json({ status: 'ok', message: 'Fire Interview Coach API is running', commit: DEPLOY_COMMIT });
 });
 
 // POST /api/question - Generate a new interview question

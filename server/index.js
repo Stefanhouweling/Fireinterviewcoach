@@ -275,7 +275,7 @@ ${profileResumeText}`;
 - The fire chief's name or department leadership
 - Local union information or department structure
 - City planning or emergency services initiatives
-Make the question feel personalized to THIS specific department and city while still testing general firefighter competencies. Examples: "Working for the ${onboardingData?.departmentName || '[Department Name]'} is a stressful job, ${candidateName ? candidateName + ', ' : ''}tell us about a time..." or "Given the challenges in ${onboardingData?.city || '[City]'}, how would you handle...".`;
+Make the question feel personalized to THIS specific department and city while still testing general firefighter competencies. Examples: "Working for the ${profileDepartmentName || '[Department Name]'} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..." or "Given the challenges in ${profileCity || '[City]'}, how would you handle...".`;
       } else {
         questionStrategy = `Generate a question focused on the category: "${selectedCategory}". Make it relevant to this specific area while still being a general situational question.`;
       }

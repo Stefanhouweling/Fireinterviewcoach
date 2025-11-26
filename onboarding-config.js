@@ -42,11 +42,11 @@ const ONBOARDING_CONFIG = {
     },
     stateProvince: {
       label: "State/Province",
-      placeholder: "Start typing state/province (AI will suggest)"
+      placeholder: "Start typing state/province"
     },
     city: {
       label: "City",
-      placeholder: "Start typing city name (AI will suggest)"
+      placeholder: "Start typing city name"
     },
     searchMessages: {
       searching: "🤖 Searching cities...",
@@ -77,7 +77,7 @@ const ONBOARDING_CONFIG = {
   department: {
     label: "4. Department Name",
     required: "*",
-    placeholder: "e.g., Abbotsford Fire Department",
+    placeholder: "e.g., CoachAI Fire Department",
     helperText: "This will be used to personalize your interview questions"
   },
   

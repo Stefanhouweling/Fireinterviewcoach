@@ -2675,18 +2675,12 @@ Return ONLY the category and question.`
     console.log("[ANALYSIS] Starting analysis process...");
     console.log("[ANALYSIS] Transcript length:", text.length, "words:", text.split(/\s+/).length);
     
+    // Open modal immediately
+    openAIModal();
+    
+    // Show loading in modal
     const modalContent = document.getElementById("aiModalContent");
-    const aiModalOverlay = document.getElementById("aiModalOverlay");
-    
-    console.log("[MODAL] Looking for modal elements:", { 
-      modalContent: !!modalContent, 
-      aiModalOverlay: !!aiModalOverlay,
-      modalContentId: modalContent ? modalContent.id : "not found",
-      overlayId: aiModalOverlay ? aiModalOverlay.id : "not found"
-    });
-    
-    if (modalContent && aiModalOverlay) {
-      console.log("[MODAL] Setting up modal content with progress bar...");
+    if (modalContent) {
       modalContent.innerHTML = `
         <div style="text-align: center; padding: 40px 20px;">
           <div style="font-size: 1.5rem; color: #f97316; margin-bottom: 30px; font-weight: 600;">
@@ -2701,29 +2695,9 @@ Return ONLY the category and question.`
           </div>
         </div>
       `;
-      
-      // Open the modal
-      console.log("[MODAL] Adding 'active' class to overlay...");
-      aiModalOverlay.classList.add("active");
-      document.body.style.overflow = "hidden";
-      
-      // Verify modal is visible
-      const computedStyle = window.getComputedStyle(aiModalOverlay);
-      console.log("[MODAL] Modal state after opening:", {
-        display: computedStyle.display,
-        hasActiveClass: aiModalOverlay.classList.contains("active"),
-        zIndex: computedStyle.zIndex,
-        visibility: computedStyle.visibility
-      });
-      
-      console.log("[MODAL] Modal opened and displayed successfully");
+      console.log("[MODAL] Modal opened with loading message");
     } else {
-      console.error("[MODAL ERROR] Modal elements not found!", { 
-        modalContent: !!modalContent, 
-        aiModalOverlay: !!aiModalOverlay,
-        modalContentElement: modalContent,
-        overlayElement: aiModalOverlay
-      });
+      console.error("[MODAL ERROR] Modal content element not found!");
     }
 
     // Add to conversation history

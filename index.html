@@ -2115,153 +2115,60 @@ Return ONLY the category and question.`
   
   // OpenAI TTS function (high quality, natural voice)
   async function speakWithOpenAITTS(text, subtitleEl) {
-    const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel - natural, conversational female voice
+    const voice = "alloy"; // Options: alloy, echo, fable, onyx, nova, shimmer
     
-    // Use backend if enabled
-    if (USE_BACKEND) {
-      try {
-        console.log(`Calling backend TTS at ${BACKEND_URL}/api/tts`);
-        const response = await fetch(`${BACKEND_URL}/api/tts`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ text, voice: "alloy" })
-        });
-        
-        console.log(`Backend TTS response status: ${response.status}`);
-        
-        if (response.ok) {
-          const audioBlob = await response.blob();
-          console.log(`Received audio blob, size: ${audioBlob.size} bytes`);
-          
-          if (audioBlob.size === 0) {
-            throw new Error("Received empty audio blob from backend");
-          }
-          
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          
-          // Update subtitle when audio starts
-          if (subtitleEl) {
-            subtitleEl.innerHTML = `<span style="color: #fbbf24;">${text}</span>`;
-          }
-          
-          return new Promise((resolve, reject) => {
-            audio.onended = () => {
-              URL.revokeObjectURL(audioUrl);
-              resolve();
-            };
-            audio.onerror = (e) => {
-              console.error("Audio playback error:", e);
-              reject(new Error("Audio playback failed"));
-            };
-            audio.oncanplaythrough = () => {
-              audio.play().catch(reject);
-            };
-            audio.load();
-          });
-        } else {
-          const errorText = await response.text().catch(() => `Status ${response.status}`);
-          console.error(`Backend TTS failed: ${response.status}`, errorText);
-          
-          // Check if it's an ElevenLabs API issue (401/403 usually means API key or free tier issue)
-          if (response.status === 401 || response.status === 403) {
-            try {
-              const errorJson = JSON.parse(errorText);
-              if (errorJson.details) {
-                const details = typeof errorJson.details === 'string' ? JSON.parse(errorJson.details) : errorJson.details;
-                if (details.detail?.status === 'detected_unusual_activity' || details.detail?.message?.includes('Free Tier')) {
-                  console.warn("ElevenLabs free tier disabled - falling back to browser TTS");
-                  throw new Error("ELEVENLABS_FREE_TIER_DISABLED");
-                }
-              }
-            } catch (parseErr) {
-              // If parsing fails, just throw the original error
-            }
-          }
-          
-          throw new Error(`TTS failed: ${response.status} - ${errorText}`);
-        }
-      } catch (err) {
-        // Don't log full error details if it's just a free tier issue
-        if (err.message === "ELEVENLABS_FREE_TIER_DISABLED") {
-          console.warn("ElevenLabs free tier unavailable - using browser TTS instead");
-        } else {
-          console.error("Backend TTS error:", err);
-          console.error("Error message:", err.message);
-        }
-        throw err; // Re-throw to fall back to browser TTS
-      }
-    }
-    
-    // Local mode - use ElevenLabs directly
-    if (!ELEVENLABS_KEY || ELEVENLABS_KEY.trim() === "") {
-      throw new Error("ElevenLabs API key is not set (local mode requires key)");
-    }
-    
+    // Use backend (OpenAI TTS is always via backend)
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      console.log(`Calling backend OpenAI TTS at ${BACKEND_URL}/api/tts`);
+      const response = await fetch(`${BACKEND_URL}/api/tts`, {
         method: "POST",
         headers: {
-          "Accept": "audio/mpeg",
-          "Content-Type": "application/json",
-          "xi-api-key": ELEVENLABS_KEY.trim()
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          text: text,
-          model_id: "eleven_turbo_v2_5", // Newer model available on free tier
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-            style: 0.0,
-            use_speaker_boost: true
-          }
-        })
+        body: JSON.stringify({ text, voice })
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("ElevenLabs API error response:", errorText);
-        let errorMessage = `ElevenLabs API error: ${response.status}`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.detail && errorJson.detail.message) {
-            errorMessage = errorJson.detail.message;
-            // Provide helpful guidance for common errors
-            if (errorJson.detail.status === "invalid_api_key") {
-              errorMessage += " - Please check that your API key is correct and try saving it again.";
-            }
-          } else {
-            errorMessage += ` - ${errorText}`;
-          }
-        } catch (e) {
-          errorMessage += ` - ${errorText}`;
+      
+      console.log(`Backend TTS response status: ${response.status}`);
+      
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        console.log(`Received audio blob, size: ${audioBlob.size} bytes`);
+        
+        if (audioBlob.size === 0) {
+          throw new Error("Received empty audio blob from backend");
         }
-        throw new Error(errorMessage);
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      
-      // Update subtitle when audio starts
-      if (subtitleEl) {
-        subtitleEl.innerHTML = `<span style="color: #fbbf24;">${text}</span>`;
-      }
-      
-      // Clean up URL when done
-      audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
+        
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        // Update subtitle when audio starts
         if (subtitleEl) {
           subtitleEl.innerHTML = `<span style="color: #fbbf24;">${text}</span>`;
         }
-      };
-      
-      await audio.play();
+        
+        return new Promise((resolve, reject) => {
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            resolve();
+          };
+          audio.onerror = (e) => {
+            console.error("Audio playback error:", e);
+            reject(new Error("Audio playback failed"));
+          };
+          audio.oncanplaythrough = () => {
+            audio.play().catch(reject);
+          };
+          audio.load();
+        });
+      } else {
+        const errorText = await response.text().catch(() => `Status ${response.status}`);
+        console.error(`Backend TTS failed: ${response.status}`, errorText);
+        throw new Error(`TTS failed: ${response.status} - ${errorText}`);
+      }
     } catch (err) {
-      console.error("ElevenLabs TTS error:", err);
-      throw err;
+      console.error("Backend TTS error:", err);
+      console.error("Error message:", err.message);
+      throw err; // Re-throw to fall back to browser TTS
     }
   }
   

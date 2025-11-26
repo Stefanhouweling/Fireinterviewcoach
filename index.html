@@ -186,6 +186,7 @@
       }
       
       .app {
+        width: calc(100% - 30px);
         margin: 15px auto;
       }
     }
@@ -193,6 +194,7 @@
     /* Tablet Styles */
     @media (max-width: 1024px) {
       .app {
+        width: calc(100% - 20px);
         margin: 10px auto;
         padding: 16px;
         border-radius: 16px;
@@ -2675,11 +2677,21 @@ Return ONLY the category and question.`
     lastAnswerTranscript = text;
 
     // Open modal immediately with analyzing message
-    console.log("Opening AI modal for analysis...");
+    console.log("[ANALYSIS] Starting analysis process...");
+    console.log("[ANALYSIS] Transcript length:", text.length, "words:", text.split(/\s+/).length);
+    
     const modalContent = document.getElementById("aiModalContent");
     const aiModalOverlay = document.getElementById("aiModalOverlay");
     
+    console.log("[MODAL] Looking for modal elements:", { 
+      modalContent: !!modalContent, 
+      aiModalOverlay: !!aiModalOverlay,
+      modalContentId: modalContent ? modalContent.id : "not found",
+      overlayId: aiModalOverlay ? aiModalOverlay.id : "not found"
+    });
+    
     if (modalContent && aiModalOverlay) {
+      console.log("[MODAL] Setting up modal content with progress bar...");
       modalContent.innerHTML = `
         <div style="text-align: center; padding: 40px 20px;">
           <div style="font-size: 1.5rem; color: #f97316; margin-bottom: 30px; font-weight: 600;">
@@ -2696,11 +2708,27 @@ Return ONLY the category and question.`
       `;
       
       // Open the modal
+      console.log("[MODAL] Adding 'active' class to overlay...");
       aiModalOverlay.classList.add("active");
       document.body.style.overflow = "hidden";
-      console.log("Modal opened and displayed");
+      
+      // Verify modal is visible
+      const computedStyle = window.getComputedStyle(aiModalOverlay);
+      console.log("[MODAL] Modal state after opening:", {
+        display: computedStyle.display,
+        hasActiveClass: aiModalOverlay.classList.contains("active"),
+        zIndex: computedStyle.zIndex,
+        visibility: computedStyle.visibility
+      });
+      
+      console.log("[MODAL] Modal opened and displayed successfully");
     } else {
-      console.error("Modal elements not found!", { modalContent: !!modalContent, aiModalOverlay: !!aiModalOverlay });
+      console.error("[MODAL ERROR] Modal elements not found!", { 
+        modalContent: !!modalContent, 
+        aiModalOverlay: !!aiModalOverlay,
+        modalContentElement: modalContent,
+        overlayElement: aiModalOverlay
+      });
     }
 
     // Add to conversation history
@@ -2763,6 +2791,7 @@ Return ONLY the category and question.`
         });
 
         if (response.ok) {
+          console.log("[ANALYSIS] API response received successfully");
           // Complete progress bar
           if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
           clearInterval(modalProgressInterval);
@@ -2770,22 +2799,31 @@ Return ONLY the category and question.`
           if (progressPercent) progressPercent.textContent = "100%";
           if (modalProgressBar) modalProgressBar.style.width = "100%";
           if (modalProgressPercent) modalProgressPercent.textContent = "100%";
+          console.log("[PROGRESS] Progress bar completed to 100%");
           
           const data = await response.json();
           const aiFeedback = data.feedback;
+          console.log("[ANALYSIS] AI feedback received, length:", aiFeedback ? aiFeedback.length : 0);
           
           if (aiFeedback) {
+            console.log("[FEEDBACK] Formatting AI feedback for display...");
             formatAIFeedback(fireTipsEl, aiFeedback, true);
             formatAIFeedbackForModal(aiFeedback);
+            console.log("[FEEDBACK] Feedback formatted and displayed in modal");
             
             const viewBtn = document.getElementById("viewAIFeedbackBtn");
             if (viewBtn) {
               viewBtn.style.display = "block";
+              console.log("[FEEDBACK] View feedback button shown");
             }
             
             addFollowupButton();
+            console.log("[FEEDBACK] Followup button added");
             
             // Modal is already open, content has been updated by formatAIFeedbackForModal
+            console.log("[MODAL] Modal should now show full AI feedback");
+          } else {
+            console.warn("[ANALYSIS] No feedback in response:", data);
           }
           
           // Hide progress bar after a short delay

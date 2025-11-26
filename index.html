@@ -1529,15 +1529,18 @@
           return;
         }
         
-        resumeSummaryEl.textContent =
-          resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
+        // Show loading state
+        resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">📄 Resume loaded. Analyzing...</div>';
         resumeKeywords = extractResumeKeywords(resumeText);
         renderResumeTags();
         
         // AI-powered resume analysis
-        if (OPENAI_KEY) {
-          resumeSummaryEl.textContent = "Analyzing resume with AI...";
+        if (USE_BACKEND || OPENAI_KEY) {
+          resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
           await parseResumeWithAI(resumeText);
+        } else {
+          // Show basic summary if no AI available
+          formatResumeSummary(resumeSummaryEl, null, resumeText);
         }
       } catch (err) {
         console.error("PDF parsing error:", err);
@@ -1555,15 +1558,18 @@
           return;
         }
 
-        resumeSummaryEl.textContent =
-          resumeText.slice(0, 600) + (resumeText.length > 600 ? "…" : "");
+        // Show loading state
+        resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">📄 Resume loaded. Analyzing...</div>';
         resumeKeywords = extractResumeKeywords(resumeText);
         renderResumeTags();
         
         // AI-powered resume analysis
-        if (OPENAI_KEY) {
-          resumeSummaryEl.textContent = "Analyzing resume with AI...";
+        if (USE_BACKEND || OPENAI_KEY) {
+          resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
           await parseResumeWithAI(resumeText);
+        } else {
+          // Show basic summary if no AI available
+          formatResumeSummary(resumeSummaryEl, null, resumeText);
         }
       };
 
@@ -1630,20 +1636,16 @@ Return a JSON object with this structure:
           }
         } catch (parseErr) {
           console.error("Error parsing AI response:", parseErr, data);
-          // Fallback: show raw text preview
-          resumeSummaryEl.textContent = 
-            `Resume loaded (${resumeText.length} chars). AI analysis had formatting issues. ` +
-            `Resume preview: ${resumeText.slice(0, 200)}...`;
+          // Fallback: show basic summary
+          formatResumeSummary(resumeSummaryEl, null, resumeText);
         }
       } else {
         throw new Error("No response from AI");
       }
     } catch (err) {
       console.error("AI resume parsing error:", err);
-      // Show more helpful error message with resume preview
-      resumeSummaryEl.textContent = 
-        `Resume loaded (${resumeText.length} chars) but AI analysis failed. ` +
-        `Error: ${err.message}. Resume preview: ${resumeText.slice(0, 300)}...`;
+      // Show basic summary on error
+      formatResumeSummary(resumeSummaryEl, null, resumeText);
     }
   }
 

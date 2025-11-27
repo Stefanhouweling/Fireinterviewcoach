@@ -3443,8 +3443,8 @@ Return ONLY the category and question.`
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ 
-          text,
-          voicePreference: selectedVoicePreference || onboardingData?.voicePreference || null
+          text: text,
+          voicePreference: selectedVoicePreference || (typeof onboardingData !== 'undefined' && onboardingData?.voicePreference) || null
         })
       });
       

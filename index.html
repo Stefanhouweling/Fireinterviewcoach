@@ -2598,6 +2598,7 @@
     resumeSummaryEl.textContent =
       "No resume loaded yet. Upload a file to extract keywords like “POC firefighter”, “EMR”, “construction”, etc.";
     resumeTagsEl.innerHTML = "";
+    updateResumeBasedOption(); // Update option state when resume is cleared
   });
 
   async function handleResumeUpload(event) {

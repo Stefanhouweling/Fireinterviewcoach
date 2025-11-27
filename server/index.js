@@ -840,16 +840,19 @@ ${cityResearch}
 
 VERIFICATION REQUIREMENTS:
 1. Check if the candidate's answer is CORRECT or INCORRECT based on the research data
-2. If incorrect, provide the CORRECT answer from the research data
-3. If partially correct, specify what was correct and what was missing/incorrect
-4. If they missed important details, list what they missed
-5. Provide specific factual corrections, not just general feedback
+2. ⚠️ REMEMBER: The answer is from a SPEECH TRANSCRIPT - spelling variations (especially in names) should be considered CORRECT if phonetically similar
+3. Focus on CONTENT/FACTUAL accuracy, NOT spelling differences
+4. If incorrect, provide the CORRECT answer from the research data
+5. If partially correct, specify what was correct and what was missing/incorrect (but don't mention spelling)
+6. If they missed important details, list what they missed
+7. Provide specific factual corrections, not just general feedback
 
 The feedback MUST include:
-- Whether the answer was correct, incorrect, or partially correct
+- Whether the answer was correct, incorrect, or partially correct (based on FACTS, not spelling)
 - The correct answer (if they got it wrong or missed details)
 - What specific facts they missed (if any)
-- How accurate their knowledge is of the city/department`;
+- How accurate their knowledge is of the city/department
+- DO NOT penalize for spelling differences in proper names or words`;
     } else if (isKnowledgeQuestion && !cityResearch) {
       // If it's a knowledge question but we don't have research, note this in feedback
       knowledgeVerificationContext = `\n\nNOTE: This appears to be a knowledge-testing question, but research data is not available to verify the answer. Provide general feedback on the answer's completeness and structure.`;

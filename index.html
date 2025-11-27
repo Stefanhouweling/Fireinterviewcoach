@@ -1202,8 +1202,9 @@
           <div class="question-text" id="questionText">
             Click <strong>Next Question</strong> to begin. AI will generate personalized questions based on your resume and conversation history.
           </div>
-          <button id="flagQuestionBtn" style="position: absolute; top: 8px; right: 8px; background: transparent; border: none; cursor: pointer; padding: 4px; display: none; opacity: 0.6; transition: opacity 0.2s;" title="Flag this question as difficult">
-            <span id="flagIcon" style="font-size: 1.2rem;">🚩</span>
+          <button id="flagQuestionBtn" style="position: absolute; top: 12px; right: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; cursor: pointer; padding: 6px 10px; display: none; opacity: 0.8; transition: all 0.2s; z-index: 10; font-size: 0.85rem; color: #fca5a5; font-weight: 600;" title="Flag this question as difficult" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'; this.style.opacity='1';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.opacity='0.8';">
+            <span id="flagIcon" style="font-size: 1rem; margin-right: 4px;">🚩</span>
+            <span id="flagText">Flag</span>
           </button>
         </div>
         <div id="questionSubtitles" style="margin-top: 8px; padding: 8px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; font-size: 0.9rem; color: #cbd5e1; min-height: 24px; display: none;"></div>
@@ -3100,12 +3101,28 @@ Return ONLY the category and question.`
     // Show flag button and update its state
     const flagBtn = document.getElementById('flagQuestionBtn');
     const flagIcon = document.getElementById('flagIcon');
+    const flagText = document.getElementById('flagText');
     if (flagBtn && flagIcon) {
-      flagBtn.style.display = 'block';
+      flagBtn.style.display = 'flex';
+      flagBtn.style.alignItems = 'center';
       const isFlagged = flaggedQuestions.some(fq => fq.question === q.template);
-      flagIcon.textContent = isFlagged ? '🚩' : '🚩';
-      flagBtn.style.opacity = isFlagged ? '1' : '0.6';
-      flagBtn.onclick = () => toggleFlagQuestion(q);
+      flagIcon.textContent = '🚩';
+      if (flagText) {
+        flagText.textContent = isFlagged ? 'Flagged' : 'Flag';
+      }
+      flagBtn.style.opacity = isFlagged ? '1' : '0.8';
+      flagBtn.style.background = isFlagged ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.15)';
+      flagBtn.style.borderColor = isFlagged ? 'rgba(239, 68, 68, 0.6)' : 'rgba(239, 68, 68, 0.4)';
+      
+      // Remove any existing listeners and add new one
+      const newFlagBtn = flagBtn.cloneNode(true);
+      flagBtn.parentNode.replaceChild(newFlagBtn, flagBtn);
+      newFlagBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Flag button clicked for question:", q.template.substring(0, 50));
+        toggleFlagQuestion(q);
+      });
     }
   }
   

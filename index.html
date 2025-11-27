@@ -2309,6 +2309,7 @@
   let liveTranscriptText = "";
   let lastAnswerTranscript = "";
   let motionScoreForAnswer = null;
+  let isSpeaking = false; // Track when TTS is speaking to prevent mic from picking it up
   
   // ========== VOICE SELECTION ==========
   let selectedVoice = null;
@@ -3399,6 +3400,19 @@ Return ONLY the category and question.`
       return;
     }
     
+    // Stop speech recognition while TTS is speaking to prevent mic from picking up the question
+    if (recognition && recognizing) {
+      console.log("Stopping speech recognition while question is being spoken...");
+      try {
+        recognizing = false; // Set flag first to prevent auto-restart
+        recognition.stop();
+      } catch (e) {
+        console.warn("Error stopping recognition:", e);
+      }
+    }
+    
+    isSpeaking = true; // Mark that TTS is starting
+    
     const subtitleEl = document.getElementById("questionSubtitles");
     
     // Show subtitle area (will be updated during speech)
@@ -3480,6 +3494,7 @@ Return ONLY the category and question.`
     };
     
     utterance.onend = () => {
+      isSpeaking = false; // TTS finished
       if (subtitleEl) {
         // Hide subtitle when done - question is already displayed in questionText
         subtitleEl.style.display = "none";
@@ -3566,6 +3581,7 @@ Return ONLY the category and question.`
             };
             
             audio.onended = () => {
+              isSpeaking = false; // TTS finished
               URL.revokeObjectURL(audioUrl);
               // Hide subtitle when audio ends - question is already displayed in questionText
               if (subtitleEl) {
@@ -3574,6 +3590,7 @@ Return ONLY the category and question.`
               resolve();
             };
             audio.onerror = (e) => {
+              isSpeaking = false; // Reset flag on error
               console.error("Audio playback error:", e);
               reject(new Error("Audio playback failed"));
             };
@@ -3762,11 +3779,20 @@ Return ONLY the category and question.`
     };
     
     recognition.onend = () => {
+      // Don't auto-restart if TTS is speaking
+      if (isSpeaking) {
+        console.log("TTS is speaking, not auto-restarting recognition");
+        recognizing = false;
+        micStatusDot.classList.add("off");
+        micStatusText.textContent = "Mic idle";
+        return;
+      }
+      
       // Auto-restart if we're still supposed to be recording
       if (recognizing && stopAnswerBtn && !stopAnswerBtn.disabled) {
         console.log("Recognition ended, auto-restarting...");
         setTimeout(() => {
-          if (recognizing && stopAnswerBtn && !stopAnswerBtn.disabled) {
+          if (recognizing && stopAnswerBtn && !stopAnswerBtn.disabled && !isSpeaking) {
             try {
               recognition.start();
             } catch (e) {
@@ -3818,6 +3844,21 @@ Return ONLY the category and question.`
       return;
     }
     if (recognizing) return;
+    
+    // Don't start recording if TTS is currently speaking
+    if (isSpeaking) {
+      console.log("TTS is speaking, waiting before starting recording...");
+      // Wait a bit and try again
+      setTimeout(() => {
+        if (!isSpeaking) {
+          startAnswerRecording(fromAuto);
+        } else {
+          // If still speaking, wait a bit more
+          setTimeout(() => startAnswerRecording(fromAuto), 500);
+        }
+      }, 300);
+      return;
+    }
     
     // Reset transcript tracking
     lastAnswerTranscript = "";

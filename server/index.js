@@ -1471,7 +1471,7 @@ async function loadLocationData() {
       }).finally(() => clearTimeout(timeoutId));
     };
     
-    const [countriesRes, statesRes, citiesRes] = await Promise.all([
+    const [countriesRes, statesRes, citiesRes] = await Promise.allSettled([
       fetchWithTimeout(`${baseUrl}/countries.json`, {
         headers: {
           'Accept': 'application/json',
@@ -1492,29 +1492,48 @@ async function loadLocationData() {
       }, 60000) // Cities file is larger, allow more time
     ]);
     
-    // Check if responses are OK
-    if (!countriesRes.ok || !statesRes.ok || !citiesRes.ok) {
-      throw new Error(`HTTP error: countries=${countriesRes.status}, states=${statesRes.status}, cities=${citiesRes.status}`);
+    // Handle results - allow partial success
+    const countriesResult = countriesRes.status === 'fulfilled' ? countriesRes.value : null;
+    const statesResult = statesRes.status === 'fulfilled' ? statesRes.value : null;
+    const citiesResult = citiesRes.status === 'fulfilled' ? citiesRes.value : null;
+    
+    // Check if responses are OK (cities can fail, that's okay)
+    if (!countriesResult || !countriesResult.ok) {
+      throw new Error(`Failed to load countries: ${countriesResult?.status || 'network error'}`);
+    }
+    if (!statesResult || !statesResult.ok) {
+      throw new Error(`Failed to load states: ${statesResult?.status || 'network error'}`);
+    }
+    // Cities can fail - we'll just log it and continue
+    if (!citiesResult || !citiesResult.ok) {
+      console.warn(`Cities data not available (status: ${citiesResult?.status || 'network error'}) - will use Nominatim for city searches`);
     }
     
     // Get text first to check if it's actually JSON
     const [countriesText, statesText, citiesText] = await Promise.all([
-      countriesRes.text(),
-      statesRes.text(),
-      citiesRes.text()
+      countriesResult.text(),
+      statesResult.text(),
+      citiesResult && citiesResult.ok ? citiesResult.text() : Promise.resolve('[]')
     ]);
     
     // Check if we got HTML (error page) instead of JSON
-    if (countriesText.trim().startsWith('<') || statesText.trim().startsWith('<') || citiesText.trim().startsWith('<')) {
+    if (countriesText.trim().startsWith('<') || statesText.trim().startsWith('<')) {
       throw new Error('Received HTML instead of JSON (likely an error page)');
+    }
+    if (citiesText && citiesText.trim().startsWith('<')) {
+      console.warn('Cities data returned HTML - will use Nominatim for city searches');
     }
     
     // Parse JSON
     countriesData = JSON.parse(countriesText);
     statesData = JSON.parse(statesText);
-    citiesData = JSON.parse(citiesText);
-    
-    console.log(`✓ Loaded ${countriesData.length} countries, ${statesData.length} states, ${citiesData.length} cities`);
+    if (citiesResult && citiesResult.ok && citiesText && !citiesText.trim().startsWith('<')) {
+      citiesData = JSON.parse(citiesText);
+      console.log(`✓ Loaded ${countriesData.length} countries, ${statesData.length} states, ${citiesData.length} cities`);
+    } else {
+      citiesData = null;
+      console.log(`✓ Loaded ${countriesData.length} countries, ${statesData.length} states (cities will use Nominatim)`);
+    }
   } catch (error) {
     console.error('Failed to load location data, falling back to static lists:', error.message || error);
     // Fall back to static lists if API fails - this is non-critical
@@ -1953,9 +1972,9 @@ app.post('/api/search-location', async (req, res) => {
     console.log(`Calling Nominatim API: ${url}`);
 
     // Call Nominatim API with proper headers (required by their usage policy)
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging (increased to 15 seconds for reliability)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
     
     try {
       const response = await fetchModule(url, {

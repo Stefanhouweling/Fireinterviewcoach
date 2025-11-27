@@ -4360,7 +4360,18 @@ Return ONLY the category and question.`
         } 
         // Check if it's a label-value pair (like "**Summary:** text")
         else if (content.match(/^\*\*[^*]+\*\*:/)) {
-          html += `<div style="margin-bottom: 8px; line-height: 1.6;">${convertMarkdownBold(content)}</div>`;
+          // Split label and value for better formatting
+          const parts = content.match(/^\*\*([^*]+)\*\*:\s*(.*)/);
+          if (parts && parts.length === 3) {
+            const label = parts[1];
+            const value = parts[2].trim();
+            html += `<div style="margin-bottom: 8px; line-height: 1.6;">
+              <strong style="color: #fbbf24;">${label}:</strong> 
+              <span style="color: #e5e7eb;">${convertMarkdownBold(value)}</span>
+            </div>`;
+          } else {
+            html += `<div style="margin-bottom: 8px; line-height: 1.6;">${convertMarkdownBold(content)}</div>`;
+          }
         }
         else {
           html += `<div style="margin-bottom: 8px; line-height: 1.6; color: #e5e7eb;">${convertMarkdownBold(content)}</div>`;

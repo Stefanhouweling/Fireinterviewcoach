@@ -1553,7 +1553,8 @@ async function loadLocationData() {
 }
 
 // Load data on server start
-loadLocationData();
+// DISABLED: Old map data loading - no longer using countries-states-cities-database
+// loadLocationData();
 
 // Static lists for instant results (fallback if API data not loaded yet)
 const US_STATES = [

@@ -1923,12 +1923,11 @@
   }
   
   // Handle onboarding form submission
+  // FIXED: Removed duplicate country/stateProvince declarations (2024-11-27)
   if (onboardingForm) {
     onboardingForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       
-      const country = document.getElementById("onboardingCountry").value;
-      const stateProvince = document.getElementById("onboardingStateProvince").value;
       const city = document.getElementById("onboardingCity").value.trim();
       const jobType = document.getElementById("onboardingJobType").value;
       const departmentName = document.getElementById("onboardingDepartmentName").value.trim();
@@ -1952,9 +1951,9 @@
         return;
       }
       
-      // Extract location info from Mapbox data or use city as fallback
-      const country = cityData?.country || "";
-      const stateProvince = cityData?.stateProvince || "";
+      // Extract location info from Mapbox data or use form values as fallback
+      const country = cityData?.country || document.getElementById("onboardingCountry")?.value || "";
+      const stateProvince = cityData?.stateProvince || document.getElementById("onboardingStateProvince")?.value || "";
       const cityName = city;
       
       // Save onboarding data

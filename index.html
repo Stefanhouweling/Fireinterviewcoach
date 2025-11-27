@@ -3338,14 +3338,6 @@ Return ONLY the category and question.`
         submitBtn.textContent = originalText;
       }
     });
-    }
-  }
-  
-  // Initialize feedback system
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeFeedbackSystem);
-  } else {
-    initializeFeedbackSystem();
   }
 
   async function speakQuestionWithCaptions(text) {

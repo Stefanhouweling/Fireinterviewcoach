@@ -830,29 +830,74 @@ app.post('/api/analyze-answer', async (req, res) => {
         ? `Resume (full): ${resumeText}`
         : "No resume provided";
     
+    // Extract proper names from research data to help with transcript error matching
+    function extractProperNames(text) {
+      if (!text) return [];
+      // Look for patterns like "Mayor [Name]", "Chief [Name]", "[Name] is the", etc.
+      const namePatterns = [
+        /(?:Mayor|mayor|Mayor of)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/gi,
+        /(?:Chief|chief|Fire Chief|fire chief|Fire Chief of)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/gi,
+        /([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:is|was|serves as|served as|the current|the)\s+(?:mayor|chief|fire chief|director|manager)/gi,
+        /(?:named|called|known as)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/gi,
+        /(?:current|Current)\s+(?:mayor|chief|fire chief|director)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/gi
+      ];
+      const names = new Set();
+      namePatterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          if (match[1] && match[1].length > 2 && !match[1].match(/^(The|Current|Mayor|Chief|Fire|City|Department)$/i)) {
+            names.add(match[1].trim());
+          }
+        }
+      });
+      return Array.from(names);
+    }
+    
     // Build knowledge verification context if this is a knowledge question
     let knowledgeVerificationContext = "";
+    let properNamesList = "";
     if (isKnowledgeQuestion && cityResearch) {
+      // Extract proper names from research data
+      const properNames = extractProperNames(cityResearch);
+      if (properNames.length > 0) {
+        properNamesList = `\n\n⚠️ CRITICAL - PROPER NAMES FROM RESEARCH DATA:
+The following proper names appear in the research data. Speech transcripts OFTEN mis-transcribe these names. You MUST consider phonetically similar variations as CORRECT:
+
+${properNames.map(name => `- Correct name: "${name}"`).join('\n')}
+
+TRANSCRIPT ERROR EXAMPLES (all should be marked CORRECT):
+- If research says "Ross Siemens" and transcript says "Russ Simmons" → CORRECT (phonetically similar)
+- If research says "Eric Peterson" and transcript says "Erick Peterson" → CORRECT (phonetically similar)  
+- If research says "John Smith" and transcript says "Jon Smith" → CORRECT (phonetically similar)
+- If research says "Ross Siemens" and transcript says "Russ Simmons" or "Ross Simmons" → CORRECT
+
+ONLY mark as INCORRECT if:
+- The name refers to a completely different person (e.g., research says "Ross Siemens" but transcript says "Mike Johnson")
+- The FACTS are wrong (wrong position, wrong department, etc.)
+- NOT if it's just a transcript/spelling variation of the same name`;
+      }
+      
       knowledgeVerificationContext = `\n\nCRITICAL: This is a KNOWLEDGE-TESTING question. You MUST verify the candidate's answer against the research data provided below.
 
 CITY/DEPARTMENT RESEARCH DATA (use this to verify the answer):
-${cityResearch}
+${cityResearch}${properNamesList}
 
 VERIFICATION REQUIREMENTS:
 1. Check if the candidate's answer is CORRECT or INCORRECT based on the research data
-2. ⚠️ REMEMBER: The answer is from a SPEECH TRANSCRIPT - spelling variations (especially in names) should be considered CORRECT if phonetically similar
-3. Focus on CONTENT/FACTUAL accuracy, NOT spelling differences
-4. If incorrect, provide the CORRECT answer from the research data
-5. If partially correct, specify what was correct and what was missing/incorrect (but don't mention spelling)
-6. If they missed important details, list what they missed
-7. Provide specific factual corrections, not just general feedback
+2. ⚠️ CRITICAL: The answer is from a SPEECH TRANSCRIPT - spelling/transcript variations in proper names should be considered CORRECT if phonetically similar
+3. Use the proper names list above to match transcript variations (e.g., "Russ Simmons" = "Ross Siemens" if that's the correct name)
+4. Focus on CONTENT/FACTUAL accuracy, NOT spelling differences
+5. If incorrect, provide the CORRECT answer from the research data
+6. If partially correct, specify what was correct and what was missing/incorrect (but don't mention spelling)
+7. If they missed important details, list what they missed
+8. Provide specific factual corrections, not just general feedback
 
 The feedback MUST include:
 - Whether the answer was correct, incorrect, or partially correct (based on FACTS, not spelling)
 - The correct answer (if they got it wrong or missed details)
 - What specific facts they missed (if any)
 - How accurate their knowledge is of the city/department
-- DO NOT penalize for spelling differences in proper names or words`;
+- DO NOT penalize for spelling/transcript differences in proper names - only mark incorrect if facts are wrong`;
     } else if (isKnowledgeQuestion && !cityResearch) {
       // If it's a knowledge question but we don't have research, note this in feedback
       knowledgeVerificationContext = `\n\nNOTE: This appears to be a knowledge-testing question, but research data is not available to verify the answer. Provide general feedback on the answer's completeness and structure.`;
@@ -896,9 +941,9 @@ The feedback MUST include:
             "STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bold labels with double asterisks, NOT star symbols):\n\n" +
             "## Answer Summary & Score\n" +
             (isKnowledgeQuestion ?
-            "- **Summary:** [1–2 short sentences summarizing what they said, and whether it was correct or incorrect. NOTE: If only spelling differs (e.g., 'Eric' vs 'Erick'), consider it CORRECT]\n" +
-            "- **Correctness:** [State clearly: CORRECT, INCORRECT, or PARTIALLY CORRECT. Remember: spelling variations in transcripts are NOT errors. Only mark incorrect if FACTS are wrong]\n" +
-            "- **Score:** [X/10 – based on CONTENT accuracy only. 10/10 = factually correct with all details. Do NOT deduct points for spelling differences in transcripts]\n" :
+            "- **Summary:** [1–2 short sentences summarizing what they said, and whether it was correct or incorrect. NOTE: Use the proper names list above - if transcript says 'Russ Simmons' but correct name is 'Ross Siemens', consider it CORRECT (phonetically similar)]\n" +
+            "- **Correctness:** [State clearly: CORRECT, INCORRECT, or PARTIALLY CORRECT. Remember: transcript variations in proper names (e.g., 'Russ' vs 'Ross', 'Simmons' vs 'Siemens') are CORRECT if phonetically similar. Only mark incorrect if FACTS are wrong or completely different person]\n" +
+            "- **Score:** [X/10 – based on CONTENT accuracy only. 10/10 = factually correct with all details. Do NOT deduct points for transcript/spelling differences - only deduct if facts are wrong]\n" :
             "- **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]\n" +
             "- **Score:** [X/10 – very short explanation of why, and what would make it a 10/10]\n") +
             "\n\n## What You Did Well\n" +

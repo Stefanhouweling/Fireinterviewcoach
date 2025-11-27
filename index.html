@@ -1690,17 +1690,29 @@
     if (jobTypeSelectEl) {
       const placeholderEl = document.getElementById('onboardingJobTypePlaceholder');
       if (placeholderEl) placeholderEl.textContent = ONBOARDING_CONFIG.jobType.placeholder;
-      // Update option texts
+      // Update option texts (only Fire is enabled, others are disabled with "Coming Soon")
       const fireEl = document.getElementById('onboardingJobTypeFire');
       const policeEl = document.getElementById('onboardingJobTypePolice');
       const paramedicEl = document.getElementById('onboardingJobTypeParamedic');
       const firstResponderEl = document.getElementById('onboardingJobTypeFirstResponder');
       const dispatcherEl = document.getElementById('onboardingJobTypeDispatcher');
       if (fireEl) fireEl.textContent = ONBOARDING_CONFIG.jobType.options.fire;
-      if (policeEl) policeEl.textContent = ONBOARDING_CONFIG.jobType.options.police;
-      if (paramedicEl) paramedicEl.textContent = ONBOARDING_CONFIG.jobType.options.paramedic;
-      if (firstResponderEl) firstResponderEl.textContent = ONBOARDING_CONFIG.jobType.options.firstResponder;
-      if (dispatcherEl) dispatcherEl.textContent = ONBOARDING_CONFIG.jobType.options.dispatcher;
+      if (policeEl) {
+        policeEl.textContent = ONBOARDING_CONFIG.jobType.options.police + ' (Coming Soon)';
+        policeEl.disabled = true;
+      }
+      if (paramedicEl) {
+        paramedicEl.textContent = ONBOARDING_CONFIG.jobType.options.paramedic + ' (Coming Soon)';
+        paramedicEl.disabled = true;
+      }
+      if (firstResponderEl) {
+        firstResponderEl.textContent = ONBOARDING_CONFIG.jobType.options.firstResponder + ' (Coming Soon)';
+        firstResponderEl.disabled = true;
+      }
+      if (dispatcherEl) {
+        dispatcherEl.textContent = ONBOARDING_CONFIG.jobType.options.dispatcher + ' (Coming Soon)';
+        dispatcherEl.disabled = true;
+      }
     }
     
     // Update department section

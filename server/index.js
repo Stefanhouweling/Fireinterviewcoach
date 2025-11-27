@@ -30,6 +30,9 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      testMapbox: 'GET /api/test-mapbox',
+      mapboxToken: 'GET /api/mapbox-token',
+      mapboxSearch: 'GET /api/mapbox-search',
       question: 'POST /api/question',
       followup: 'POST /api/followup',
       analyze: 'POST /api/analyze-answer',
@@ -37,9 +40,7 @@ app.get('/', (req, res) => {
       tts: 'POST /api/tts',
       researchCity: 'POST /api/research-city',
       searchLocation: 'POST /api/search-location',
-      feedback: 'POST /api/feedback',
-      mapboxToken: 'GET /api/mapbox-token',
-      mapboxSearch: 'GET /api/mapbox-search'
+      feedback: 'POST /api/feedback'
     },
     message: 'API is running. Use the endpoints above to interact with the service.'
   });

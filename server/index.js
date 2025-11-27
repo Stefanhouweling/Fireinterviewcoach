@@ -976,14 +976,24 @@ app.post('/api/feedback', async (req, res) => {
     
     feedbackStore.push(feedback);
     
-    // Log feedback for visibility
-    console.log('[FEEDBACK] New feedback received:', {
-      satisfaction: feedback.satisfaction,
-      hasWorkingWell: !!feedback.workingWell,
-      hasImprovements: !!feedback.improvements,
-      categoriesCount: feedback.categories.length,
-      hasAdditional: !!feedback.additional
-    });
+    // Log feedback for visibility (detailed)
+    console.log('\n========== NEW FEEDBACK RECEIVED ==========');
+    console.log(`Satisfaction: ${feedback.satisfaction}`);
+    console.log(`Session ID: ${feedback.sessionId}`);
+    if (feedback.workingWell) {
+      console.log(`What's Working: ${feedback.workingWell.substring(0, 100)}${feedback.workingWell.length > 100 ? '...' : ''}`);
+    }
+    if (feedback.improvements) {
+      console.log(`Improvements: ${feedback.improvements.substring(0, 100)}${feedback.improvements.length > 100 ? '...' : ''}`);
+    }
+    if (feedback.categories.length > 0) {
+      console.log(`Categories Requested: ${feedback.categories.join(', ')}`);
+    }
+    if (feedback.additional) {
+      console.log(`Additional: ${feedback.additional.substring(0, 100)}${feedback.additional.length > 100 ? '...' : ''}`);
+    }
+    console.log(`Timestamp: ${feedback.createdAt}`);
+    console.log('==========================================\n');
     
     res.json({ 
       success: true, 
@@ -1002,9 +1012,38 @@ app.post('/api/feedback', async (req, res) => {
 // GET /api/feedback - Get all feedback (for admin/viewing)
 app.get('/api/feedback', (req, res) => {
   try {
+    // Calculate summary statistics
+    const satisfactionCounts = {
+      'very-satisfied': 0,
+      'satisfied': 0,
+      'neutral': 0,
+      'dissatisfied': 0,
+      'very-dissatisfied': 0
+    };
+    
+    const categoryCounts = {};
+    
+    feedbackStore.forEach(fb => {
+      if (fb.satisfaction) {
+        satisfactionCounts[fb.satisfaction] = (satisfactionCounts[fb.satisfaction] || 0) + 1;
+      }
+      if (fb.categories && Array.isArray(fb.categories)) {
+        fb.categories.forEach(cat => {
+          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+        });
+      }
+    });
+    
     res.json({
       success: true,
       count: feedbackStore.length,
+      summary: {
+        satisfaction: satisfactionCounts,
+        topCategories: Object.entries(categoryCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([category, count]) => ({ category, count }))
+      },
       feedback: feedbackStore
     });
   } catch (error) {

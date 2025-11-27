@@ -1785,12 +1785,34 @@
             return;
           }
           
-          // Render suggestions using place_formatted
-          mapboxSuggestions.innerHTML = suggestions.map((s, index) => `
-            <div class="suggestion-item" data-index="${index}" style="padding: 12px; cursor: pointer; border-bottom: 1px solid rgba(239, 68, 68, 0.1); transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='transparent'">
-              <div style="color: #e2e8f0; font-size: 0.95rem;">${s.place_formatted || s.full_address || 'City'}</div>
-            </div>
-          `).join("");
+          // Render suggestions with city, state, country format
+          mapboxSuggestions.innerHTML = suggestions.map((s, index) => {
+            // Extract city, state, and country from Mapbox response
+            const cityName = s.name || s.place_name?.split(',')[0] || '';
+            const stateProvince = s.context?.region?.name || s.context?.postcode?.name || '';
+            const country = s.context?.country?.name || '';
+            
+            // Build display text: City, State/Province, Country
+            let displayText = cityName;
+            const locationParts = [];
+            if (stateProvince) locationParts.push(stateProvince);
+            if (country) locationParts.push(country);
+            
+            if (locationParts.length > 0) {
+              displayText += ', ' + locationParts.join(', ');
+            }
+            
+            // Fallback to place_formatted if we don't have city name
+            if (!cityName && (s.place_formatted || s.full_address)) {
+              displayText = s.place_formatted || s.full_address;
+            }
+            
+            return `
+              <div class="suggestion-item" data-index="${index}" style="padding: 12px; cursor: pointer; border-bottom: 1px solid rgba(239, 68, 68, 0.1); transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='transparent'">
+                <div style="color: #e2e8f0; font-size: 0.95rem; font-weight: 500;">${displayText || 'Location'}</div>
+              </div>
+            `;
+          }).join("");
           
           // Store suggestions data for click handler
           window.mapboxCurrentSuggestions = suggestions;
@@ -1802,8 +1824,8 @@
               const suggestion = window.mapboxCurrentSuggestions[index];
               
               if (suggestion) {
-                // Fill input with place_formatted
-                cityInput.value = suggestion.place_formatted || suggestion.full_address || '';
+                // Extract city, state, and country from Mapbox response
+                const cityName = suggestion.name || suggestion.place_name?.split(',')[0] || '';
                 
                 // Store full suggestion data
                 const cityData = {
@@ -1811,10 +1833,18 @@
                   full_address: suggestion.full_address,
                   mapbox_id: suggestion.mapbox_id,
                   feature_type: suggestion.feature_type,
-                  // Try to extract country and state from context if available
+                  // Extract city, state, and country from context
+                  city: cityName,
                   country: suggestion.context?.country?.name || '',
                   stateProvince: suggestion.context?.region?.name || suggestion.context?.postcode?.name || ''
                 };
+                
+                // Fill input with city name (or full formatted address if no city name)
+                if (cityName) {
+                  cityInput.value = cityName;
+                } else {
+                  cityInput.value = suggestion.place_formatted || suggestion.full_address || '';
+                }
                 
                 if (selectedCityDataInput) {
                   selectedCityDataInput.value = JSON.stringify(cityData);

@@ -1,6 +1,101 @@
 // Question Bank - Pre-determined questions organized by type, category, and difficulty
 // This provides a large pool of high-quality questions that can be selected from
 
+const fs = require('fs');
+const path = require('path');
+
+// Load master questions from JSON file
+let masterQuestions = [];
+try {
+  const masterQuestionsPath = path.join(__dirname, 'masterQuestions.json');
+  const masterQuestionsData = fs.readFileSync(masterQuestionsPath, 'utf8');
+  masterQuestions = JSON.parse(masterQuestionsData);
+  console.log(`[QUESTION BANK] Loaded ${masterQuestions.length} questions from masterQuestions.json`);
+} catch (error) {
+  console.error('[QUESTION BANK] Error loading master questions:', error.message);
+  masterQuestions = [];
+}
+
+// Normalize category names to match system categories
+function normalizeCategory(category) {
+  const categoryMap = {
+    'Situational': 'Situational',
+    'Behavioral': 'Behavioral',
+    'Resume-Based': 'Resume-Based',
+    'City & Community Specific': 'City & Department Specific',
+    'Department Specific': 'City & Department Specific',
+    'Leadership': 'Leadership',
+    'Chain of Command': 'Chain of Command',
+    'Safety & Accountability': 'Safety & Accountability',
+    'Teamwork & Collaboration': 'Teamwork & Collaboration',
+    'Conflict Resolution': 'Conflict Resolution',
+    'Communication': 'Communication',
+    'Stress Management': 'Stress Management',
+    'Ethics & Integrity': 'Ethics & Integrity',
+    'Technical – Fireground': 'Technical – Fireground',
+    'Medical / EMR': 'Medical / EMR'
+  };
+  return categoryMap[category] || category;
+}
+
+// Determine question type (behavioral vs situational) from question text
+function determineQuestionType(question, category) {
+  const questionLower = question.toLowerCase();
+  
+  // Behavioral indicators
+  if (questionLower.includes('tell us about a time') ||
+      questionLower.includes('describe a time') ||
+      questionLower.includes('give an example of') ||
+      questionLower.includes('share an experience') ||
+      questionLower.includes('recall a time') ||
+      questionLower.includes('tell me about') ||
+      category === 'Behavioral') {
+    return 'behavioral';
+  }
+  
+  // Situational indicators
+  if (questionLower.includes('how would you') ||
+      questionLower.includes('what would you') ||
+      questionLower.includes('walk us through') ||
+      questionLower.includes('explain your approach') ||
+      questionLower.includes('describe your') ||
+      questionLower.includes('what is your plan') ||
+      category === 'Situational') {
+    return 'situational';
+  }
+  
+  // Default to situational for fire service questions
+  return 'situational';
+}
+
+// Convert master questions to internal format
+function convertMasterQuestions() {
+  const converted = {
+    behavioral: { easy: [], medium: [], hard: [] },
+    situational: { easy: [], medium: [], hard: [] }
+  };
+  
+  for (const q of masterQuestions) {
+    const type = determineQuestionType(q.question, q.category);
+    const difficulty = q.difficulty ? q.difficulty.toLowerCase() : 'medium';
+    const category = normalizeCategory(q.category);
+    
+    if (['easy', 'medium', 'hard'].includes(difficulty)) {
+      converted[type][difficulty].push({
+        category: category,
+        question: q.question,
+        type: type,
+        difficulty: difficulty,
+        originalCategory: q.category
+      });
+    }
+  }
+  
+  return converted;
+}
+
+const masterQuestionBank = convertMasterQuestions();
+
 const questionBank = {
   behavioral: {
     easy: [
@@ -237,16 +332,17 @@ function getQuestions(type = null, difficulty = null, category = null, excludeQu
   // If no type specified, get both behavioral and situational
   const types = type ? [type] : ['behavioral', 'situational'];
   
+  // Search in master question bank first (larger pool)
   for (const questionType of types) {
-    if (!questionBank[questionType]) continue;
+    if (!masterQuestionBank[questionType]) continue;
     
     // If no difficulty specified, get all difficulties
     const difficulties = difficulty ? [difficulty] : ['easy', 'medium', 'hard'];
     
     for (const diff of difficulties) {
-      if (!questionBank[questionType][diff]) continue;
+      if (!masterQuestionBank[questionType][diff]) continue;
       
-      for (const q of questionBank[questionType][diff]) {
+      for (const q of masterQuestionBank[questionType][diff]) {
         // Filter by category if specified
         if (category && q.category.toLowerCase() !== category.toLowerCase()) {
           continue;
@@ -264,6 +360,38 @@ function getQuestions(type = null, difficulty = null, category = null, excludeQu
             type: questionType,
             difficulty: diff
           });
+        }
+      }
+    }
+  }
+  
+  // Fallback to original question bank if master bank doesn't have enough
+  if (questions.length === 0) {
+    for (const questionType of types) {
+      if (!questionBank[questionType]) continue;
+      
+      const difficulties = difficulty ? [difficulty] : ['easy', 'medium', 'hard'];
+      
+      for (const diff of difficulties) {
+        if (!questionBank[questionType][diff]) continue;
+        
+        for (const q of questionBank[questionType][diff]) {
+          if (category && q.category.toLowerCase() !== category.toLowerCase()) {
+            continue;
+          }
+          
+          const questionLower = q.question.toLowerCase().trim();
+          const isExcluded = excludeQuestions.some(excluded => 
+            excluded.toLowerCase().trim() === questionLower
+          );
+          
+          if (!isExcluded) {
+            questions.push({
+              ...q,
+              type: questionType,
+              difficulty: diff
+            });
+          }
         }
       }
     }
@@ -292,9 +420,12 @@ function getQuestionStats() {
     total: 0
   };
   
+  // Count from master question bank
   for (const type of ['behavioral', 'situational']) {
     for (const diff of ['easy', 'medium', 'hard']) {
-      const count = questionBank[type]?.[diff]?.length || 0;
+      const masterCount = masterQuestionBank[type]?.[diff]?.length || 0;
+      const originalCount = questionBank[type]?.[diff]?.length || 0;
+      const count = masterCount + originalCount;
       stats[type][diff] = count;
       stats[type].total += count;
     }
@@ -310,4 +441,5 @@ module.exports = {
   getRandomQuestion,
   getQuestionStats
 };
+
 

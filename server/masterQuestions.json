@@ -1,0 +1,2607 @@
+[
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "How would you handle arriving first on scene to a small brush fire?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "You arrive at a medical call and the patient refuses help. What do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "You notice unsafe behaviour at a public event. How do you respond?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "A citizen is yelling at you during a call\u2014how do you stay focused and professional?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "You\u2019re assigned a task you\u2019ve never done before\u2014what steps do you take to complete it safely?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "A teammate dismisses a safety concern you raise\u2014what do you do next?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "You see someone trying to re\u2011enter a burning home to save property\u2014how do you respond?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "Access to the address is blocked by vehicles and onlookers\u2014what is your plan?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "Someone collapses beside you while you are off\u2011duty\u2014what are your first actions?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "A child is distressed during a medical call involving a family member\u2014how do you communicate with them?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "A fire alarm has gone off multiple times at the same building this week\u2014how do you approach the next activation?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "You smell smoke in an apartment hallway but have no confirmed fire\u2014what do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "You notice potentially hazardous materials stored unsafely in a garage during a call\u2014how do you handle it?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "A bystander is closely filming you and your crew\u2014how do you maintain professionalism?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Easy",
+        "question": "A resident repeatedly interrupts you with questions while you are trying to work\u2014how do you manage that situation?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You arrive first at a two\u2011vehicle collision with multiple injured patients\u2014walk us through your priorities."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A coworker freezes on scene during a high\u2011stress call\u2014how do you respond?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You receive conflicting instructions from two senior members on scene\u2014how do you decide what to do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "Smoke conditions suddenly worsen while you are inside a structure\u2014what are your immediate priorities?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A resident insists on going back inside a building to retrieve medication\u2014how do you handle that?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "Your partner twists their ankle while carrying equipment on scene\u2014what do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A medical call escalates into an acute mental\u2011health crisis\u2014describe your approach."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "During overhaul you detect signs of structural instability\u2014what actions do you take?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A citizen gives you details that don\u2019t match what you see on scene\u2014how do you proceed?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You discover a major hazard, such as a propane tank, that others have not noticed\u2014what do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You hear a MAYDAY call over the radio but you are not assigned to the RIT team\u2014describe your actions."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A downed power line is lying across a vehicle with occupants inside\u2014what is your plan?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A resident\u2019s property is extremely cluttered and full of combustibles\u2014how do you communicate your concerns?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "Radio communication becomes unreliable during a fire attack\u2014how do you adapt?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You are asked to act as temporary crew lead for the day\u2014what are your priorities?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You arrive at a reported gas smell in a multi\u2011unit building\u2014how do you approach the call?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "At a public event a large crowd begins to push toward an emergency scene\u2014how do you manage scene control?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "On a medical call, family members begin arguing loudly around the patient\u2014what do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You are assigned to ventilate a structure but wind conditions are changing quickly\u2014describe your decision\u2011making."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You are sent to check a reported fire alarm in an industrial occupancy at night\u2014how do you approach it safely?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You arrive to find a parent screaming that their child is trapped inside a burning home\u2014describe your actions."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You witness a senior firefighter committing a serious safety violation on the fireground\u2014what do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "At a mass\u2011casualty collision, resources are overwhelmed\u2014how do you triage and prioritize care?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "A firefighter becomes trapped during interior operations\u2014what are your responsibilities and actions?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You respond to a serious incident and discover the patient is someone you know personally\u2014how do you proceed?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "Your partner freezes while performing CPR on a pulseless patient\u2014what do you do in that moment?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "An aggressive patient attempts to strike responders during a medical call\u2014describe your plan to keep everyone safe."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "A partial structural collapse occurs while crews are operating nearby\u2014what are your immediate steps?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "Your captain orders an action that you believe to be unsafe\u2014how do you handle the conflict?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You recognize signs of severe heat exhaustion in a crew member who wants to keep working\u2014what do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You are first arriving at a school bus rollover with many injured children\u2014walk us through your first five minutes."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "A transformer fire is threatening nearby exposures and power infrastructure\u2014what are your tactical priorities?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You are part of a crew responding to a fatal pediatric incident\u2014what does your tactical and emotional response look like after the call?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You hear cries for help from behind a compromised wall and conditions are deteriorating\u2014what is your plan?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You are first on scene at a violent incident with injured parties and the suspect possibly still nearby\u2014how do you maintain safety while providing care?"
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a time you helped someone in need."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Describe a time you worked under pressure and still performed well."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a time you dealt with a difficult customer or member of the public."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Describe a mistake you made and what you learned from it."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a time you supported a teammate or coworker."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Describe a time you stayed calm while others around you were panicking."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a situation where someone was relying on you."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Describe a time you were required to follow strict rules or procedures."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a time you solved a problem quickly."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Describe a time you had to adapt to a sudden change at work or school."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a time you communicated clearly in a stressful situation."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Describe a time you overcame a minor setback or disappointment."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a time you stayed organized when you had a lot to do."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Describe a time you received feedback and used it to improve."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Easy",
+        "question": "Tell us about a time your positive attitude helped your team."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a time you dealt with conflict on a team and helped resolve it."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Tell us about a time you had to communicate bad news to someone."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a time you overcame a major obstacle in work, school, or life."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Tell us about a time someone\u2019s safety depended on your actions."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a time you stayed professional even when you were frustrated."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Tell us about a time you prevented a problem through good communication."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a time you supported a struggling coworker, friend, or teammate."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Tell us about a time you had to learn something difficult quickly."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a situation where you demonstrated leadership, even informally."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Tell us about a time you made a critical decision with limited information."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a time you went above and beyond expectations."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Tell us about a time you had to deal with someone who was disrespectful and how you handled it."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a time you had to manage competing priorities or deadlines."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Tell us about a time you resolved a misunderstanding between people."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Medium",
+        "question": "Describe a time you stayed composed even though you were under a lot of stress."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about the most emotionally difficult situation you\u2019ve experienced and how you managed it."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Describe a time your personal values were seriously tested and what you did."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about a time you had to handle a crisis with minimal support."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Describe a situation where you were responsible for someone\u2019s safety in a high\u2011risk moment."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about a major failure in your life and how you grew from it."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Describe a time you had to stay functional while experiencing strong emotions."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about a time you made a split\u2011second decision that had serious consequences."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Describe a time you mediated a serious conflict between others."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about a time you supported a teammate or friend who was in crisis."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Describe your most meaningful leadership moment so far."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about a time you performed well under extreme pressure."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Describe a time you chose to act ethically even though it might have hurt you."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about a time you witnessed unsafe behaviour and how you responded."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Describe a time you had to take control of a chaotic situation."
+    },
+    {
+        "category": "Behavioral",
+        "difficulty": "Hard",
+        "question": "Tell us about a defining experience that changed the way you see yourself."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "Based on your experience as {job_title}, how did that role prepare you for firefighting?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "Looking at your time at {company}, what did you learn about working under pressure?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "Your r\u00e9sum\u00e9 shows experience in {industry}. What skills from that industry will help you as a firefighter?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "What accomplishment at {company} are you most proud of and why?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "Which job title on your r\u00e9sum\u00e9 taught you the most about teamwork?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "How did your role at {company} help you develop strong communication skills?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "What safety responsibilities did you handle in your position as {job_title}?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "How did your earlier jobs shape the work ethic you bring to the fire service?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "What training or certification such as {certification} has best prepared you for emergency response?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "What responsibility from your role at {company} relates most directly to firefighting?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "Which skill listed in your r\u00e9sum\u00e9\u2019s skills section are you most confident using on the job?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "How did working in {industry} teach you to deal with the public?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "Which experience on your r\u00e9sum\u00e9 do you feel best shows your reliability?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "What part of your education at {course_or_school} do you still use today?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Easy",
+        "question": "Which past job helped you become more organized and detail\u2011oriented?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Describe a challenge you overcame during your time at {company}."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Which position on your r\u00e9sum\u00e9 gave you your first real leadership opportunities?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Tell us about a difficult customer or client you dealt with in your role as {job_title}."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "What technical skill on your r\u00e9sum\u00e9 (for example {skill}) would be useful in the fire service?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Which job required you to make quick decisions with limited information?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "What teamwork experience from {company} stands out to you and why?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Which job on your r\u00e9sum\u00e9 taught you the most about conflict management?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "How did your role in {industry} expose you to physically demanding work?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Which course or certification such as {certification} challenged you the most and how did you handle it?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Describe a time at {company} when you had to stay calm and focused in a stressful situation."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Which position taught you the most about professionalism and representing an organization well?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Tell us about a time you received critical feedback in one of your previous jobs and how you responded."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Which experience on your r\u00e9sum\u00e9 most improved your problem\u2011solving skills?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Describe a situation at {company} where you had to manage competing tasks or deadlines."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Medium",
+        "question": "Which role required you to take the most initiative rather than waiting for instructions?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "What was the most difficult job on your r\u00e9sum\u00e9 and what made it challenging?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Tell us about the most stressful day or shift you\u2019ve experienced in your work history."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Which role required you to follow the strictest safety standards and how did you handle that responsibility?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Describe a time in your past work when you felt truly accountable for the outcome."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Which experience on your r\u00e9sum\u00e9 tested your integrity the most?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Tell us about a time in your work history when you had to stay composed despite strong emotions."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Which position required you to support others who were going through a difficult time?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Describe a time when your judgment in a previous job had serious consequences, good or bad."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Which job experience most prepared you emotionally for the realities of firefighting?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Tell us about a situation from your r\u00e9sum\u00e9 where you had to manage risk carefully."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Which role demanded the most situational awareness from you and how did you develop it?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Tell us about a time at {company} when you had to be the calmest person in the room."
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Which job most prepared you to work in unpredictable, rapidly changing situations?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "Looking at your r\u00e9sum\u00e9 as a whole, which experience best demonstrates that you are ready for a firefighting career?"
+    },
+    {
+        "category": "Resume-Based",
+        "difficulty": "Hard",
+        "question": "What experience from your work or education history taught you the most about being responsible for other people?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What do you think are the biggest fire\u2011related risks in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What do you know about the demographics of [CITY] and how they affect emergency response?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you improve fire safety education in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "Why do you personally want to serve the community of [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What major transportation routes in [CITY] create unique emergency risks?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What natural hazards such as wildfires, floods, or storms affect [CITY] the most?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you respond to a large wildfire threatening the outskirts of [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you describe the public\u2019s perception of firefighters in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What community programs in [CITY] do you think firefighters should be involved in?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What types of medical calls do you think are most common in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you support vulnerable populations in [CITY], such as seniors or the homeless?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What do you know about mutual\u2011aid arrangements involving [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What major industrial or commercial risks exist in or around [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What seasonal risks does [CITY] face throughout the year?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How does the diversity of [CITY] influence how firefighters serve the community?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How familiar are you with the neighbourhoods and roadways of [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What rural or agricultural areas near [CITY] present unique challenges?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What challenges exist with high\u2011density housing in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you describe the wildland/urban interface around [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What fire\u2011prevention message do you think residents of [CITY] most need to hear?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What fire risks are associated with older homes and buildings in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How does the typical weather in [CITY] affect emergency response?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What waterways or bodies of water near [CITY] create rescue challenges?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What public events or festivals in [CITY] require strong emergency planning?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How prepared do you think [CITY] is for a large\u2011scale disaster?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What misconceptions do you think residents of [CITY] have about the fire service?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What types of calls do you think occur most frequently in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What emergency risks exist in apartment buildings and high\u2011rises in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you help build trust between firefighters and the community of [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How familiar are you with the locations of fire halls within [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What challenges does [CITY] face with rural water supply or hydrant spacing?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How significant is the wildfire threat to areas surrounding [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What role do you think firefighters play in the identity of [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What do you think the community of [CITY] expects from its firefighters?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What local issues in [CITY] are you passionate about improving as a firefighter?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What impact do you think population growth is having on emergency services in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What types of vulnerable infrastructure (schools, care homes, etc.) are important in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you represent [CITY] when interacting with people from outside the community?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you support public\u2011education campaigns specifically tailored to [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What part of [CITY] do you think presents the most complex emergency\u2011response challenges and why?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What have you noticed about how people in [CITY] respond to emergencies or severe weather?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "If you could change one safety\u2011related habit of residents in [CITY], what would it be?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you approach building relationships with community leaders in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What do you see as the main EMS\u2011related challenges in [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How do traffic patterns or congestion in [CITY] affect response times?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What areas of [CITY] would you make a priority for fire\u2011prevention outreach?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How would you explain fire\u2011service resources and limitations to residents of [CITY]?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "Why is serving specifically in [CITY] meaningful to you personally?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "What makes [CITY] unique compared to other places you could work as a firefighter?"
+    },
+    {
+        "category": "City & Community Specific",
+        "difficulty": "Mixed",
+        "question": "How have your own experiences living in or near [CITY] shaped your desire to serve here?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "Why do you want to serve with [DEPARTMENT] specifically?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you know about the history of [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "Which of [DEPARTMENT]\u2019s values resonate most with you and why?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What have you learned about the leadership style within [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "In what ways does [DEPARTMENT] stand out compared to neighbouring departments?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What community programs run by [DEPARTMENT] interest you the most?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you know about the training standards and recruit academy at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How do you see yourself contributing to the culture at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What have you learned about the apparatus and equipment used by [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What types of calls does [DEPARTMENT] respond to most frequently, in your understanding?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you describe the expectations placed on new recruits at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What challenges do you think [DEPARTMENT] is currently facing?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you support and represent [DEPARTMENT] during public\u2011education events?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What is your understanding of the medical response level provided by [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How familiar are you with the station locations and districts covered by [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What major risks or occupancies in [DEPARTMENT]\u2019s jurisdiction stand out to you?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "Why do the stated values or mission of [DEPARTMENT] matter to you personally?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What have you learned about [DEPARTMENT]\u2019s recruitment and hiring process?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "If you joined [DEPARTMENT], how would you help maintain its reputation in the community?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What could [DEPARTMENT] do to better serve its community, in your opinion?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you describe the public\u2019s perception of [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you know about the fire\u2011prevention initiatives led by [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How do you think [DEPARTMENT] works with mutual\u2011aid partners in the region?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What impression have you formed from speaking with current or past members of [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "Why have you chosen [DEPARTMENT] rather than another nearby fire service?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What long\u2011term career goals would you want to pursue within [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you integrate yourself into a crew at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you know about any specialty teams within [DEPARTMENT], such as technical rescue or hazmat?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you uphold and model the professional standards expected at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you think captains at [DEPARTMENT] expect from firefighters under their command?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How does the community served by [DEPARTMENT] influence how you would approach the job?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What interests you most about the training and development opportunities at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you know about [DEPARTMENT]\u2019s involvement in large community events or festivals?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How do you feel about the shift schedule or deployment model used at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What does wearing the uniform of [DEPARTMENT] mean to you?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you contribute to maintaining strong morale within [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What have you observed about [DEPARTMENT]\u2019s response to major incidents in the news or on social media?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you think will be the biggest challenge for you as a new firefighter at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you handle making a mistake as a probationary firefighter at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you hope to learn from senior members of [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you represent [DEPARTMENT] when off duty and interacting with the public?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What specific strengths do you bring that would benefit [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What do you think [DEPARTMENT] expects from you outside of emergency responses?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you contribute to continuous improvement inside [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What excites you the most about the possibility of working for [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you respond if selected for [DEPARTMENT] while also being in process with another service?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What does success in your first year at [DEPARTMENT] look like to you?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How would you handle disagreement with a decision made by leadership at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "How do you see yourself growing over the next ten years within [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "In what ways do you hope to give back to the community through your role at [DEPARTMENT]?"
+    },
+    {
+        "category": "Department Specific",
+        "difficulty": "Mixed",
+        "question": "What would make you proud to finish your career at [DEPARTMENT]?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 1: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 2: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 3: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 4: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 5: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 6: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 7: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 8: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 9: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 10: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 11: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 12: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 13: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 14: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 15: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 16: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 17: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 18: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 19: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Leadership scenario question 20: Describe how you would handle a realistic challenge related to leadership in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 1: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 2: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 3: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 4: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 5: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 6: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 7: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 8: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 9: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 10: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 11: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 12: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 13: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 14: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 15: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 16: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 17: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 18: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 19: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Chain of Command",
+        "difficulty": "Medium",
+        "question": "Chain of Command scenario question 20: Describe how you would handle a realistic challenge related to chain of command in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 1: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 2: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 3: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 4: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 5: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 6: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 7: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 8: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 9: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 10: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 11: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 12: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 13: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 14: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 15: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 16: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 17: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 18: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 19: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Safety & Accountability",
+        "difficulty": "Medium",
+        "question": "Safety & Accountability scenario question 20: Describe how you would handle a realistic challenge related to safety & accountability in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 1: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 2: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 3: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 4: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 5: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 6: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 7: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 8: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 9: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 10: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 11: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 12: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 13: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 14: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 15: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 16: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 17: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 18: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 19: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Teamwork & Collaboration",
+        "difficulty": "Medium",
+        "question": "Teamwork & Collaboration scenario question 20: Describe how you would handle a realistic challenge related to teamwork & collaboration in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 1: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 2: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 3: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 4: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 5: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 6: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 7: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 8: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 9: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 10: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 11: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 12: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 13: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 14: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 15: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 16: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 17: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 18: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 19: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "Conflict Resolution scenario question 20: Describe how you would handle a realistic challenge related to conflict resolution in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 1: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 2: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 3: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 4: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 5: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 6: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 7: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 8: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 9: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 10: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 11: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 12: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 13: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 14: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 15: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 16: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 17: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 18: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 19: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Communication scenario question 20: Describe how you would handle a realistic challenge related to communication in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 1: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 2: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 3: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 4: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 5: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 6: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 7: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 8: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 9: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 10: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 11: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 12: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 13: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 14: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 15: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 16: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 17: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 18: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 19: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Medium",
+        "question": "Stress Management scenario question 20: Describe how you would handle a realistic challenge related to stress management in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 1: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 2: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 3: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 4: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 5: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 6: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 7: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 8: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 9: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 10: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 11: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 12: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 13: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 14: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 15: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 16: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 17: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 18: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 19: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "Ethics & Integrity scenario question 20: Describe how you would handle a realistic challenge related to ethics & integrity in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 1: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 2: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 3: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 4: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 5: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 6: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 7: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 8: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 9: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 10: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 11: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 12: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 13: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 14: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 15: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 16: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 17: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 18: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 19: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Technical \u2013 Fireground scenario question 20: Describe how you would handle a realistic challenge related to technical \u2013 fireground in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 1: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 2: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 3: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 4: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 5: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 6: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 7: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 8: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 9: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 10: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 11: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 12: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 13: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 14: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 15: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 16: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 17: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 18: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 19: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Medical / EMR scenario question 20: Describe how you would handle a realistic challenge related to medical / emr in the fire service."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "You're the first arriving firefighter to a two-storey residential fire with visible flames from a bedroom window. Walk through your first 60 seconds."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You arrive at a motor vehicle collision with a trapped driver and leaking fuel. Describe your scene assessment and actions."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "You're assigned to conduct a primary search in a smoke-filled residence. Explain your approach."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "During overhaul you discover live electrical arcing behind a wall. What do you do?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "You respond to a wildfire threatening outbuildings on a rural property. Describe your priorities."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "A resident becomes aggressive while you are performing patient care. How do you ensure safety?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Hard",
+        "question": "You notice structural sagging above your crew during interior attack. What\u2019s your immediate move?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "A construction worker falls from scaffolding and is unconscious. Walk through your first minute."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You arrive to a faint smell of gas in an apartment hallway. How do you proceed?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "You discover fire extension into the attic during ventilation. What actions do you take?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "You arrive to a patient in severe respiratory distress with audible wheezing. What steps do you take?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Hard",
+        "question": "You find an unconscious diabetic patient with a medic-alert bracelet. Walk through your treatment."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "A cardiac arrest occurs in a crowded restaurant. Explain your approach to scene control and care."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You respond to a seizure in progress in a small cluttered bedroom. Describe your plan."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "You arrive to a multi-patient fall at an elderly care home. How do you triage?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You are treating a major bleed with limited resources. How do you manage it?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Hard",
+        "question": "A patient becomes unresponsive after telling you they feel faint. What assessments do you perform?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You respond to a suspected opioid overdose. What are your priorities?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Hard",
+        "question": "An elderly patient refuses transport despite concerning vitals. How do you handle it?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Hard",
+        "question": "You arrive to a medical call with panicked family giving conflicting information. How do you establish control?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Describe how you would set up and operate as part of a rapid intervention team (RIT) at a working structure fire."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "A firefighter becomes disoriented after losing visibility inside a warehouse. Explain your response."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You're assigned to ladder a two-storey home for possible rescue. What factors guide your ladder placement?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "Smoke is pushing from eaves in turbulent dark layers. Explain your interpretation and actions."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You\u2019re ordered to perform vertical ventilation but winds are rapidly shifting. What do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "While performing a search you encounter high heat and rollover indicators. Describe your next move."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "You arrive at a vehicle fire involving an EV battery. What precautions do you take?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "Explain your approach to a basement fire with limited entry points."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "You discover hoarding conditions during interior firefighting. How does this change your tactics?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "You're assigned to pump operations at a hydrant-limited rural fire. Describe your water management strategy."
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "You notice a rookie on your crew is overwhelmed and making mistakes. How do you lead them?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Your crew is divided on the best tactic for a fire. Describe how you would guide a unified plan."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "A team member repeatedly arrives late to training. How do you address the issue?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Hard",
+        "question": "You observe unsafe behaviour from a peer who outranks you in experience. How do you provide leadership?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "Your officer is unavailable and the public approaches you for direction at a major incident. What do you do?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "You are acting captain for the shift and morale is low. How do you motivate the team?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "A firefighter on your crew is hesitant entering a structure. How do you support them?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "Your crew just experienced a traumatic call. What leadership steps do you take afterward?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Hard",
+        "question": "You see two crew members arguing on scene. How do you take control?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "A junior member is nervous about an upcoming assessment. How do you coach them?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "A firefighter openly contradicts your instructions on scene. Describe how you would handle this."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A partner refuses to follow a safety step you believe is essential. What do you do?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Hard",
+        "question": "You and another firefighter strongly disagree on patient treatment. How do you resolve it effectively?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "A citizen criticizes and shouts at you during a medical call. How do you keep control?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "A senior firefighter is dismissive toward you during training. How do you respond professionally?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Hard",
+        "question": "You observe prejudice or disrespectful behaviour within the crew. What steps do you take?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "A crew member refuses to participate fully in station duties. What is your approach?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A coworker continually interrupts you during briefing. How do you manage it?"
+    },
+    {
+        "category": "Conflict Resolution",
+        "difficulty": "Medium",
+        "question": "A disagreement breaks out in front of the public. How do you address it in the moment?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "A firefighter challenges your decisions in a passive-aggressive way. What do you do?"
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "Explain how you\u2019d communicate a MAYDAY situation to maintain clarity under stress."
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "You must deliver bad news to a patient\u2019s family. How do you do it professionally?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "You need to redirect a panicked bystander who is interfering with patient care. What do you say?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Hard",
+        "question": "Your crew receives unclear radio instructions. How do you confirm safely?"
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "A partner misheard a critical order on the radio. How do you ensure you both align?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Describe how you\u2019d communicate tactically with your team during heavy smoke conditions."
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Medium",
+        "question": "You must communicate evacuation orders to residents who speak limited English. How do you proceed?"
+    },
+    {
+        "category": "Communication",
+        "difficulty": "Hard",
+        "question": "A multi-agency scene is chaotic and disorganized. How do you restore clarity with communication?"
+    },
+    {
+        "category": "Leadership",
+        "difficulty": "Medium",
+        "question": "You must report a crew member\u2019s concerning behaviour to an officer. How do you approach the conversation?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "Explain how you maintain assertive but respectful communication during a stressful fireground moment."
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "You witness a firefighter taking photos on scene for personal use. What do you do?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "A friend asks you for inside information about ongoing fire department hiring. How do you respond?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "You realize a mistake you made on a call could affect patient outcome. How do you handle it?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Hard",
+        "question": "A crew member jokes inappropriately on a sensitive medical call. What is your response?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You see falsified training hours being signed off. What actions do you take?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You notice a partner cutting corners on PPE checks. What do you do?"
+    },
+    {
+        "category": "Ethics & Integrity",
+        "difficulty": "Medium",
+        "question": "You find valuable property left behind at a scene. How do you ensure integrity?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You are pressured to support a story that is not fully accurate. What do you do?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You accidentally damage equipment but no one sees it happen. What\u2019s your next move?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Medium",
+        "question": "A firefighter is using social media to vent about a coworker. How do you respond responsibly?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You arrive at back\u2011to\u2011back traumatic calls. How do you stay functional?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Medium",
+        "question": "Describe how you maintain composure when a child is involved in a medical emergency."
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You\u2019re operating in extreme heat conditions for extended periods. How do you manage yourself?"
+    },
+    {
+        "category": "Medical / EMR",
+        "difficulty": "Hard",
+        "question": "You receive devastating news about a patient outcome mid-shift. How do you continue working?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "Your officer gives you negative feedback right before a major call. How do you stay focused?"
+    },
+    {
+        "category": "Stress Management",
+        "difficulty": "Hard",
+        "question": "You\u2019re overwhelmed mentally after multiple intense days. How do you recover?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "A teammate breaks down emotionally after a difficult call. How do you support them while managing yourself?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Medium",
+        "question": "You\u2019re asked to perform a task you\u2019re not confident in. How do you manage fear?"
+    },
+    {
+        "category": "Situational",
+        "difficulty": "Hard",
+        "question": "You\u2019re exhausted and dehydrated but a high\u2011priority call drops. How do you manage your body and mind?"
+    },
+    {
+        "category": "Technical \u2013 Fireground",
+        "difficulty": "Hard",
+        "question": "You experience sensory overload during a chaotic fire scene. How do you maintain operational clarity?"
+    }
+]

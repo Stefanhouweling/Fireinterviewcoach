@@ -308,9 +308,33 @@ IMPORTANT: Reference ALL past jobs and experiences when generating questions, no
       return 'hard';
     })();
     
-    // Initialize question bank reference (currently not used, but kept for future use)
+    // Get a question from the bank for inspiration (matching type, difficulty, and category)
     let questionBankReference = null;
     let bankReferenceText = "";
+    
+    // Try to get a question from the bank that matches the criteria
+    if (useQuestionBank) {
+      try {
+        // Map selectedCategory to question bank category if needed
+        let bankCategory = selectedCategory;
+        if (selectedCategory === "City & Department Specific") {
+          bankCategory = null; // Let bank provide any category for inspiration
+        }
+        
+        questionBankReference = getRandomQuestion(
+          questionTypeToUse,
+          difficultyToUse,
+          bankCategory,
+          askedQuestions || []
+        );
+        
+        if (questionBankReference) {
+          console.log(`[QUESTION BANK] Selected question for inspiration: ${questionBankReference.category} - ${questionBankReference.question.substring(0, 60)}...`);
+        }
+      } catch (error) {
+        console.error('[QUESTION BANK] Error getting question reference:', error);
+      }
+    }
     
     // Build personalization context
     let personalizationContext = "";
@@ -524,13 +548,26 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
     // Add question bank reference as inspiration if available
     // (This is defined earlier in the code, but ensure it's always initialized)
     if (questionBankReference) {
-      bankReferenceText = `\n\nQUESTION BANK REFERENCE (use as inspiration, but create a NEW, PERSONALIZED question):
+      bankReferenceText = `\n\nQUESTION BANK REFERENCE (use as inspiration and personalize it):
 - Type: ${questionBankReference.type}
 - Difficulty: ${questionBankReference.difficulty}
 - Category: ${questionBankReference.category}
-- Example question style: "${questionBankReference.question}"
+- Example question: "${questionBankReference.question}"
 
-IMPORTANT: Do NOT copy this question. Use it as inspiration for the TYPE and STYLE of question, but create a completely new, personalized question that incorporates the candidate's profile information above.`;
+CRITICAL INSTRUCTIONS:
+1. Use this question as a BASE/INSPIRATION for creating a personalized version
+2. DO NOT ask the exact same question - personalize it using the candidate's profile information
+3. Incorporate their name (if provided, very occasionally), department, city, resume background, etc.
+4. Maintain the same TYPE (${questionBankReference.type}), DIFFICULTY level (${questionBankReference.difficulty}), and CATEGORY focus (${questionBankReference.category})
+5. Make it feel like a real interview question tailored specifically to this candidate
+6. Replace placeholders like [CITY], [DEPARTMENT], {job_title}, {company}, etc. with actual information from the profile
+7. The final question should be UNIQUE and PERSONALIZED, not a direct copy
+
+Example transformation:
+- Original: "What do you know about the demographics of [CITY]?"
+- Personalized: "Given your background in ${profileCity || 'this city'}, what do you think are the biggest fire-related risks in ${profileCity || 'this city'} and how would your experience help you serve this community?"
+
+Remember: Personalize and tailor, but keep the core competency being tested the same.`;
     } else {
       bankReferenceText = "";
     }

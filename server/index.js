@@ -869,15 +869,21 @@ The feedback MUST include:
             `Question Category: ${category || 'General'}\n\n` +
             "Candidate's Answer:\n" +
             "\"" + String(answer).replace(/"/g, '\\"') + "\"\n\n" +
+            "⚠️ IMPORTANT: This answer is from a SPEECH TRANSCRIPT (speech-to-text). Spelling variations are expected and should NOT be penalized.\n" +
+            "- Focus on CONTENT ACCURACY, not exact spelling\n" +
+            "- For proper names (e.g., 'Eric' vs 'Erick', 'Peterson' vs 'Petersen'), consider them correct if phonetically similar\n" +
+            "- Only mark as incorrect if the CONTENT/FACTS are wrong, not spelling differences\n" +
+            "- Spelling errors in transcripts are NOT the candidate's fault\n\n" +
             "Body Language Score (higher = more movement/fidgeting): " + (motionScore ?? "unknown") + "\n" +
             resumeContext + knowledgeVerificationContext + "\n\n" +
             (isKnowledgeQuestion ? 
             "CRITICAL: This is a KNOWLEDGE-TESTING question. You MUST:\n" +
             "1. Verify the candidate's answer against the research data provided\n" +
-            "2. State clearly if the answer was CORRECT, INCORRECT, or PARTIALLY CORRECT\n" +
-            "3. If incorrect or partially correct, provide the CORRECT answer from the research data\n" +
-            "4. List any specific facts they missed\n" +
-            "5. Score based on accuracy: 10/10 = completely correct with all details, lower scores for incorrect or incomplete answers\n\n" :
+            "2. REMEMBER: This is a transcript - spelling variations (especially in names) are expected and should be considered CORRECT if phonetically similar\n" +
+            "3. State clearly if the answer was CORRECT, INCORRECT, or PARTIALLY CORRECT (based on CONTENT, not spelling)\n" +
+            "4. If incorrect or partially correct, provide the CORRECT answer from the research data\n" +
+            "5. List any specific facts they missed (but don't penalize spelling differences)\n" +
+            "6. Score based on CONTENT accuracy: 10/10 = completely correct with all details, lower scores only for factually incorrect or incomplete answers (NOT spelling)\n\n" :
             "CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or HYPOTHETICAL question (future scenario).\n\n" +
             "- BEHAVIORAL questions: \"Tell me about a time when...\", \"Describe a situation where...\", \"Give me an example of...\"\n" +
             "  → Use STAR method (Situation-Task-Action-Result) for these.\n\n" +
@@ -887,9 +893,9 @@ The feedback MUST include:
             "STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bold labels with double asterisks, NOT star symbols):\n\n" +
             "## Answer Summary & Score\n" +
             (isKnowledgeQuestion ?
-            "- **Summary:** [1–2 short sentences summarizing what they said, and whether it was correct or incorrect]\n" +
-            "- **Correctness:** [State clearly: CORRECT, INCORRECT, or PARTIALLY CORRECT. If incorrect/partial, provide the correct answer from research data]\n" +
-            "- **Score:** [X/10 – based on accuracy. 10/10 = completely correct with all details, lower for incorrect/incomplete answers]\n" :
+            "- **Summary:** [1–2 short sentences summarizing what they said, and whether it was correct or incorrect. NOTE: If only spelling differs (e.g., 'Eric' vs 'Erick'), consider it CORRECT]\n" +
+            "- **Correctness:** [State clearly: CORRECT, INCORRECT, or PARTIALLY CORRECT. Remember: spelling variations in transcripts are NOT errors. Only mark incorrect if FACTS are wrong]\n" +
+            "- **Score:** [X/10 – based on CONTENT accuracy only. 10/10 = factually correct with all details. Do NOT deduct points for spelling differences in transcripts]\n" :
             "- **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]\n" +
             "- **Score:** [X/10 – very short explanation of why, and what would make it a 10/10]\n") +
             "\n\n## What You Did Well\n" +
@@ -898,7 +904,7 @@ The feedback MUST include:
             "- **Positive 2:** [Short, specific positive point]\n" +
             "- **Positive 3 (optional):** [Only if there is a clear extra strength]\n\n" +
             "## What To Improve Next\n" +
-            "- **Focus 1:** " + (isKnowledgeQuestion ? "[If incorrect: 'The correct answer is [correct answer from research].' If missed details: 'You missed [specific fact].']" : "[Very practical change they can make next time]") + "\n" +
+            "- **Focus 1:** " + (isKnowledgeQuestion ? "[If factually incorrect: 'The correct answer is [correct answer from research].' If missed details: 'You missed [specific fact].' DO NOT mention spelling - transcripts have spelling variations]" : "[Very practical change they can make next time]") + "\n" +
             "- **Focus 2:** [Another clear tweak or addition]\n" +
             "- **Focus 3 (optional):** [Only if it adds real value]\n\n" +
             (isKnowledgeQuestion ? 

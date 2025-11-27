@@ -2343,6 +2343,8 @@
   let askedQuestions = new Set(); // Track all asked questions (by text) to prevent duplicates
   let askedCategories = new Set(); // Track question categories to ensure diversity
   let resumeTopicsCovered = new Set(); // Track resume topics/questions covered
+  let flaggedQuestions = []; // Track flagged questions
+  let onlyFlaggedMode = false; // Toggle for practicing only flagged questions
 
   let cameraStream = null;
   let motionCtx = null;

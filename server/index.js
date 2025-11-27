@@ -272,13 +272,25 @@ ${profileResumeText}`;
       
       // Add name context if available
       if (profileName) {
-        userProfileContext += `\n\nIMPORTANT: The candidate's name is ${profileName}. Occasionally address them by name in questions to make it more personal and realistic (e.g., "${profileName}, tell us about a time..." or "${profileName}, how would you..."). Use the name naturally, not in every question - mix it in about 30% of the time.`;
+        // Use name very randomly - only about 10-15% of the time
+        userProfileContext += `\n\nIMPORTANT: The candidate's name is ${profileName}. Very occasionally address them by name in questions to make it more personal and realistic (e.g., "${profileName}, tell us about a time..." or "${profileName}, how would you..."). Use the name very sparingly - only about 10-15% of the time, and make it feel natural and random.`;
       }
     }
 
     // Determine question strategy based on mode, with heavy emphasis on personalization
     let questionStrategy = "";
-    const questionTypeToUse = questionType || (Math.random() < 0.5 ? 'behavioral' : 'situational');
+    
+    // Determine question type: if category is "Situational" or "Behavioral", use that; otherwise random
+    let questionTypeToUse;
+    if (selectedCategory === "Situational") {
+      questionTypeToUse = 'situational';
+    } else if (selectedCategory === "Behavioral") {
+      questionTypeToUse = 'behavioral';
+    } else {
+      // Randomly choose between situational and behavioral when no specific category
+      questionTypeToUse = questionType || (Math.random() < 0.5 ? 'behavioral' : 'situational');
+    }
+    
     const difficultyToUse = difficulty || (() => {
       const rand = Math.random();
       if (rand < 0.3) return 'easy';
@@ -293,7 +305,7 @@ ${profileResumeText}`;
     // Build personalization context
     let personalizationContext = "";
     if (profileName) {
-      personalizationContext += `\n- Candidate's name: ${profileName} (address them by name naturally in about 30-40% of questions)`;
+      personalizationContext += `\n- Candidate's name: ${profileName} (address them by name very occasionally - only about 10-15% of questions, make it feel random and natural)`;
     }
     if (profileDepartmentName) {
       personalizationContext += `\n- Department: ${profileDepartmentName} (reference this department naturally when relevant)`;
@@ -312,7 +324,48 @@ ${profileResumeText}`;
     }
     
     if (practiceMode === "specific" && selectedCategory) {
-      if (selectedCategory === "Resume-Based") {
+      if (selectedCategory === "Situational") {
+        questionStrategy = `Generate a SITUATIONAL question (${difficultyToUse} difficulty). A situational question presents a hypothetical scenario and asks what the candidate would do.${personalizationContext}
+
+CRITICAL REQUIREMENTS:
+- This MUST be a SITUATIONAL question (hypothetical scenario)
+- Use formats like: "How would you handle...", "What would you do if...", "How would you approach...", "Imagine you are...", "You are faced with..."
+- DO NOT use "Tell us about a time..." or "Describe a situation where..." (those are behavioral questions)
+- Present a specific scenario or situation laid out for the candidate
+- Ask them to explain what they would do in that situation
+- Test their judgment, decision-making, chain of command understanding, ethics, and approach
+- Personalize using the candidate's profile information (name, department, city, resume) when relevant
+- Make it feel like a real interview question tailored to this candidate
+
+EXAMPLES OF GOOD SITUATIONAL QUESTIONS:
+- "How would you handle a situation if you felt you weren't treated fairly?"
+- "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
+- "How would you handle a leader where you question their leadership, would you still respect them?"
+- "Imagine you're on a call and you notice a safety violation that could put your team at risk. How would you address this?"
+- "What would you do if you saw a fellow firefighter engaging in behavior that violates department policy?"
+
+The question should present a clear situation and ask what they would do, not ask about past experiences.`;
+      } else if (selectedCategory === "Behavioral") {
+        questionStrategy = `Generate a BEHAVIORAL question (${difficultyToUse} difficulty). A behavioral question asks about past experiences and past behavior.${personalizationContext}
+
+CRITICAL REQUIREMENTS:
+- This MUST be a BEHAVIORAL question (past experiences)
+- Use formats like: "Tell us about a time when...", "Describe a situation where...", "Give me an example of...", "Share an experience where...", "Can you recall a time when..."
+- DO NOT use "How would you handle..." or "What would you do if..." (those are situational questions)
+- Ask about actual past experiences and behaviors
+- Test their ability to reflect on past actions and learn from experiences
+- Personalize using the candidate's profile information (name, department, city, resume) when relevant
+- Make it feel like a real interview question tailored to this candidate
+
+EXAMPLES OF GOOD BEHAVIORAL QUESTIONS:
+- "Tell us about a time when you had to work under extreme pressure."
+- "Describe a situation where you had to resolve a conflict with a team member."
+- "Give me an example of a time when you had to make a difficult decision quickly."
+- "Share an experience where you had to adapt to a sudden change in plans."
+- "Can you recall a time when you had to step up and take leadership in a challenging situation?"
+
+The question should ask about past experiences and behaviors, not hypothetical future scenarios.`;
+      } else if (selectedCategory === "Resume-Based") {
         questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) SPECIFICALLY personalized to this candidate's resume and background.${personalizationContext}
 
 CRITICAL PERSONALIZATION REQUIREMENTS:
@@ -426,13 +479,15 @@ IMPORTANT: The question MUST stay within the "${selectedCategory}" category. Do 
 
 CRITICAL PERSONALIZATION REQUIREMENTS:
 - HEAVILY personalize this question using ALL available profile information
-- Use the candidate's name (${profileName ? profileName : 'if provided'}) naturally in about 30-40% of questions
+- Use the candidate's name (${profileName ? profileName : 'if provided'}) very occasionally - only about 10-15% of the time, make it feel random
 - Reference their department "${profileDepartmentName || '[if provided]'}" when relevant
 - Reference their city "${profileCity || '[if provided]'}" and use city research details when appropriate
 - Reference their resume background (experience, certifications, skills) naturally when it fits
 - Make it feel like a real panel member who has reviewed their application is asking
 
-${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format asking about past experience.' : 'Use "How would you handle..." format asking about a hypothetical situation.'} 
+${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format asking about past experience (BEHAVIORAL question).' : 'Use "How would you handle..." format asking about a hypothetical situation (SITUATIONAL question).'} 
+
+IMPORTANT: Randomly vary between behavioral and situational questions. This is a ${questionTypeToUse} question.
 
 Vary the topics to simulate a real interview where questions come from different areas. Mix personalized questions (about 60-70% personalized to their profile, 30-40% general) if profile information is available.`;
     } else {
@@ -470,7 +525,7 @@ IMPORTANT: Do NOT copy this question. Use it as inspiration for the TYPE and STY
 2. Make questions feel authentic and tailored specifically to THIS candidate
 3. Test behavioral competencies, technical knowledge, and situational judgment
 4. Reference their specific background naturally (experience, certifications, skills, department, city)
-5. Address them by name when appropriate (about 30-40% of questions)
+5. Address them by name very occasionally (only about 10-15% of questions, make it feel random)
 6. Incorporate specific details from city/department research to make questions feel authentic
 7. Test judgment, ethics, chain of command, and decision-making
 8. Ensure questions are UNIQUE and cover diverse topics/areas
@@ -490,7 +545,7 @@ ${resumeContext}${diversityContext}${userProfileContext}
 
 CRITICAL PERSONALIZATION INSTRUCTIONS:
 - HEAVILY personalize this question using ALL available profile information
-- If a name is provided, address them by name naturally (about 30-40% of the time)
+- If a name is provided, address them by name very occasionally (only about 10-15% of the time, make it feel random)
 - If a department is provided, reference it naturally when relevant
 - If city research is available, incorporate specific, authentic details
 - If resume information is available, reference their background naturally

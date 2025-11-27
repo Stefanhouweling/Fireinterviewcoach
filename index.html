@@ -157,6 +157,28 @@
       animation: fire-flicker 3s ease-in-out infinite;
     }
 
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
     @keyframes fire-flicker {
       0%, 100% { transform: rotate(-8deg) scale(1); }
       25% { transform: rotate(-6deg) scale(1.05); }
@@ -2022,72 +2044,75 @@
       localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
       localStorage.setItem("onboardingComplete", "true");
       
-      // Show loading state
-      const submitBtn = document.getElementById("onboardingSubmitBtn");
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = "Researching city information...";
-      submitBtn.disabled = true;
-      
-      try {
-        // Call backend to research city information
-        const response = await fetch(`${BACKEND_URL}/api/research-city`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            country,
-            stateProvince,
-            city,
-            jobType,
-            departmentName
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Backend error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        onboardingData.cityResearch = data.research;
-        localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
-        
-        // Set voice preference
-        if (onboardingData.voicePreference) {
-          selectedVoicePreference = onboardingData.voicePreference;
-        }
-        
-        // Update user profile on backend with all onboarding data
-        await updateUserProfile();
-        
-        console.log("City research completed:", data.research);
-        
-        // Hide onboarding modal and show main app
-        if (onboardingModal) {
-          onboardingModal.style.display = "none";
-        }
-        if (mainApp) {
-          mainApp.style.display = "block";
-        }
-        document.body.style.overflow = "auto";
-        
-        // Resume will be processed by the main app when it loads
-        // The resumeText and resumeAnalysis variables are already set
-      } catch (error) {
-        console.error("City research error:", error);
-        // Still proceed even if research fails
-        if (onboardingModal) {
-          onboardingModal.style.display = "none";
-        }
-        if (mainApp) {
-          mainApp.style.display = "block";
-        }
-        document.body.style.overflow = "auto";
-        alert("Onboarding complete, but city research failed. You can still use the app.");
-      } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+      // Set voice preference immediately
+      if (onboardingData.voicePreference) {
+        selectedVoicePreference = onboardingData.voicePreference;
       }
+      
+      // Update user profile on backend with onboarding data (without city research for now)
+      await updateUserProfile();
+      
+      // Hide onboarding modal and show main app immediately
+      if (onboardingModal) {
+        onboardingModal.style.display = "none";
+      }
+      if (mainApp) {
+        mainApp.style.display = "block";
+      }
+      document.body.style.overflow = "auto";
+      
+      // Research city information in the background (fire-and-forget)
+      // This won't block the user from proceeding
+      (async () => {
+        try {
+          console.log("Starting background city research...");
+          
+          // Call backend to research city information (no await - runs in background)
+          const response = await fetch(`${BACKEND_URL}/api/research-city`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              country,
+              stateProvince,
+              city,
+              jobType,
+              departmentName
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Backend error: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          onboardingData.cityResearch = data.research;
+          localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
+          
+          // Update user profile with city research
+          await updateUserProfile();
+          
+          console.log("Background city research completed:", data.research);
+          
+          // Show a subtle notification that research is complete
+          const notification = document.createElement("div");
+          notification.style.cssText = "position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; font-size: 14px; animation: slideIn 0.3s ease;";
+          notification.textContent = "✓ City research completed";
+          document.body.appendChild(notification);
+          
+          setTimeout(() => {
+            notification.style.animation = "slideOut 0.3s ease";
+            setTimeout(() => notification.remove(), 300);
+          }, 3000);
+        } catch (error) {
+          console.error("Background city research error:", error);
+          // Silently fail - user can still use the app
+        }
+      })();
+      
+      // Resume will be processed by the main app when it loads
+      // The resumeText and resumeAnalysis variables are already set
     });
   }
 

@@ -3461,6 +3461,12 @@ Return ONLY the category and question.`
       
       console.log(`Backend TTS response status: ${response.status}`);
       
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "Could not read error response");
+        console.error(`Backend TTS error response: ${errorText}`);
+        throw new Error(`Backend TTS failed: ${response.status} - ${errorText}`);
+      }
+      
       if (response.ok) {
         const audioBlob = await response.blob();
         console.log(`Received audio blob, size: ${audioBlob.size} bytes`);

@@ -2561,6 +2561,35 @@
   const resumeTagsEl = document.getElementById("resumeTags");
   const clearResumeBtn = document.getElementById("clearResumeBtn");
 
+  // Function to update Resume-Based option state based on resume availability
+  function updateResumeBasedOption() {
+    const resumeBasedOption = document.getElementById('resumeBasedOption');
+    const categorySelectEl = document.getElementById('categorySelect');
+    
+    if (resumeBasedOption && categorySelectEl) {
+      const hasResume = (resumeText && resumeText.length > 10) || (resumeAnalysis !== null);
+      
+      if (hasResume) {
+        resumeBasedOption.disabled = false;
+        resumeBasedOption.style.color = '';
+        resumeBasedOption.style.opacity = '1';
+      } else {
+        resumeBasedOption.disabled = true;
+        resumeBasedOption.style.color = '#64748b';
+        resumeBasedOption.style.opacity = '0.6';
+        
+        // If Resume-Based is currently selected, clear the selection
+        if (categorySelectEl.value === 'Resume-Based') {
+          categorySelectEl.value = '';
+          selectedCategory = '';
+        }
+      }
+    }
+  }
+  
+  // Initialize Resume-Based option state on page load
+  updateResumeBasedOption();
+
   resumeInput.addEventListener("change", handleResumeUpload);
   clearResumeBtn.addEventListener("click", () => {
     resumeInput.value = "";

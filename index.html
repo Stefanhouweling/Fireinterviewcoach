@@ -3424,7 +3424,18 @@ Return ONLY the category and question.`
         submitBtn.textContent = originalText;
       }
     });
+    }
   }
+  
+  // Initialize feedback system when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFeedbackSystem);
+  } else {
+    setupFeedbackSystem();
+  }
+  
+  // Also try after a short delay as backup
+  setTimeout(setupFeedbackSystem, 1000);
 
   async function speakQuestionWithCaptions(text) {
     console.log("speakQuestionWithCaptions called with text:", text ? text.substring(0, 50) + "..." : "NO TEXT");

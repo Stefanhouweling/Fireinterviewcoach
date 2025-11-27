@@ -325,7 +325,7 @@ IMPORTANT: Reference ALL past jobs and experiences when generating questions, no
           questionTypeToUse,
           difficultyToUse,
           bankCategory,
-          askedQuestions || []
+          profileAskedQuestions || []
         );
         
         if (questionBankReference) {

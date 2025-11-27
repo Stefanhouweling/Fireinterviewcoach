@@ -1004,6 +1004,23 @@
   </div>
 </div>
 
+<!-- Areas to Work On Modal -->
+<div id="areasToWorkOnModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 10003; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);">
+  <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%); border: 2px solid rgba(251, 191, 36, 0.3); border-radius: 16px; padding: 24px; max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="color: #fbbf24; font-size: 1.5em; margin: 0;">💡 What You Should Work On</h2>
+      <button id="closeAreasToWorkOnModal" style="background: transparent; border: none; color: #cbd5e1; font-size: 1.5rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(251, 191, 36, 0.2)'" onmouseout="this.style.background='transparent'">×</button>
+    </div>
+    <div id="areasToWorkOnContent" style="color: #e5e7eb; line-height: 1.7; font-size: 1rem;">
+      <div style="text-align: center; padding: 40px; color: #94a3b8;">
+        <div style="font-size: 2rem; margin-bottom: 12px;">🤖</div>
+        <p>Analyzing your answers...</p>
+        <p style="font-size: 0.9rem; margin-top: 8px;">This will update as you answer more questions</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Terms & Privacy Acceptance Modal -->
 <div id="termsModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);">
   <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 40px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);">
@@ -1281,8 +1298,12 @@
           
           <!-- Flagged Questions Controls -->
           <div style="margin-top: 12px; padding: 10px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
-            <button id="viewFlaggedBtn" style="width: 100%; padding: 8px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; color: #fca5a5; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;" title="View flagged questions">
+            <button id="viewFlaggedBtn" style="width: 100%; padding: 8px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; color: #fca5a5; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; margin-bottom: 8px;" title="View flagged questions">
               🚩 Flagged: <span id="flaggedCount">0</span>
+            </button>
+            <!-- What You Should Work On Button (appears after 5 questions) -->
+            <button id="areasToWorkOnBtn" style="width: 100%; padding: 8px 12px; background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 6px; color: #fbbf24; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: none; font-weight: 600;" title="View personalized areas to work on">
+              💡 What You Should Work On
             </button>
           </div>
         </div>
@@ -3376,6 +3397,148 @@ Return ONLY the category and question.`
     });
   }
   
+  // ========== AREAS TO WORK ON ==========
+  const areasToWorkOnBtn = document.getElementById('areasToWorkOnBtn');
+  const areasToWorkOnModal = document.getElementById('areasToWorkOnModal');
+  const areasToWorkOnContent = document.getElementById('areasToWorkOnContent');
+  const closeAreasToWorkOnModal = document.getElementById('closeAreasToWorkOnModal');
+  
+  // Check if button should be shown and fetch/update areas to work on
+  async function checkAndShowAreasToWorkOnButton() {
+    if (!areasToWorkOnBtn || questionCount < 5) return;
+    
+    try {
+      const sessionId = getSessionId();
+      
+      // Check if we have existing data
+      const response = await fetch(`${BACKEND_URL}/api/areas-to-work-on?sessionId=${sessionId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.hasData) {
+          areasToWorkOnBtn.style.display = 'block';
+          // If we have existing data, we can show it, but we'll regenerate on click
+        } else {
+          // Need to generate it first
+          await generateAreasToWorkOn();
+          areasToWorkOnBtn.style.display = 'block';
+        }
+      }
+    } catch (err) {
+      console.error('Error checking areas to work on:', err);
+    }
+  }
+  
+  // Generate or update areas to work on
+  async function generateAreasToWorkOn() {
+    try {
+      const sessionId = getSessionId();
+      const response = await fetch(`${BACKEND_URL}/api/areas-to-work-on`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ sessionId })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.areasToWorkOn;
+      } else {
+        throw new Error(`Failed to generate: ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Error generating areas to work on:', err);
+      throw err;
+    }
+  }
+  
+  // Load and display areas to work on in modal
+  async function loadAreasToWorkOn() {
+    if (!areasToWorkOnContent) return;
+    
+    // Show loading state
+    areasToWorkOnContent.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #94a3b8;">
+        <div style="font-size: 2rem; margin-bottom: 12px;">🤖</div>
+        <p>Analyzing your recent answers...</p>
+        <p style="font-size: 0.9rem; margin-top: 8px;">This may take a moment</p>
+      </div>
+    `;
+    
+    try {
+      const sessionId = getSessionId();
+      
+      // First try to get existing data
+      let response = await fetch(`${BACKEND_URL}/api/areas-to-work-on?sessionId=${sessionId}`);
+      let areasToWorkOn = null;
+      
+      if (response.ok) {
+        const data = await response.json();
+        areasToWorkOn = data.areasToWorkOn;
+      }
+      
+      // If no data or we want to refresh, generate new
+      if (!areasToWorkOn) {
+        areasToWorkOn = await generateAreasToWorkOn();
+      } else {
+        // Regenerate to get latest insights
+        try {
+          areasToWorkOn = await generateAreasToWorkOn();
+        } catch (err) {
+          console.warn('Failed to regenerate, using existing:', err);
+        }
+      }
+      
+      // Display the content
+      if (areasToWorkOn) {
+        areasToWorkOnContent.innerHTML = `
+          <div style="background: rgba(251, 191, 36, 0.1); border-left: 4px solid #fbbf24; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <p style="color: #e5e7eb; line-height: 1.8; font-size: 1.05rem; margin: 0; white-space: pre-wrap;">${areasToWorkOn}</p>
+          </div>
+          <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">This feedback is based on your last ${questionCount} answers and updates as you practice more.</p>
+          </div>
+        `;
+      } else {
+        areasToWorkOnContent.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #94a3b8;">
+            <p>Not enough data yet. Answer a few more questions to get personalized feedback.</p>
+          </div>
+        `;
+      }
+    } catch (err) {
+      console.error('Error loading areas to work on:', err);
+      areasToWorkOnContent.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #fca5a5;">
+          <p>Error loading feedback. Please try again.</p>
+        </div>
+      `;
+    }
+  }
+  
+  if (areasToWorkOnBtn) {
+    areasToWorkOnBtn.addEventListener('click', async () => {
+      if (areasToWorkOnModal) {
+        areasToWorkOnModal.style.display = 'flex';
+        await loadAreasToWorkOn();
+      }
+    });
+  }
+  
+  if (closeAreasToWorkOnModal) {
+    closeAreasToWorkOnModal.addEventListener('click', () => {
+      if (areasToWorkOnModal) areasToWorkOnModal.style.display = 'none';
+    });
+  }
+  
+  if (areasToWorkOnModal) {
+    areasToWorkOnModal.addEventListener('click', (e) => {
+      if (e.target === areasToWorkOnModal) {
+        areasToWorkOnModal.style.display = 'none';
+      }
+    });
+  }
+  
   // ========== FEEDBACK SYSTEM ==========
   function setupFeedbackSystem() {
     console.log("Setting up feedback system...");
@@ -4239,7 +4402,9 @@ Return ONLY the category and question.`
           resumeText: resumeText,
           conversationHistory: conversationHistory,
           cityResearch: onboardingData?.cityResearch || null,
-          category: currentQuestion?.category || null
+          category: currentQuestion?.category || null,
+          sessionId: getSessionId(),
+          questionCount: questionCount
         })
       });
 
@@ -4267,6 +4432,11 @@ Return ONLY the category and question.`
         }
 
         addFollowupButton();
+        
+        // Show "What You Should Work On" button after 5 questions
+        if (questionCount >= 5) {
+          checkAndShowAreasToWorkOnButton();
+        }
       } else if (modalContentEl) {
         modalContentEl.innerHTML = `
           <p style="color:#fecaca;">AI didn't return any feedback. Please try again.</p>

@@ -40,7 +40,8 @@ app.get('/', (req, res) => {
       tts: 'POST /api/tts',
       researchCity: 'POST /api/research-city',
       searchLocation: 'POST /api/search-location',
-      feedback: 'POST /api/feedback'
+      feedback: 'POST /api/feedback',
+      areasToWorkOn: 'POST /api/areas-to-work-on (generate), GET /api/areas-to-work-on (retrieve)'
     },
     message: 'API is running. Use the endpoints above to interact with the service.'
   });
@@ -814,7 +815,7 @@ Return ONLY the category and question.`
 // POST /api/analyze-answer - Analyze candidate's answer
 app.post('/api/analyze-answer', async (req, res) => {
   try {
-    const { question, answer, motionScore, resumeAnalysis, resumeText, conversationHistory = [], cityResearch, category } = req.body;
+    const { question, answer, motionScore, resumeAnalysis, resumeText, conversationHistory = [], cityResearch, category, sessionId, questionCount } = req.body;
 
     // Check if this is a knowledge-testing question (City & Department Specific)
     const isKnowledgeQuestion = category === "City & Department Specific" ||
@@ -986,6 +987,31 @@ The feedback MUST include:
     });
 
     const aiFeedback = response.choices[0].message.content;
+    
+    // Track answer analysis after 5 questions for "areas to work on" feature
+    if (sessionId && questionCount && questionCount >= 5) {
+      try {
+        const profile = getUserProfile(sessionId);
+        const analysisEntry = {
+          question: question,
+          answer: answer,
+          feedback: aiFeedback,
+          category: category || 'General',
+          timestamp: new Date().toISOString(),
+          questionCount: questionCount
+        };
+        
+        // Keep only last 10 analyses to avoid too much data
+        profile.answerAnalyses = (profile.answerAnalyses || []).slice(-9).concat([analysisEntry]);
+        updateUserProfile(sessionId, { answerAnalyses: profile.answerAnalyses });
+        
+        console.log(`[AREAS TO WORK ON] Tracked analysis #${questionCount} for session ${sessionId}`);
+      } catch (trackError) {
+        console.error('Error tracking answer analysis:', trackError);
+        // Don't fail the request if tracking fails
+      }
+    }
+    
     res.json({ feedback: aiFeedback });
   } catch (error) {
     console.error('Error analyzing answer:', error);
@@ -1565,6 +1591,8 @@ function getUserProfile(sessionId) {
       conversationHistory: [],
       askedQuestions: [],
       askedCategories: [],
+      answerAnalyses: [], // Store recent answer analyses for "areas to work on"
+      areasToWorkOn: null, // AI-generated summary of areas to improve
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });

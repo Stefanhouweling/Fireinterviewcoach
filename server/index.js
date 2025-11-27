@@ -1123,94 +1123,57 @@ app.post('/api/research-city', async (req, res) => {
     // Perform actual web searches for critical facts using OpenAI's web search capability
     console.log('Performing web searches for current information...');
     
+    // Reduced to most critical searches only (5 instead of 17) for speed
+    // Run in parallel batches to speed up significantly
     const criticalSearches = [
       { query: `current fire chief ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'fire chief name' },
-      { query: `deputy chiefs ${departmentName} ${city} ${country} 2024 2025`, fact: 'deputy chiefs' },
       { query: `current mayor ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'mayor name' },
-      { query: `city council public safety committee ${city} ${country} 2024`, fact: 'public safety committee members' },
       { query: `${departmentName} union number ${city} ${country}`, fact: 'union number' },
-      { query: `union president ${departmentName} ${city} ${country} 2024`, fact: 'union president' },
       { query: `${departmentName} number of fire stations ${city} ${country} 2024 2025`, fact: 'number of fire stations' },
-      { query: `${departmentName} number of members staff ${city} ${country} 2024 2025`, fact: 'number of members' },
-      { query: `${departmentName} annual budget ${city} ${country} 2024`, fact: 'annual budget' },
-      { query: `when was ${departmentName} established ${city} ${country}`, fact: 'department established date' },
-      { query: `${departmentName} mission statement values ${city} ${country}`, fact: 'department mission statement' },
-      { query: `${departmentName} community programs ${city} ${country} 2024`, fact: 'community programs' },
-      { query: `${departmentName} fire prevention programs ${city} ${country}`, fact: 'fire prevention programs' },
-      { query: `population ${city} ${stateProvince || ''} ${country} 2024`, fact: 'city population' },
-      { query: `main industries ${city} ${country}`, fact: 'city main industries' },
-      { query: `${departmentName} specialized equipment apparatus ${city} ${country}`, fact: 'specialized equipment' },
-      { query: `${departmentName} technical rescue capabilities ${city} ${country}`, fact: 'technical rescue capabilities' }
+      { query: `${departmentName} number of members staff ${city} ${country} 2024 2025`, fact: 'number of members' }
     ];
 
     let verifiedFacts = {};
     
-    console.log(`\n=== Starting ${criticalSearches.length} web searches for comprehensive city research ===`);
-    console.log(`Researching: ${locationString}, ${departmentName}`);
-    console.log(`Total searches to perform: ${criticalSearches.length}\n`);
+    console.log(`\n=== Starting ${criticalSearches.length} web searches (optimized, parallel batches) ===`);
+    console.log(`Researching: ${locationString}, ${departmentName}\n`);
     
-    // Use OpenAI Responses API with web search to get current, accurate information
-    // Process all searches sequentially
-    for (let idx = 0; idx < criticalSearches.length; idx++) {
-      const search = criticalSearches[idx];
+    // Process searches in parallel batches for speed (2 at a time)
+    const processSearch = async (search) => {
       try {
-        console.log(`[${idx + 1}/${criticalSearches.length}] Searching for: ${search.fact}`);
-        console.log(`    Query: "${search.query}"`);
-        
-        // Try OpenAI Responses API with web search first (if available)
         let factResult = null;
         let usedWebSearch = false;
         
         try {
           // Try Responses API with web_search tool for real-time information
           if (openai.responses && typeof openai.responses.create === 'function') {
-            console.log(`Attempting Responses API with web search for: ${search.query}`);
             const searchResponse = await openai.responses.create({
-              model: "gpt-4o", // Use gpt-4o for Responses API (gpt-5 doesn't exist yet)
-              tools: [
-                { type: "web_search" }
-              ],
+              model: "gpt-4o",
+              tools: [{ type: "web_search" }],
               input: `What is the current, verified fact for: "${search.query}"? Return ONLY the fact itself (name or number), no explanations.`
             });
             
             if (searchResponse && searchResponse.output_text) {
               factResult = searchResponse.output_text.trim();
               usedWebSearch = true;
-              console.log(`✓ Responses API with web search found ${search.fact}: ${factResult}`);
             }
           }
         } catch (responsesError) {
-          console.log(`Responses API not available (${responsesError.message}), falling back to chat completions`);
+          // Fallback to chat completions
         }
         
-        // Fallback to chat completions if Responses API not available or failed
+        // Fallback to chat completions if Responses API not available
         if (!factResult) {
           const searchResponse = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
               {
                 role: "system",
-                content: `You are a fact-checker. Provide the MOST CURRENT information you have. 
-
-IMPORTANT RULES:
-- For "${city}, ${country}" specifically, provide the most recent information available
-- Return ONLY the fact itself (name or number), no explanations
-- If you're uncertain or the information might be outdated, return "NOT FOUND"
-- Do NOT add extra initials or letters to names
-- For numbers, return just the number`
+                content: `You are a fact-checker. Provide the MOST CURRENT information. Return ONLY the fact itself (name or number), no explanations. If uncertain, return "NOT FOUND".`
               },
               {
                 role: "user",
-                content: `What is the current fact for "${search.query}"?
-
-Return ONLY the fact:
-- For fire chief: Return the full name (e.g., "Erick Peterson")
-- For mayor: Return the full name (e.g., "Ross Siemens") 
-- For union number: Return the number (e.g., "IAFF Local 1234")
-- For number of stations: Return just the number (e.g., "6")
-- For number of members: Return just the number (e.g., "150")
-
-If you cannot provide a current, verified fact, return "NOT FOUND".`
+                content: `What is the current fact for "${search.query}"? Return ONLY the fact (name or number). If you cannot provide a current, verified fact, return "NOT FOUND".`
               }
             ],
             temperature: 0.1,
@@ -1220,9 +1183,8 @@ If you cannot provide a current, verified fact, return "NOT FOUND".`
           factResult = searchResponse.choices[0].message.content.trim();
         }
         
-        // Clean up the response - remove any explanatory text, keep only the fact
+        // Clean up the response
         factResult = factResult.split('\n')[0].split('.')[0].trim();
-        // Remove quotes if present
         factResult = factResult.replace(/^["']|["']$/g, '');
         
         if (factResult && 
@@ -1231,20 +1193,25 @@ If you cannot provide a current, verified fact, return "NOT FOUND".`
             !factResult.toLowerCase().includes('outdated') &&
             !factResult.toLowerCase().includes('uncertain') &&
             factResult.length > 0 &&
-            factResult.length < 100) { // Reasonable length check
+            factResult.length < 100) {
           verifiedFacts[search.fact] = factResult;
-          console.log(`✓ Found ${search.fact}: ${factResult}${usedWebSearch ? ' (via web search)' : ''}`);
+          console.log(`✓ Found ${search.fact}: ${factResult}`);
+          return { success: true, fact: search.fact, result: factResult };
         } else {
-            console.log(`    ✗ Could not verify: ${factResult || 'no result'}`);
+          console.log(`✗ Could not verify ${search.fact}`);
+          return { success: false, fact: search.fact };
         }
       } catch (err) {
-        console.error(`    ✗ ERROR for ${search.fact}:`, err.message);
+        console.error(`✗ ERROR for ${search.fact}:`, err.message);
+        return { success: false, fact: search.fact, error: err.message };
       }
-      
-      // Small delay between searches to avoid rate limiting
-      if (idx < criticalSearches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
-      }
+    };
+    
+    // Process in parallel batches of 2 for speed
+    const batchSize = 2;
+    for (let i = 0; i < criticalSearches.length; i += batchSize) {
+      const batch = criticalSearches.slice(i, i + batchSize);
+      await Promise.all(batch.map(processSearch));
     }
     
     console.log(`\n=== Completed all ${criticalSearches.length} searches ===`);

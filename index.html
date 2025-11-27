@@ -1321,20 +1321,7 @@
 </div>
 
 <!-- Onscreen Console (Debug) -->
-<div id="debugConsole" style="position: fixed; bottom: 20px; right: 20px; width: 400px; max-height: 300px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 12px; z-index: 9999; display: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); font-family: 'Courier New', monospace; font-size: 11px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(239, 68, 68, 0.2);">
-    <h4 style="margin: 0; color: #fbbf24; font-size: 12px; font-weight: 600;">🐛 Debug Console</h4>
-    <div>
-      <button id="clearConsoleBtn" style="padding: 4px 8px; margin-right: 4px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 10px;">Clear</button>
-      <button id="toggleConsoleBtn" style="padding: 4px 8px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 10px;">Hide</button>
-    </div>
-  </div>
-  <div id="consoleContent" style="max-height: 240px; overflow-y: auto; color: #cbd5e1; line-height: 1.4;">
-    <!-- Console messages will appear here -->
-  </div>
-</div>
-
-<button id="showConsoleBtn" style="position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; color: #fff; font-size: 20px; cursor: pointer; z-index: 9998; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center;">🐛</button>
+<!-- Debug console removed to avoid overlap with feedback button -->
 
   <!-- Footer with Legal Links -->
   <footer style="text-align: center; padding: 30px 20px; margin-top: auto; border-top: 1px solid rgba(239, 68, 68, 0.2); color: #94a3b8; font-size: 0.9em; width: 100%; clear: both; display: block; flex-shrink: 0;">
@@ -2149,125 +2136,7 @@
     });
   }
 
-  // ========== ONScreen CONSOLE ==========
-  const debugConsole = document.getElementById("debugConsole");
-  const consoleContent = document.getElementById("consoleContent");
-  const showConsoleBtn = document.getElementById("showConsoleBtn");
-  const toggleConsoleBtn = document.getElementById("toggleConsoleBtn");
-  const clearConsoleBtn = document.getElementById("clearConsoleBtn");
-  
-  function logToConsole(message, type = "info") {
-    if (!consoleContent) return;
-    
-    const timestamp = new Date().toLocaleTimeString();
-    const colors = {
-      info: "#93c5fd",
-      error: "#fca5a5",
-      warn: "#fbbf24",
-      success: "#86efac"
-    };
-    const color = colors[type] || colors.info;
-    
-    const logEntry = document.createElement("div");
-    logEntry.style.cssText = `margin-bottom: 4px; color: ${color}; word-break: break-word;`;
-    logEntry.textContent = `[${timestamp}] ${message}`;
-    
-    consoleContent.appendChild(logEntry);
-    consoleContent.scrollTop = consoleContent.scrollHeight;
-    
-    // Don't call console methods here - they're already being called by the override
-  }
-  
-  if (showConsoleBtn) {
-    showConsoleBtn.addEventListener("click", () => {
-      if (debugConsole) {
-        debugConsole.style.display = "block";
-        showConsoleBtn.style.display = "none";
-      }
-    });
-  }
-  
-  if (toggleConsoleBtn) {
-    toggleConsoleBtn.addEventListener("click", () => {
-      if (debugConsole) {
-        debugConsole.style.display = "none";
-        if (showConsoleBtn) showConsoleBtn.style.display = "flex";
-      }
-    });
-  }
-  
-  if (clearConsoleBtn) {
-    clearConsoleBtn.addEventListener("click", () => {
-      if (consoleContent) {
-        consoleContent.innerHTML = "";
-      }
-    });
-  }
-  
-  // Override console methods to also log to onscreen console
-  // Use a flag to prevent infinite recursion - call original first, then log
-  let isLogging = false;
-  
-  if (consoleContent) {
-    try {
-      const originalLog = console.log.bind(console);
-      const originalError = console.error.bind(console);
-      const originalWarn = console.warn.bind(console);
-      
-      const safeStringify = (arg) => {
-        if (typeof arg === 'object' && arg !== null) {
-          try {
-            return JSON.stringify(arg);
-          } catch (e) {
-            return String(arg);
-          }
-        }
-        return String(arg);
-      };
-      
-      console.log = function(...args) {
-        originalLog(...args);
-        if (!isLogging && consoleContent) {
-          isLogging = true;
-          try {
-            logToConsole(args.map(safeStringify).join(" "), "info");
-          } catch (e) {
-            // Ignore
-          }
-          isLogging = false;
-        }
-      };
-      
-      console.error = function(...args) {
-        originalError(...args);
-        if (!isLogging && consoleContent) {
-          isLogging = true;
-          try {
-            logToConsole(args.map(safeStringify).join(" "), "error");
-          } catch (e) {
-            // Ignore
-          }
-          isLogging = false;
-        }
-      };
-      
-      console.warn = function(...args) {
-        originalWarn(...args);
-        if (!isLogging && consoleContent) {
-          isLogging = true;
-          try {
-            logToConsole(args.map(safeStringify).join(" "), "warn");
-          } catch (e) {
-            // Ignore
-          }
-          isLogging = false;
-        }
-      };
-    } catch (err) {
-      // If console override fails, just continue without it
-      console.error("Console override failed:", err);
-    }
-  }
+  // Debug console removed - no longer needed
 
   // ========== API CONFIGURATION ==========
   // Backend API URL - automatically detects environment
@@ -2321,6 +2190,25 @@
       categorySelectEl.addEventListener("change", () => {
         selectedCategory = categorySelectEl.value;
         console.log("Selected category:", selectedCategory || "All Categories");
+        
+        // Check if City & Department Specific is selected and research is not ready
+        if (selectedCategory === "City & Department Specific") {
+          const savedOnboarding = localStorage.getItem("onboardingData");
+          let onboardingData = null;
+          if (savedOnboarding) {
+            try {
+              onboardingData = JSON.parse(savedOnboarding);
+            } catch (e) {
+              console.error("Failed to parse onboarding data:", e);
+            }
+          }
+          
+          if (!onboardingData || !onboardingData.cityResearch) {
+            alert("City research is still in progress. Please wait a moment for the research to complete, or select a different category. You'll see a notification when research is ready.");
+            categorySelectEl.value = "";
+            selectedCategory = "";
+          }
+        }
       });
     } else {
       console.warn("Category select element not found");
@@ -2849,7 +2737,15 @@
           }
           
           renderQuestion(currentQuestion);
-          speakQuestionWithCaptions(currentQuestion.template);
+          
+          // Speak question - ensure it happens
+          try {
+            await speakQuestionWithCaptions(currentQuestion.template);
+          } catch (ttsError) {
+            console.error("TTS error:", ttsError);
+            // Continue even if TTS fails
+          }
+          
           // Auto-start recording based on the user's Next Question click (browser-friendly)
           startAnswerRecording(true);
         }
@@ -3442,6 +3338,14 @@ Return ONLY the category and question.`
         submitBtn.textContent = originalText;
       }
     });
+    }
+  }
+  
+  // Initialize feedback system
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeFeedbackSystem);
+  } else {
+    initializeFeedbackSystem();
   }
 
   async function speakQuestionWithCaptions(text) {

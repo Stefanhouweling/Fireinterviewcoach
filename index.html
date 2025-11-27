@@ -1311,11 +1311,11 @@
           <strong>Finish Answering Question</strong> when you’re done.
         </p>
         <div style="position: relative;">
-          <div class="transcript" id="transcriptBox" style="min-height: 80px; padding: 12px; position: relative;">
+          <div class="transcript" id="transcriptBox" style="min-height: 80px; padding: 12px; position: relative; cursor: text;">
             Your live transcript will show here if your browser supports speech recognition.
           </div>
-          <div style="position: absolute; bottom: 8px; right: 12px; font-size: 0.7rem; color: #94a3b8; pointer-events: none;">
-            ✏️ Click to edit transcript
+          <div id="transcriptEditHint" style="position: absolute; bottom: 8px; right: 12px; font-size: 0.7rem; color: #94a3b8; pointer-events: none; opacity: 0.7;">
+            ✏️ Click to edit
           </div>
         </div>
         <div style="margin-top: 8px; padding: 8px; background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; border-radius: 4px; font-size: 0.8rem; color: #fbbf24;">
@@ -3990,22 +3990,27 @@ Return ONLY the category and question.`
     transcriptBox.contentEditable = "true";
     
     // Add visual feedback when editing transcript
+    const editHint = document.getElementById('transcriptEditHint');
     transcriptBox.addEventListener('focus', () => {
       transcriptBox.style.border = '2px solid #fbbf24';
       transcriptBox.style.background = 'rgba(251, 191, 36, 0.1)';
+      if (editHint) editHint.style.display = 'none';
     });
     
     transcriptBox.addEventListener('blur', () => {
       transcriptBox.style.border = '';
       transcriptBox.style.background = '';
+      if (editHint && transcriptBox.textContent.trim()) editHint.style.display = 'block';
     });
     
-    // Update text color when user types
+    // Update text color and hide hint when user types
     transcriptBox.addEventListener('input', () => {
       if (transcriptBox.textContent.trim() === '') {
         transcriptBox.style.color = '#94a3b8';
+        if (editHint) editHint.style.display = 'block';
       } else {
         transcriptBox.style.color = '#e5e7eb';
+        if (editHint) editHint.style.display = 'none';
       }
     });
   }

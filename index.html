@@ -3283,43 +3283,83 @@ Return ONLY the category and question.`
   }
   
   // ========== FEEDBACK SYSTEM ==========
-  const feedbackBtn = document.getElementById('feedbackBtn');
-  const feedbackModal = document.getElementById('feedbackModal');
-  const closeFeedbackModal = document.getElementById('closeFeedbackModal');
-  const cancelFeedbackBtn = document.getElementById('cancelFeedbackBtn');
-  const feedbackForm = document.getElementById('feedbackForm');
-  
-  if (feedbackBtn) {
-    feedbackBtn.addEventListener('click', () => {
-      if (feedbackModal) feedbackModal.style.display = 'flex';
+  function setupFeedbackSystem() {
+    console.log("Setting up feedback system...");
+    const feedbackBtn = document.getElementById('feedbackBtn');
+    const feedbackModal = document.getElementById('feedbackModal');
+    const closeFeedbackModal = document.getElementById('closeFeedbackModal');
+    const cancelFeedbackBtn = document.getElementById('cancelFeedbackBtn');
+    const feedbackForm = document.getElementById('feedbackForm');
+    
+    console.log("Feedback elements found:", {
+      feedbackBtn: !!feedbackBtn,
+      feedbackModal: !!feedbackModal,
+      closeFeedbackModal: !!closeFeedbackModal,
+      cancelFeedbackBtn: !!cancelFeedbackBtn,
+      feedbackForm: !!feedbackForm
     });
-  }
+    
+    if (feedbackBtn) {
+      // Remove any existing listeners
+      const newBtn = feedbackBtn.cloneNode(true);
+      feedbackBtn.parentNode.replaceChild(newBtn, feedbackBtn);
+      
+      newBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Feedback button clicked!");
+        const modal = document.getElementById('feedbackModal');
+        if (modal) {
+          console.log("Showing feedback modal");
+          modal.style.display = 'flex';
+        } else {
+          console.error("Feedback modal not found!");
+        }
+      });
+      
+      // Also add inline onclick as backup
+      newBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Feedback button clicked (onclick)!");
+        const modal = document.getElementById('feedbackModal');
+        if (modal) {
+          modal.style.display = 'flex';
+        }
+      };
+    } else {
+      console.error("Feedback button not found in DOM!");
+    }
   
-  if (closeFeedbackModal) {
-    closeFeedbackModal.addEventListener('click', () => {
-      if (feedbackModal) feedbackModal.style.display = 'none';
-      if (feedbackForm) feedbackForm.reset();
-    });
-  }
-  
-  if (cancelFeedbackBtn) {
-    cancelFeedbackBtn.addEventListener('click', () => {
-      if (feedbackModal) feedbackModal.style.display = 'none';
-      if (feedbackForm) feedbackForm.reset();
-    });
-  }
-  
-  if (feedbackModal) {
-    feedbackModal.addEventListener('click', (e) => {
-      if (e.target === feedbackModal) {
-        feedbackModal.style.display = 'none';
-        if (feedbackForm) feedbackForm.reset();
-      }
-    });
-  }
-  
-  if (feedbackForm) {
-    feedbackForm.addEventListener('submit', async (e) => {
+    if (closeFeedbackModal) {
+      closeFeedbackModal.addEventListener('click', () => {
+        const modal = document.getElementById('feedbackModal');
+        const form = document.getElementById('feedbackForm');
+        if (modal) modal.style.display = 'none';
+        if (form) form.reset();
+      });
+    }
+    
+    if (cancelFeedbackBtn) {
+      cancelFeedbackBtn.addEventListener('click', () => {
+        const modal = document.getElementById('feedbackModal');
+        const form = document.getElementById('feedbackForm');
+        if (modal) modal.style.display = 'none';
+        if (form) form.reset();
+      });
+    }
+    
+    if (feedbackModal) {
+      feedbackModal.addEventListener('click', (e) => {
+        if (e.target === feedbackModal) {
+          feedbackModal.style.display = 'none';
+          if (feedbackForm) feedbackForm.reset();
+        }
+      });
+    }
+    
+    if (feedbackForm) {
+      feedbackForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const satisfaction = document.getElementById('feedbackSatisfaction').value;

@@ -4262,10 +4262,24 @@ Return ONLY the category and question.`
     container.innerHTML = ""; // Clear existing content
     
     if (showPreview) {
-      // Show just a brief preview in the small box
-      const preview = text.split("\n").slice(0, 3).join(" ").slice(0, 150) + "...";
+      // Show just a brief preview in the small box - clean up markdown
+      let preview = text
+        .replace(/##\s+/g, '') // Remove headings
+        .replace(/\*\*/g, '') // Remove bold markers
+        .replace(/-\s+/g, '') // Remove bullet points
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+      
+      // Get first meaningful sentence
+      const sentences = preview.split(/[.!?]/).filter(s => s.trim().length > 10);
+      preview = sentences[0] || preview;
+      
+      if (preview.length > 150) {
+        preview = preview.slice(0, 147) + "...";
+      }
+      
       container.textContent = preview;
-      container.style.cssText = "font-size: 0.75rem; color: #9ca3af; margin: 0;";
+      container.style.cssText = "font-size: 0.75rem; color: #9ca3af; margin: 0; line-height: 1.4;";
     } else {
       // Full formatting for modal
       formatAIFeedbackForModal(text);
@@ -4283,39 +4297,94 @@ Return ONLY the category and question.`
       return str.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     }
     
+    // Clean up text - remove trailing dashes, extra spaces, incomplete formatting
+    function cleanText(str) {
+      return str
+        .replace(/\s*-\s*$/, '') // Remove trailing dashes
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+    }
+    
     // Parse markdown-style formatting
     const lines = text.split("\n");
     let html = "";
+    let inList = false;
     
-    lines.forEach(line => {
+    lines.forEach((line, index) => {
       const trimmed = line.trim();
       
-      // Main sections (##)
+      // Skip empty lines at the start
+      if (trimmed.length === 0 && html === "") {
+        return;
+      }
+      
+      // Main sections (##) - clean up title
       if (trimmed.startsWith("## ")) {
-        const sectionTitle = trimmed.substring(3);
-        html += `<h4>${convertMarkdownBold(sectionTitle)}</h4>`;
+        if (inList) {
+          html += "</div>"; // Close list if open
+          inList = false;
+        }
+        let sectionTitle = trimmed.substring(3).trim();
+        sectionTitle = cleanText(sectionTitle); // Remove trailing dashes
+        html += `<h4 style="margin-top: ${html ? '24px' : '0'}; margin-bottom: 12px; color: #fbbf24; font-size: 1.1rem; font-weight: 600;">${convertMarkdownBold(sectionTitle)}</h4>`;
       }
       // Bullet points
       else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-        const content = trimmed.substring(2);
-        html += `<div class="bullet-point">• ${convertMarkdownBold(content)}</div>`;
+        if (!inList) {
+          html += '<div style="margin-left: 0; margin-bottom: 8px;">';
+          inList = true;
+        }
+        let content = trimmed.substring(2).trim();
+        content = cleanText(content);
+        // Remove markdown formatting artifacts
+        content = content.replace(/^\*\*/, '').replace(/\*\*$/, '');
+        html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">• ${convertMarkdownBold(content)}</div>`;
       }
       // Regular paragraphs
       else if (trimmed.length > 0) {
+        if (inList) {
+          html += "</div>";
+          inList = false;
+        }
+        
+        let content = cleanText(trimmed);
+        
+        // Skip incomplete lines (like "**Correctne..." that got cut off)
+        if (content.endsWith('...') && content.length < 20) {
+          return; // Skip incomplete text
+        }
+        
         // Check if it's a score line
-        if (trimmed.match(/^\d+\/10/)) {
-          html += `<div class="score-highlight">${convertMarkdownBold(trimmed)}</div>`;
-        } else {
-          html += `<div>${convertMarkdownBold(trimmed)}</div>`;
+        if (content.match(/^\d+\/10/)) {
+          html += `<div class="score-highlight" style="margin: 8px 0; padding: 8px; background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; border-radius: 4px;">${convertMarkdownBold(content)}</div>`;
+        } 
+        // Check if it's a label-value pair (like "**Summary:** text")
+        else if (content.match(/^\*\*[^*]+\*\*:/)) {
+          html += `<div style="margin-bottom: 8px; line-height: 1.6;">${convertMarkdownBold(content)}</div>`;
+        }
+        else {
+          html += `<div style="margin-bottom: 8px; line-height: 1.6; color: #e5e7eb;">${convertMarkdownBold(content)}</div>`;
         }
       }
-      // Empty lines
-      else {
-        html += "<br>";
+      // Empty lines - only add spacing if we have content
+      else if (html.length > 0) {
+        if (inList) {
+          html += "</div>";
+          inList = false;
+        }
+        // Add spacing between sections
+        if (index < lines.length - 1 && lines[index + 1]?.trim().startsWith('##')) {
+          html += '<div style="margin-bottom: 16px;"></div>';
+        }
       }
     });
     
-    modalContent.innerHTML = html;
+    // Close any open list
+    if (inList) {
+      html += "</div>";
+    }
+    
+    modalContent.innerHTML = html || '<p style="color: #94a3b8;">No feedback available.</p>';
   }
   
   // Modal functionality

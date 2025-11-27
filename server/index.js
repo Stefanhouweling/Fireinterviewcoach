@@ -50,6 +50,16 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Fire Interview Coach API is running' });
 });
 
+// Test endpoint to verify Mapbox token is configured
+app.get('/api/test-mapbox', (req, res) => {
+  const token = process.env.MAPBOX_TOKEN;
+  res.json({ 
+    hasToken: !!token,
+    tokenLength: token ? token.length : 0,
+    tokenPrefix: token ? token.substring(0, 10) + '...' : 'none'
+  });
+});
+
 // GET /api/mapbox-token - Return Mapbox token (stored in environment variable)
 app.get('/api/mapbox-token', (req, res) => {
   const token = process.env.MAPBOX_TOKEN;
@@ -66,23 +76,27 @@ app.get('/api/mapbox-search', async (req, res) => {
     const token = process.env.MAPBOX_TOKEN;
     
     if (!token) {
-      return res.status(404).json({ error: 'Mapbox token not configured' });
+      console.error('Mapbox token not configured in environment variables');
+      return res.status(500).json({ error: 'Mapbox token not configured' });
     }
     
     if (!q) {
       return res.status(400).json({ error: 'Query parameter "q" is required' });
     }
     
-    // Build Mapbox API URL
-    const params = new URLSearchParams({
-      q: q,
-      types: types || 'place,locality',
-      limit: limit || '5',
-      access_token: token,
-      ...(session_token && { session_token: session_token })
-    });
+    // Build Mapbox API URL parameters
+    const params = new URLSearchParams();
+    params.append('q', q);
+    params.append('types', types || 'place,locality');
+    params.append('limit', limit || '5');
+    params.append('access_token', token);
+    if (session_token) {
+      params.append('session_token', session_token);
+    }
     
-    const mapboxUrl = `https://api.mapbox.com/searchbox/v1/suggest?${params.toString()}`;
+    const mapboxUrl = `https://api.mapbox.com/search/searchbox/v1/suggest?${params.toString()}`;
+    
+    console.log('Proxying Mapbox search request:', { q, types, limit, hasToken: !!token });
     
     // Proxy the request to Mapbox
     const response = await fetchModule(mapboxUrl, {
@@ -94,8 +108,11 @@ app.get('/api/mapbox-search', async (req, res) => {
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Mapbox API error:', response.status, errorText);
       return res.status(response.status).json({ 
-        error: `Mapbox API error: ${response.status}` 
+        error: `Mapbox API error: ${response.status}`,
+        details: errorText
       });
     }
     
@@ -103,7 +120,10 @@ app.get('/api/mapbox-search', async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Mapbox search proxy error:', error);
-    res.status(500).json({ error: 'Failed to proxy Mapbox search request' });
+    res.status(500).json({ 
+      error: 'Failed to proxy Mapbox search request',
+      message: error.message 
+    });
   }
 });
 

@@ -2271,6 +2271,110 @@ app.post('/api/search-location', async (req, res) => {
   }
 });
 
+// POST /api/areas-to-work-on - Generate or update "areas to work on" based on recent answer analyses
+app.post('/api/areas-to-work-on', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+    
+    const profile = getUserProfile(sessionId);
+    const analyses = profile.answerAnalyses || [];
+    
+    if (analyses.length < 3) {
+      return res.status(400).json({ 
+        error: 'Not enough data', 
+        message: 'Need at least 3 answer analyses to generate areas to work on' 
+      });
+    }
+    
+    // Extract key feedback points from recent analyses
+    const recentAnalyses = analyses.slice(-10); // Last 10 analyses
+    const feedbackSummary = recentAnalyses.map(a => ({
+      question: a.question,
+      category: a.category,
+      feedback: a.feedback
+    }));
+    
+    console.log(`[AREAS TO WORK ON] Generating summary for session ${sessionId} based on ${recentAnalyses.length} analyses`);
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert firefighter interview coach. Analyze multiple answer feedbacks and identify the most important areas a candidate should focus on improving. Be specific, actionable, and encouraging."
+        },
+        {
+          role: "user",
+          content: `Based on the candidate's recent interview practice sessions, analyze their performance and provide 2-3 key areas they should work on.
+
+Recent Answer Analyses:
+${feedbackSummary.map((a, i) => `
+Question ${i + 1} (${a.category}): ${a.question}
+Feedback: ${a.feedback.substring(0, 500)}...
+`).join('\n---\n')}
+
+Instructions:
+- Identify the MOST IMPORTANT patterns across all their answers
+- Focus on areas where they consistently struggle or could improve
+- Be specific and actionable (not vague like "improve communication")
+- Write 2-3 sentences maximum
+- Be encouraging but honest
+- Update based on their recent performance (if they're improving, note it; if they're getting worse, address it)
+- Focus on what will have the biggest impact on their interview success
+
+Format your response as 2-3 clear, concise sentences that directly tell them what to work on.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 200
+    });
+    
+    const areasToWorkOn = response.choices[0].message.content.trim();
+    
+    // Update profile
+    updateUserProfile(sessionId, { areasToWorkOn: areasToWorkOn });
+    
+    console.log(`[AREAS TO WORK ON] Generated summary for session ${sessionId}`);
+    
+    res.json({ 
+      success: true, 
+      areasToWorkOn: areasToWorkOn,
+      basedOnAnalyses: recentAnalyses.length
+    });
+  } catch (error) {
+    console.error('Error generating areas to work on:', error);
+    res.status(500).json({ error: 'Failed to generate areas to work on', message: error.message });
+  }
+});
+
+// GET /api/areas-to-work-on - Get current "areas to work on" for a session
+app.get('/api/areas-to-work-on', async (req, res) => {
+  try {
+    const { sessionId } = req.query;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+    
+    const profile = getUserProfile(sessionId);
+    const areasToWorkOn = profile.areasToWorkOn || null;
+    const analysisCount = (profile.answerAnalyses || []).length;
+    
+    res.json({ 
+      areasToWorkOn: areasToWorkOn,
+      hasData: analysisCount >= 3,
+      analysisCount: analysisCount
+    });
+  } catch (error) {
+    console.error('Error getting areas to work on:', error);
+    res.status(500).json({ error: 'Failed to get areas to work on', message: error.message });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🔥 Fire Interview Coach API server running on port ${PORT}`);

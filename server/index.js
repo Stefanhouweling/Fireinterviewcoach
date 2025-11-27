@@ -199,17 +199,27 @@ app.post('/api/question', async (req, res) => {
     let resumeContext = "";
     if (profileResumeAnalysis) {
       const analysis = profileResumeAnalysis;
-      resumeContext = `Resume Summary:
-- Experience: ${analysis.experience || analysis.yearsOfExperience || "N/A"}
+      const allJobs = analysis.allJobs || analysis.workHistory || [];
+      const jobsList = Array.isArray(allJobs) && allJobs.length > 0 
+        ? allJobs.join("; ")
+        : (Array.isArray(analysis.workHistory) ? analysis.workHistory.join("; ") : "N/A");
+      
+      resumeContext = `Resume Summary (COMPLETE - includes ALL jobs, not just fire-related):
+- Total Experience: ${analysis.experience || analysis.yearsOfExperience || "N/A"} (includes ALL work experience)
+- ALL Past Jobs: ${jobsList}
 - Certifications: ${Array.isArray(analysis.certifications) ? analysis.certifications.join(", ") : "None listed"}
-- Key Skills: ${Array.isArray(analysis.skills) ? analysis.skills.slice(0, 5).join(", ") : "General"}
-- Work History Highlights: ${Array.isArray(analysis.workHistory) ? analysis.workHistory.slice(0, 3).join("; ") : "N/A"}
+- Key Skills: ${Array.isArray(analysis.skills) ? analysis.skills.join(", ") : "General"}
+- Education: ${analysis.education ? (Array.isArray(analysis.education) ? analysis.education.join(", ") : analysis.education) : "N/A"}
 - Interview Focus Areas: ${Array.isArray(analysis.interviewFocus) ? analysis.interviewFocus.join(", ") : "General competencies"}
 
-Full Resume Analysis: ${JSON.stringify(profileResumeAnalysis)}`;
+Full Resume Analysis: ${JSON.stringify(profileResumeAnalysis)}
+
+IMPORTANT: Reference ALL past jobs and experiences when generating questions, not just fire-related experience. Past jobs in construction, retail, customer service, healthcare, etc. are all valuable for interview questions.`;
     } else if (profileResumeText) {
-      resumeContext = `Resume Text (full text for context):
-${profileResumeText}`;
+      resumeContext = `Resume Text (full text for context - includes ALL jobs and experience):
+${profileResumeText}
+
+IMPORTANT: Reference ALL past jobs and experiences when generating questions, not just fire-related experience.`;
     } else {
       resumeContext = "No resume provided";
     }
@@ -317,7 +327,11 @@ ${profileResumeText}`;
       personalizationContext += `\n- Position: ${profileJobType}`;
     }
     if (profileResumeAnalysis) {
-      personalizationContext += `\n- Resume highlights: ${profileResumeAnalysis.experience || 'N/A'} experience, Certifications: ${Array.isArray(profileResumeAnalysis.certifications) ? profileResumeAnalysis.certifications.slice(0, 3).join(", ") : 'None'}, Key skills: ${Array.isArray(profileResumeAnalysis.skills) ? profileResumeAnalysis.skills.slice(0, 5).join(", ") : 'General'}`;
+      const allJobs = profileResumeAnalysis.allJobs || profileResumeAnalysis.workHistory || [];
+      const jobsText = Array.isArray(allJobs) && allJobs.length > 0 
+        ? `All past jobs: ${allJobs.slice(0, 5).join("; ")}${allJobs.length > 5 ? "..." : ""}`
+        : "Work history available";
+      personalizationContext += `\n- Resume highlights: ${profileResumeAnalysis.experience || 'N/A'} total experience (ALL jobs), ${jobsText}, Certifications: ${Array.isArray(profileResumeAnalysis.certifications) ? profileResumeAnalysis.certifications.slice(0, 3).join(", ") : 'None'}, Key skills: ${Array.isArray(profileResumeAnalysis.skills) ? profileResumeAnalysis.skills.slice(0, 5).join(", ") : 'General'}`;
     }
     if (profileCityResearch) {
       personalizationContext += `\n- City/Department research available: Use specific details from this research to make questions feel authentic and personalized to this exact department and location.`;
@@ -366,16 +380,23 @@ EXAMPLES OF GOOD BEHAVIORAL QUESTIONS:
 
 The question should ask about past experiences and behaviors, not hypothetical future scenarios.`;
       } else if (selectedCategory === "Resume-Based") {
-        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) SPECIFICALLY personalized to this candidate's resume and background.${personalizationContext}
+        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) SPECIFICALLY personalized to this candidate's COMPLETE resume and background.${personalizationContext}
 
 CRITICAL PERSONALIZATION REQUIREMENTS:
-- Reference their actual experience, certifications, or specific skills from their resume
+- Reference their ACTUAL experience from ALL past jobs (fire-related AND non-fire-related jobs like construction, retail, customer service, healthcare, etc.)
+- Reference their certifications, skills, and achievements from ALL their work experience
 - Use their name naturally (${profileName ? profileName : 'if provided'})
-- Connect the question to their background while still testing general firefighter competencies
-- Make it feel like the panel researched their resume and is asking a tailored question
-- Example: If they have EMR certification, ask about a medical scenario. If they have construction experience, reference that in a safety question.
+- Connect the question to their COMPLETE background while still testing general firefighter competencies
+- Make it feel like the panel researched their ENTIRE resume and is asking a tailored question
+- Examples: 
+  * If they have construction experience, ask about safety protocols or working in teams
+  * If they have customer service experience, ask about communication or conflict resolution
+  * If they have healthcare experience, ask about medical scenarios or patient care
+  * If they have retail experience, ask about following procedures or handling stress
+  * If they have EMR certification, ask about a medical scenario
+  * Draw from ALL their past jobs, not just fire-related experience
 
-However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
+IMPORTANT: Reference ALL their work history, not just fire-related jobs. Past jobs provide valuable transferable skills and experiences that are relevant to firefighting. However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
       } else if (selectedCategory === "City & Department Specific") {
         questionStrategy = `CRITICAL: Generate a KNOWLEDGE-TESTING question (NOT behavioral or situational) that asks about SPECIFIC FACTS regarding ${profileCity || 'the city'} and ${profileDepartmentName || 'the department'}.${personalizationContext}
 
@@ -524,7 +545,7 @@ IMPORTANT: Do NOT copy this question. Use it as inspiration for the TYPE and STY
 1. HEAVILY personalize questions using the candidate's profile (name, department, city, resume, city research)
 2. Make questions feel authentic and tailored specifically to THIS candidate
 3. Test behavioral competencies, technical knowledge, and situational judgment
-4. Reference their specific background naturally (experience, certifications, skills, department, city)
+4. Reference their COMPLETE background naturally (ALL past jobs including non-fire jobs, experience, certifications, skills, department, city)
 5. Address them by name very occasionally (only about 10-15% of questions, make it feel random)
 6. Incorporate specific details from city/department research to make questions feel authentic
 7. Test judgment, ethics, chain of command, and decision-making
@@ -819,30 +840,38 @@ app.post('/api/parse-resume', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert at analyzing firefighter resumes. Extract structured information in JSON format."
+          content: "You are an expert at analyzing resumes. Extract ALL information from the resume, including ALL past jobs and work experience, not just fire-related experience. Extract structured information in JSON format."
         },
         {
           role: "user",
-          content: `Analyze this firefighter resume and extract:
-- Years of experience
-- Certifications (EMR, POC, etc.)
-- Specialized skills (medical, technical, leadership)
-- Relevant work history
-- Key achievements
-- Areas that would be interesting for interview questions
+          content: `Analyze this COMPLETE resume and extract ALL information, including ALL past jobs and work experience (fire-related AND non-fire-related):
+
+CRITICAL: Extract ALL work history, including:
+- ALL past jobs (fire-related AND non-fire-related jobs like construction, retail, customer service, healthcare, etc.)
+- ALL work experience, even if not directly related to firefighting
+- Years of experience in each role
+- Certifications (fire-related like EMR, POC, etc. AND any other certifications)
+- ALL skills (fire-related AND transferable skills from other jobs)
+- Key achievements from ALL jobs
+- Education background
+- Areas that would be interesting for interview questions (draw from ALL experience, not just fire-related)
 
 Resume text (full text - analyze completely):
 ${resumeText}
 
 Return a JSON object with this structure:
 {
-  "experience": "X years",
+  "experience": "X years total (include all work experience)",
   "certifications": ["cert1", "cert2"],
   "skills": ["skill1", "skill2"],
-  "workHistory": ["job1", "job2"],
-  "achievements": ["achievement1"],
-  "interviewFocus": ["area1", "area2"]
-}`
+  "workHistory": ["ALL jobs - job1 with details", "ALL jobs - job2 with details", "Include non-fire jobs too"],
+  "achievements": ["achievement1 from all jobs"],
+  "interviewFocus": ["area1", "area2"],
+  "education": ["education details"],
+  "allJobs": ["Complete list of ALL jobs with company names, titles, and dates"]
+}
+
+IMPORTANT: Include ALL jobs, not just fire-related ones. For example, if they worked in construction, retail, customer service, healthcare, etc., include those jobs in workHistory and allJobs. These experiences are valuable for interview questions too.`
         }
       ],
       response_format: { type: "json_object" }

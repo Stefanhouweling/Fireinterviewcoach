@@ -1250,6 +1250,12 @@
             </label>
           </div>
           
+          <!-- Only Flagged Toggle -->
+          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.85rem; gap: 6px; margin-top: 8px;">
+            <input type="checkbox" id="onlyFlaggedToggle" style="accent-color: #ef4444; cursor: pointer;">
+            <span>🚩 Only Flagged Questions</span>
+          </label>
+          
           <!-- Category Selector (shown only in User-Specific mode) -->
           <div id="categorySelector" style="display: none; margin-top: 8px;">
             <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: #cbd5e1;">Focus Category:</label>
@@ -1275,15 +1281,9 @@
           
           <!-- Flagged Questions Controls -->
           <div style="margin-top: 12px; padding: 10px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-              <button id="viewFlaggedBtn" style="flex: 1; padding: 8px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; color: #fca5a5; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;" title="View flagged questions">
-                🚩 Flagged: <span id="flaggedCount">0</span>
-              </button>
-              <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.85rem; gap: 6px;">
-                <input type="checkbox" id="onlyFlaggedToggle" style="accent-color: #ef4444; cursor: pointer;">
-                <span>Only Flagged</span>
-              </label>
-            </div>
+            <button id="viewFlaggedBtn" style="width: 100%; padding: 8px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; color: #fca5a5; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;" title="View flagged questions">
+              🚩 Flagged: <span id="flaggedCount">0</span>
+            </button>
           </div>
         </div>
         

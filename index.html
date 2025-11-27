@@ -3459,16 +3459,21 @@ Return ONLY the category and question.`
     // Always use backend
     {
       console.log("Using backend OpenAI TTS...");
-      console.log("BACKEND_URL:", BACKEND_URL);
-      try {
-        await speakWithOpenAITTS(text, subtitleEl);
-        console.log("OpenAI TTS completed successfully");
-        return;
-      } catch (err) {
-        console.error("OpenAI TTS error:", err.message || err);
-        console.error("OpenAI TTS error details:", err);
-        console.log("Falling back to browser TTS");
-        // Fall through to browser TTS as fallback
+      console.log("BACKEND_URL:", typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'NOT DEFINED');
+      
+      if (typeof BACKEND_URL === 'undefined') {
+        console.error("BACKEND_URL is not defined! Falling back to browser TTS");
+      } else {
+        try {
+          await speakWithOpenAITTS(text, subtitleEl);
+          console.log("OpenAI TTS completed successfully");
+          return;
+        } catch (err) {
+          console.error("OpenAI TTS error:", err.message || err);
+          console.error("OpenAI TTS error details:", err);
+          console.log("Falling back to browser TTS");
+          // Fall through to browser TTS as fallback
+        }
       }
     }
     
@@ -4450,7 +4455,7 @@ Return ONLY the category and question.`
 </script>
 
 <!-- Feedback Button (Fixed at bottom) -->
-<button id="feedbackBtn" style="position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%); color: white; border: none; border-radius: 50px; padding: 12px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); z-index: 9999; transition: all 0.3s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.4)'">
+<button id="feedbackBtn" onclick="document.getElementById('feedbackModal').style.display='flex'; console.log('Feedback button clicked (inline)');" style="position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%); color: white; border: none; border-radius: 50px; padding: 12px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); z-index: 9999; transition: all 0.3s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.4)'">
   💬 Feedback
 </button>
 

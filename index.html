@@ -1291,7 +1291,7 @@
               <option value="Leadership">Leadership</option>
               <option value="Medical / EMR">Medical / EMR</option>
               <option value="Technical – Fireground">Technical – Fireground</option>
-              <option value="Resume-Based">Resume-Based Questions</option>
+              <option value="Resume-Based" id="resumeBasedOption">Resume-Based Questions</option>
               <option value="City & Department Specific">City & Department Specific</option>
             </select>
           </div>
@@ -1823,6 +1823,8 @@
             resumeSummaryEl.innerHTML = `<div style="color: #94a3b8; font-size: 0.9rem; padding: 20px;">📄 Resume loaded (${resumeText.length} characters). Analysis pending.</div>`;
           });
         }
+        // Update Resume-Based option state
+        updateResumeBasedOption();
       }
     }
   } else {
@@ -2099,10 +2101,15 @@
             if (analysis) {
               resumeAnalysis = analysis;
               onboardingResumeStatus.textContent = `✓ Resume analyzed successfully`;
+              updateResumeBasedOption(); // Enable Resume-Based option after resume is analyzed
             }
           } catch (e) {
             console.error("Resume analysis error:", e);
             onboardingResumeStatus.textContent = `✓ Resume loaded (analysis skipped)`;
+            // Even if analysis fails, if we have resume text, enable the option
+            if (resumeText && resumeText.length > 10) {
+              updateResumeBasedOption();
+            }
           }
         }
       } catch (error) {
@@ -2614,6 +2621,7 @@
         // Always use backend for AI analysis
         resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
         await parseResumeWithAI(resumeText);
+        updateResumeBasedOption(); // Enable Resume-Based option after resume is analyzed
       } catch (err) {
         console.error("PDF parsing error:", err);
         resumeSummaryEl.textContent =
@@ -2639,6 +2647,7 @@
         // Always use backend for AI analysis
         resumeSummaryEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">🤖 Analyzing resume with AI...</div>';
         await parseResumeWithAI(resumeText);
+        updateResumeBasedOption(); // Enable Resume-Based option after resume is analyzed
       };
 
       reader.readAsText(file);
@@ -2727,6 +2736,9 @@
         
         // Update user profile with resume analysis
         await updateUserProfile();
+        
+        // Enable Resume-Based option now that resume is analyzed
+        updateResumeBasedOption();
         
         return;
       } else {

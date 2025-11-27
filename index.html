@@ -3988,6 +3988,26 @@ Return ONLY the category and question.`
     };
 
     transcriptBox.contentEditable = "true";
+    
+    // Add visual feedback when editing transcript
+    transcriptBox.addEventListener('focus', () => {
+      transcriptBox.style.border = '2px solid #fbbf24';
+      transcriptBox.style.background = 'rgba(251, 191, 36, 0.1)';
+    });
+    
+    transcriptBox.addEventListener('blur', () => {
+      transcriptBox.style.border = '';
+      transcriptBox.style.background = '';
+    });
+    
+    // Update text color when user types
+    transcriptBox.addEventListener('input', () => {
+      if (transcriptBox.textContent.trim() === '') {
+        transcriptBox.style.color = '#94a3b8';
+      } else {
+        transcriptBox.style.color = '#e5e7eb';
+      }
+    });
   }
 
   // Helper to start answer recording, used by both the button and auto-start from Next Question

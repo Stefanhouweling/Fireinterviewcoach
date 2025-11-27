@@ -353,19 +353,15 @@ IMPORTANT: Reference ALL past jobs and experiences when generating questions, no
 - Location: ${locationString || "Not specified"}`;
       
       if (profileCityResearch) {
-        userProfileContext += `\n\nCity/Department Research:\n${profileCityResearch}\n\nIMPORTANT: Incorporate specific, accurate information from this research into your questions when relevant. For example:
-- Reference the department name: "Working for the ${profileDepartmentName} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..."
-- Reference city-specific challenges or initiatives from the research
-- Reference the fire chief's name or department history when appropriate
-- Make questions feel personalized to this specific department and city while still testing general competencies`;
+        userProfileContext += `\n\nCity/Department Research:\n${profileCityResearch}\n\nIMPORTANT: RANDOMLY decide whether to incorporate this information. Most questions should be GENERAL and not reference specific departments or cities. Only occasionally (about 20-30% of the time) reference the department name "${profileDepartmentName}" or city-specific details. Make it feel random and natural - most questions should be general firefighter questions that apply to any department.`;
       } else if (profileDepartmentName || profileCity) {
-        userProfileContext += `\n\nIMPORTANT: When generating questions, incorporate the department name "${profileDepartmentName}" and location context naturally. For example: "Working for the ${profileDepartmentName} is a stressful job${profileName ? `, ${profileName}` : ''}, tell us about a time..." or "Given the challenges in ${profileCity}, how would you handle...". Make questions feel personalized to this specific department while still testing general competencies.`;
+        userProfileContext += `\n\nIMPORTANT: RANDOMLY decide whether to reference the department or city. Most questions should be GENERAL and not mention "${profileDepartmentName}" or "${profileCity}". Only occasionally (about 20-30% of the time) incorporate the department name or location context. Most questions should be general firefighter questions that apply to any department. Make it feel random - don't force personalization into every question.`;
       }
       
       // Add name context if available
       if (profileName) {
         // Use name very randomly - only about 10-15% of the time
-        userProfileContext += `\n\nIMPORTANT: The candidate's name is ${profileName}. Very occasionally address them by name in questions to make it more personal and realistic (e.g., "${profileName}, tell us about a time..." or "${profileName}, how would you..."). Use the name very sparingly - only about 10-15% of the time, and make it feel natural and random.`;
+        userProfileContext += `\n\nIMPORTANT: The candidate's name is ${profileName}. RANDOMLY decide whether to use it - only about 10-15% of questions should address them by name. Most questions should NOT use their name. Make it feel completely random and natural.`;
       }
     }
 
@@ -421,13 +417,13 @@ IMPORTANT: Reference ALL past jobs and experiences when generating questions, no
     // Build personalization context
     let personalizationContext = "";
     if (profileName) {
-      personalizationContext += `\n- Candidate's name: ${profileName} (address them by name very occasionally - only about 10-15% of questions, make it feel random and natural)`;
+      personalizationContext += `\n- Candidate's name: ${profileName} (RANDOMLY decide - only use name in about 10-15% of questions. Most questions should NOT use their name. Make it feel completely random.)`;
     }
     if (profileDepartmentName) {
-      personalizationContext += `\n- Department: ${profileDepartmentName} (reference this department naturally when relevant)`;
+      personalizationContext += `\n- Department: ${profileDepartmentName} (RANDOMLY decide - only reference department in about 20-30% of questions. Most questions should be GENERAL and not mention the department. Make it feel random.)`;
     }
     if (profileCity) {
-      personalizationContext += `\n- City: ${profileCity}${profileStateProvince ? `, ${profileStateProvince}` : ''}${profileCountry ? `, ${profileCountry}` : ''} (reference city-specific challenges or context when appropriate)`;
+      personalizationContext += `\n- City: ${profileCity}${profileStateProvince ? `, ${profileStateProvince}` : ''}${profileCountry ? `, ${profileCountry}` : ''} (RANDOMLY decide - only reference city in about 20-30% of questions. Most questions should be GENERAL. Make it feel random.)`;
     }
     if (profileJobType) {
       personalizationContext += `\n- Position: ${profileJobType}`;
@@ -454,8 +450,9 @@ CRITICAL REQUIREMENTS:
 - Present a specific scenario or situation laid out for the candidate
 - Ask them to explain what they would do in that situation
 - Test their judgment, decision-making, chain of command understanding, ethics, and approach
-- Personalize using the candidate's profile information (name, department, city, resume) when relevant
-- Make it feel like a real interview question tailored to this candidate
+- RANDOMLY decide whether to personalize - most questions should be GENERAL
+- Only occasionally (20-30%) reference department/city, very rarely (10-15%) use their name
+- Most questions should be general firefighter questions that apply to any candidate
 
 EXAMPLES OF GOOD SITUATIONAL QUESTIONS:
 - "How would you handle a situation if you felt you weren't treated fairly?"
@@ -474,8 +471,9 @@ CRITICAL REQUIREMENTS:
 - DO NOT use "How would you handle..." or "What would you do if..." (those are situational questions)
 - Ask about actual past experiences and behaviors
 - Test their ability to reflect on past actions and learn from experiences
-- Personalize using the candidate's profile information (name, department, city, resume) when relevant
-- Make it feel like a real interview question tailored to this candidate
+- RANDOMLY decide whether to personalize - most questions should be GENERAL
+- Only occasionally (20-30%) reference department/city, very rarely (10-15%) use their name
+- Most questions should be general firefighter questions that apply to any candidate
 
 EXAMPLES OF GOOD BEHAVIORAL QUESTIONS:
 - "Tell us about a time when you had to work under extreme pressure."
@@ -491,9 +489,10 @@ The question should ask about past experiences and behaviors, not hypothetical f
 CRITICAL PERSONALIZATION REQUIREMENTS:
 - Reference their ACTUAL experience from ALL past jobs (fire-related AND non-fire-related jobs like construction, retail, customer service, healthcare, etc.)
 - Reference their certifications, skills, and achievements from ALL their work experience
-- Use their name naturally (${profileName ? profileName : 'if provided'})
+- RANDOMLY decide whether to use their name (${profileName ? profileName : 'if provided'}) - only about 10-15% of the time
 - Connect the question to their COMPLETE background while still testing general firefighter competencies
 - Make it feel like the panel researched their ENTIRE resume and is asking a tailored question
+- RANDOMLY decide whether to mention department - only about 20-30% of the time
 - Examples: 
   * If they have construction experience, ask about safety protocols or working in teams
   * If they have customer service experience, ask about communication or conflict resolution
@@ -584,10 +583,10 @@ CRITICAL REQUIREMENTS:
 - The question MUST be about "${selectedCategory}" and ONLY this category
 - Do NOT generate questions about other categories like "Behavioural – High Stress", "Medical / EMR", "Teamwork", etc.
 - The question must directly test competencies related to "${selectedCategory}"
-- Personalize it using the candidate's profile information above
-- Reference their name (${profileName ? profileName : 'if provided'}), department, city, or resume when relevant
-- Make it feel tailored to this specific candidate while still testing the "${selectedCategory}" competency area
-- Make it relevant to this specific area while still being a general situational question that tests judgment
+- RANDOMLY decide whether to personalize - most questions should be GENERAL
+- Reference their name (${profileName ? profileName : 'if provided'}) very rarely (10-15% of questions), department/city only occasionally (20-30% of questions)
+- Most questions should be general firefighter questions that apply to any candidate
+- Make it relevant to this specific area while still being a general question that tests judgment
 
 CATEGORY-SPECIFIC GUIDANCE:
 - If category is "Behavioural – High Stress": Focus on stress management, pressure situations, crisis response
@@ -605,26 +604,28 @@ IMPORTANT: The question MUST stay within the "${selectedCategory}" category. Do 
       questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) for an interview simulation.${personalizationContext}
 
 CRITICAL PERSONALIZATION REQUIREMENTS:
-- HEAVILY personalize this question using ALL available profile information
-- Use the candidate's name (${profileName ? profileName : 'if provided'}) very occasionally - only about 10-15% of the time, make it feel random
-- Reference their department "${profileDepartmentName || '[if provided]'}" when relevant
-- Reference their city "${profileCity || '[if provided]'}" and use city research details when appropriate
-- Reference their COMPLETE resume background (ALL past jobs including non-fire jobs, experience, certifications, skills) naturally when it fits
-- Make it feel like a real panel member who has reviewed their ENTIRE application is asking
+- RANDOMLY decide whether to personalize - most questions should be GENERAL firefighter questions
+- Use the candidate's name (${profileName ? profileName : 'if provided'}) very rarely - only about 10-15% of questions, make it feel completely random
+- Reference their department "${profileDepartmentName || '[if provided]'}" only occasionally - about 20-30% of questions. Most questions should NOT mention the department
+- Reference their city "${profileCity || '[if provided]'}" only occasionally - about 20-30% of questions. Most questions should be general
+- Reference their COMPLETE resume background (ALL past jobs including non-fire jobs, experience, certifications, skills) naturally when it fits, but don't force it
+- Most questions should be general firefighter questions that apply to any candidate
+- Make personalization feel random and natural - don't include department/name in every question
 
 ${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format asking about past experience (BEHAVIORAL question).' : 'Use "How would you handle..." format asking about a hypothetical situation (SITUATIONAL question).'} 
 
 IMPORTANT: Randomly vary between behavioral and situational questions. This is a ${questionTypeToUse} question.
 
-Vary the topics to simulate a real interview where questions come from different areas. Mix personalized questions (about 60-70% personalized to their profile, 30-40% general) if profile information is available.`;
+Vary the topics to simulate a real interview where questions come from different areas. Most questions should be general (70-80%), with occasional personalization (20-30%) that feels random.`;
     } else {
       questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) mixing general firefighter competencies with heavy personalization.${personalizationContext}
 
 CRITICAL PERSONALIZATION REQUIREMENTS:
-- Use ALL available profile information to personalize this question
-- Reference their name, department, city, and resume naturally
-- Make it feel tailored to this specific candidate
-- About 60-70% personalized to their profile, 30-40% general if profile information is available.`;
+- RANDOMLY decide whether to personalize - most questions should be GENERAL
+- Reference their name only occasionally (10-15% of questions), department only occasionally (20-30% of questions), city only occasionally (20-30% of questions)
+- Most questions should be general firefighter questions that apply to any candidate
+- Make personalization feel random and natural - don't force it into every question
+- About 70-80% general questions, 20-30% personalized if profile information is available.`;
     }
     
     // Add question bank reference as inspiration if available
@@ -637,19 +638,20 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
 - Example question: "${questionBankReference.question}"
 
 CRITICAL INSTRUCTIONS:
-1. Use this question as a BASE/INSPIRATION for creating a personalized version
-2. DO NOT ask the exact same question - personalize it using the candidate's profile information
-3. Incorporate their name (if provided, very occasionally), department, city, resume background, etc.
+1. Use this question as a BASE/INSPIRATION - you can keep it general or personalize it
+2. RANDOMLY decide whether to personalize - most questions should be GENERAL
+3. If personalizing: incorporate their name very rarely (10-15%), department/city only occasionally (20-30%)
 4. Maintain the same TYPE (${questionBankReference.type}), DIFFICULTY level (${questionBankReference.difficulty}), and CATEGORY focus (${questionBankReference.category})
-5. Make it feel like a real interview question tailored specifically to this candidate
-6. Replace placeholders like [CITY], [DEPARTMENT], {job_title}, {company}, etc. with actual information from the profile
-7. The final question should be UNIQUE and PERSONALIZED, not a direct copy
+5. Most questions should be general firefighter questions that apply to any candidate
+6. The final question should be UNIQUE, but doesn't need to be personalized - most should be general
+7. Make personalization feel random and natural - don't force department/name into every question
 
-Example transformation:
+Example transformation (RANDOM - sometimes keep it general):
 - Original: "What do you know about the demographics of [CITY]?"
-- Personalized: "Given your background in ${profileCity || 'this city'}, what do you think are the biggest fire-related risks in ${profileCity || 'this city'} and how would your experience help you serve this community?"
+- General version: "What do you think are the biggest fire-related risks in a typical urban community and how would you prepare to serve that community?"
+- Personalized version (only 20-30% of the time): "Given your background in ${profileCity || 'this city'}, what do you think are the biggest fire-related risks in ${profileCity || 'this city'} and how would your experience help you serve this community?"
 
-Remember: Personalize and tailor, but keep the core competency being tested the same.`;
+Remember: Most questions should be GENERAL. Personalization should feel RANDOM.`;
     } else {
       bankReferenceText = "";
     }
@@ -659,21 +661,21 @@ Remember: Personalize and tailor, but keep the core competency being tested the 
       messages: [
         {
           role: "system",
-          content: `You are an expert firefighter interview panel member who has thoroughly reviewed the candidate's application, resume, and profile. Your role is to generate highly personalized, realistic, and challenging interview questions that:
+          content: `You are an expert firefighter interview panel member. Your role is to generate realistic and challenging interview questions that:
 
-1. HEAVILY personalize questions using the candidate's profile (name, department, city, resume, city research)
-2. Make questions feel authentic and tailored specifically to THIS candidate
-3. Test behavioral competencies, technical knowledge, and situational judgment
-4. Reference their COMPLETE background naturally (ALL past jobs including non-fire jobs, experience, certifications, skills, department, city)
-5. Address them by name very occasionally (only about 10-15% of questions, make it feel random)
-6. Incorporate specific details from city/department research to make questions feel authentic
+1. RANDOMLY decide whether to personalize - MOST questions should be GENERAL firefighter questions that apply to any candidate
+2. Only occasionally (20-30% of questions) reference the candidate's department or city - make it feel random
+3. Only very rarely (10-15% of questions) address the candidate by name - make it feel completely random
+4. Most questions should be general and not mention specific departments, cities, or names
+5. Test behavioral competencies, technical knowledge, and situational judgment
+6. Reference their COMPLETE background naturally when relevant, but don't force it
 7. Test judgment, ethics, chain of command, and decision-making
 8. Ensure questions are UNIQUE and cover diverse topics/areas
 9. Vary between behavioral ("Tell us about a time...") and situational ("How would you handle...") questions
 
 CRITICAL EXCEPTION: If the category is "City & Department Specific", you MUST generate KNOWLEDGE-TESTING questions (Who/What/When/How many) about specific facts, NOT behavioral or situational questions. For this category only, ask about factual information like fire chief's name, union number, department size, mayor's name, etc.
 
-CRITICAL: Personalization is KEY. The questions should feel like they were crafted specifically for this candidate after reviewing their complete application package. Use ALL available profile information to create authentic, personalized questions that still test general firefighter competencies.`
+CRITICAL: Most questions should be GENERAL. Personalization should feel RANDOM and NATURAL - don't include department name or candidate name in every question. About 70-80% of questions should be general firefighter questions.`
         },
         {
           role: "user",
@@ -684,13 +686,14 @@ ${questionStrategy}${bankReferenceText}
 ${resumeContext}${diversityContext}${userProfileContext}
 
 CRITICAL PERSONALIZATION INSTRUCTIONS:
-- HEAVILY personalize this question using ALL available profile information
-- If a name is provided, address them by name very occasionally (only about 10-15% of the time, make it feel random)
-- If a department is provided, reference it naturally when relevant
-- If city research is available, incorporate specific, authentic details
-- If resume information is available, reference their background naturally
-- Make it feel like a real panel member who has thoroughly reviewed their application is asking
-- The question should feel tailored specifically to THIS candidate while still testing general competencies
+- RANDOMLY decide whether to personalize - MOST questions should be GENERAL
+- If a name is provided, address them by name very rarely (only about 10-15% of the time, make it feel completely random)
+- If a department is provided, reference it only occasionally (about 20-30% of questions). Most questions should NOT mention the department
+- If city research is available, incorporate specific details only occasionally (about 20-30% of questions)
+- If resume information is available, reference their background naturally when it fits, but don't force it
+- Most questions should be general firefighter questions that apply to any candidate
+- Make personalization feel random and natural - don't include department/name in every question
+- About 70-80% of questions should be general, 20-30% can be personalized
 
 ${selectedCategory === "City & Department Specific" ? `\n\nCRITICAL: This is the "City & Department Specific" category. The question MUST be a KNOWLEDGE-TESTING question asking about SPECIFIC FACTS about ${profileCity || 'the city'} and ${profileDepartmentName || 'the department'}.
 

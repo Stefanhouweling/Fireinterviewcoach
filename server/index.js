@@ -36,7 +36,8 @@ app.get('/', (req, res) => {
       parseResume: 'POST /api/parse-resume',
       tts: 'POST /api/tts',
       researchCity: 'POST /api/research-city',
-      searchLocation: 'POST /api/search-location'
+      searchLocation: 'POST /api/search-location',
+      feedback: 'POST /api/feedback'
     },
     message: 'API is running. Use the endpoints above to interact with the service.'
   });
@@ -945,6 +946,72 @@ IMPORTANT: Include ALL jobs, not just fire-related ones. For example, if they wo
       error: 'Failed to parse resume', 
       message: error.message || 'Unknown error occurred',
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Store feedback in memory (in production, you'd want to use a database)
+const feedbackStore = [];
+
+// POST /api/feedback - Submit user feedback
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const { sessionId, satisfaction, workingWell, improvements, categories, additional, timestamp } = req.body;
+    
+    if (!satisfaction) {
+      return res.status(400).json({ error: 'Satisfaction level is required' });
+    }
+    
+    const feedback = {
+      id: Date.now().toString(),
+      sessionId: sessionId || 'anonymous',
+      satisfaction: satisfaction,
+      workingWell: workingWell || '',
+      improvements: improvements || '',
+      categories: categories || [],
+      additional: additional || '',
+      timestamp: timestamp || new Date().toISOString(),
+      createdAt: new Date().toISOString()
+    };
+    
+    feedbackStore.push(feedback);
+    
+    // Log feedback for visibility
+    console.log('[FEEDBACK] New feedback received:', {
+      satisfaction: feedback.satisfaction,
+      hasWorkingWell: !!feedback.workingWell,
+      hasImprovements: !!feedback.improvements,
+      categoriesCount: feedback.categories.length,
+      hasAdditional: !!feedback.additional
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Feedback submitted successfully',
+      feedbackId: feedback.id
+    });
+  } catch (error) {
+    console.error('[FEEDBACK] Error processing feedback:', error);
+    res.status(500).json({ 
+      error: 'Failed to process feedback', 
+      message: error.message || 'Unknown error occurred'
+    });
+  }
+});
+
+// GET /api/feedback - Get all feedback (for admin/viewing)
+app.get('/api/feedback', (req, res) => {
+  try {
+    res.json({
+      success: true,
+      count: feedbackStore.length,
+      feedback: feedbackStore
+    });
+  } catch (error) {
+    console.error('[FEEDBACK] Error retrieving feedback:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve feedback', 
+      message: error.message || 'Unknown error occurred'
     });
   }
 });

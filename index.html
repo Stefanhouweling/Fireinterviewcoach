@@ -3339,6 +3339,110 @@ Return ONLY the category and question.`
       }
     });
   }
+  
+  // ========== FEEDBACK SYSTEM ==========
+  const feedbackBtn = document.getElementById('feedbackBtn');
+  const feedbackModal = document.getElementById('feedbackModal');
+  const closeFeedbackModal = document.getElementById('closeFeedbackModal');
+  const cancelFeedbackBtn = document.getElementById('cancelFeedbackBtn');
+  const feedbackForm = document.getElementById('feedbackForm');
+  
+  if (feedbackBtn) {
+    feedbackBtn.addEventListener('click', () => {
+      if (feedbackModal) feedbackModal.style.display = 'flex';
+    });
+  }
+  
+  if (closeFeedbackModal) {
+    closeFeedbackModal.addEventListener('click', () => {
+      if (feedbackModal) feedbackModal.style.display = 'none';
+      if (feedbackForm) feedbackForm.reset();
+    });
+  }
+  
+  if (cancelFeedbackBtn) {
+    cancelFeedbackBtn.addEventListener('click', () => {
+      if (feedbackModal) feedbackModal.style.display = 'none';
+      if (feedbackForm) feedbackForm.reset();
+    });
+  }
+  
+  if (feedbackModal) {
+    feedbackModal.addEventListener('click', (e) => {
+      if (e.target === feedbackModal) {
+        feedbackModal.style.display = 'none';
+        if (feedbackForm) feedbackForm.reset();
+      }
+    });
+  }
+  
+  if (feedbackForm) {
+    feedbackForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const satisfaction = document.getElementById('feedbackSatisfaction').value;
+      const workingWell = document.getElementById('feedbackWorkingWell').value.trim();
+      const improvements = document.getElementById('feedbackImprovements').value.trim();
+      const additional = document.getElementById('feedbackAdditional').value.trim();
+      
+      // Get selected categories
+      const categoryCheckboxes = feedbackForm.querySelectorAll('input[name="feedbackCategories"]:checked');
+      const selectedCategories = Array.from(categoryCheckboxes).map(cb => cb.value);
+      
+      if (!satisfaction) {
+        alert('Please select your overall satisfaction level.');
+        return;
+      }
+      
+      const submitBtn = feedbackForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+      
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/feedback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sessionId: getSessionId(),
+            satisfaction: satisfaction,
+            workingWell: workingWell,
+            improvements: improvements,
+            categories: selectedCategories,
+            additional: additional,
+            timestamp: new Date().toISOString()
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Backend error: ${response.status}`);
+        }
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10004; font-size: 0.95rem; animation: slideIn 0.3s ease;';
+        successMsg.textContent = '✓ Thank you for your feedback!';
+        document.body.appendChild(successMsg);
+        
+        setTimeout(() => {
+          successMsg.style.animation = 'slideOut 0.3s ease';
+          setTimeout(() => successMsg.remove(), 300);
+        }, 3000);
+        
+        // Close modal and reset form
+        if (feedbackModal) feedbackModal.style.display = 'none';
+        feedbackForm.reset();
+      } catch (error) {
+        console.error('Error submitting feedback:', error);
+        alert('Failed to submit feedback. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    });
+  }
 
   async function speakQuestionWithCaptions(text) {
     const subtitleEl = document.getElementById("questionSubtitles");

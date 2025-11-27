@@ -964,33 +964,17 @@
         <div id="onboardingResumeStatus" style="margin-top: 8px; font-size: 0.85rem; color: #94a3b8; min-height: 20px;"></div>
       </div>
 
-      <!-- Location Selection -->
+      <!-- Location Selection - Mapbox Autocomplete -->
       <div>
         <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingLocationLabel">
           2. What City are you applying to? <span style="color: #ef4444;">*</span>
         </label>
-        <div>
-          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;" id="onboardingCountryLabel">Country</label>
-          <select id="onboardingCountry" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer; margin-bottom: 12px;">
-            <option value="" id="onboardingCountryPlaceholder">Select Country</option>
-            <option value="United States" id="onboardingCountryUS">United States</option>
-            <option value="Canada" id="onboardingCountryCanada">Canada</option>
-            <option value="United Kingdom" id="onboardingCountryUK">United Kingdom</option>
-            <option value="Australia" id="onboardingCountryAustralia">Australia</option>
-            <option value="New Zealand" id="onboardingCountryNZ">New Zealand</option>
-            <option value="Other" id="onboardingCountryOther">Other</option>
-          </select>
-        </div>
-        <div style="position: relative; margin-bottom: 12px;">
-          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;" id="onboardingStateLabel">State/Province</label>
-          <input type="text" id="onboardingStateProvince" placeholder="Start typing state/province (AI will suggest)" autocomplete="off" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
-          <div id="stateSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 10002; display: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"></div>
-        </div>
         <div style="position: relative;">
-          <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;" id="onboardingCityLabel">City</label>
-          <input type="text" id="onboardingCity" placeholder="Start typing city name (AI will suggest)" required autocomplete="off" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
-          <div id="citySuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 10002; display: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"></div>
+          <input type="text" id="onboardingCity" placeholder="Search for a city worldwide..." required autocomplete="off" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem;">
+          <div id="mapboxSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; margin-top: 4px; max-height: 250px; overflow-y: auto; z-index: 10002; display: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"></div>
         </div>
+        <input type="hidden" id="selectedCityData" />
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">Start typing to search cities worldwide</p>
       </div>
 
       <!-- Job Type Selection -->
@@ -2044,17 +2028,34 @@
       const name = document.getElementById("onboardingName") ? document.getElementById("onboardingName").value.trim() : "";
       const voicePreference = document.getElementById("onboardingVoice") ? document.getElementById("onboardingVoice").value : "";
       
+      // Get selected city data from Mapbox
+      const selectedCityData = document.getElementById("selectedCityData").value;
+      let cityData = null;
+      if (selectedCityData) {
+        try {
+          cityData = JSON.parse(selectedCityData);
+        } catch (e) {
+          console.error("Failed to parse city data:", e);
+        }
+      }
+      
       // Validate required fields
-      if (!country || !city || !jobType || !departmentName) {
+      if (!city || !jobType || !departmentName) {
         alert("Please fill in all required fields (marked with *)");
         return;
       }
+      
+      // Extract location info from Mapbox data or use city as fallback
+      const country = cityData?.country || "";
+      const stateProvince = cityData?.stateProvince || "";
+      const cityName = city;
       
       // Save onboarding data
       onboardingData = {
         country,
         stateProvince,
-        city,
+        city: cityName,
+        cityData: cityData, // Store full Mapbox data
         jobType,
         departmentName,
         name: name || null,

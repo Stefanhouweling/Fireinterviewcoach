@@ -48,6 +48,15 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Fire Interview Coach API is running' });
 });
 
+// GET /api/mapbox-token - Return Mapbox token (stored in environment variable)
+app.get('/api/mapbox-token', (req, res) => {
+  const token = process.env.MAPBOX_TOKEN;
+  if (!token) {
+    return res.status(404).json({ error: 'Mapbox token not configured' });
+  }
+  res.json({ token: token });
+});
+
 // POST /api/user-profile - Create or update user profile
 app.post('/api/user-profile', async (req, res) => {
   try {

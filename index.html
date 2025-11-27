@@ -2739,10 +2739,13 @@
           renderQuestion(currentQuestion);
           
           // Speak question - ensure it happens
+          console.log("About to speak question:", currentQuestion.template.substring(0, 50) + "...");
           try {
             await speakQuestionWithCaptions(currentQuestion.template);
+            console.log("Question speaking completed");
           } catch (ttsError) {
             console.error("TTS error:", ttsError);
+            console.error("TTS error stack:", ttsError.stack);
             // Continue even if TTS fails
           }
           
@@ -3341,6 +3344,13 @@ Return ONLY the category and question.`
   }
 
   async function speakQuestionWithCaptions(text) {
+    console.log("speakQuestionWithCaptions called with text:", text ? text.substring(0, 50) + "..." : "NO TEXT");
+    
+    if (!text || text.trim().length === 0) {
+      console.error("speakQuestionWithCaptions: No text provided!");
+      return;
+    }
+    
     const subtitleEl = document.getElementById("questionSubtitles");
     
     // Show subtitle area (will be updated during speech)
@@ -3353,12 +3363,14 @@ Return ONLY the category and question.`
     // Always use backend
     {
       console.log("Using backend OpenAI TTS...");
+      console.log("BACKEND_URL:", BACKEND_URL);
       try {
         await speakWithOpenAITTS(text, subtitleEl);
         console.log("OpenAI TTS completed successfully");
         return;
       } catch (err) {
         console.error("OpenAI TTS error:", err.message || err);
+        console.error("OpenAI TTS error details:", err);
         console.log("Falling back to browser TTS");
         // Fall through to browser TTS as fallback
       }
@@ -3424,11 +3436,18 @@ Return ONLY the category and question.`
   
   // OpenAI TTS function (high quality, natural voice)
   async function speakWithOpenAITTS(text, subtitleEl) {
+    console.log("speakWithOpenAITTS called");
     const voice = "alloy"; // Options: alloy, echo, fable, onyx, nova, shimmer
+    
+    if (!text || text.trim().length === 0) {
+      console.error("speakWithOpenAITTS: No text provided!");
+      throw new Error("No text provided for TTS");
+    }
     
     // Use backend (OpenAI TTS is always via backend)
     try {
       console.log(`Calling backend OpenAI TTS at ${BACKEND_URL}/api/tts`);
+      console.log(`Text length: ${text.length} characters`);
       const response = await fetch(`${BACKEND_URL}/api/tts`, {
         method: "POST",
         headers: {

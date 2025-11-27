@@ -156,7 +156,7 @@ const APP_CONFIG = {
   onboardingResume: {
     label: "1. Upload Resume",
     optional: "(Optional)",
-    uploadButtonText: "Upload resume (.txt / PDF)",
+    uploadButtonText: "Upload resume (PDF, DOC, DOCX, TXT, RTF)",
     statusMessages: {
       reading: "Reading resume file...",
       parsing: "Parsing resume with AI...",
@@ -281,8 +281,7 @@ const APP_CONFIG = {
   // 📝 RESUME SECTION TEXT
   // ============================================
   resume: {
-    uploadLabel: "Upload resume (.txt / simple PDF)",
-    uploadNote: "For a full build, use a backend parser. This demo reads simple text.",
+    uploadLabel: "Upload resume (PDF, DOC, DOCX, TXT, RTF)",
     noResumeLoaded: "No resume loaded yet. Upload a file to get personalized questions based on your experience."
   }
 };

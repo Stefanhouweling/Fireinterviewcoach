@@ -1689,15 +1689,41 @@
     }
   }
   
-  // ========== LOCATION AUTCOMPLETE ==========
+  // ========== MAPBOX LOCATION AUTCOMPLETE ==========
   const cityInput = document.getElementById("onboardingCity");
-  const stateInput = document.getElementById("onboardingStateProvince");
-  const countrySelect = document.getElementById("onboardingCountry");
-  const citySuggestions = document.getElementById("citySuggestions");
-  const stateSuggestions = document.getElementById("stateSuggestions");
+  const mapboxSuggestions = document.getElementById("mapboxSuggestions");
+  const selectedCityDataInput = document.getElementById("selectedCityData");
   
-  let citySearchTimeout = null;
-  let stateSearchTimeout = null;
+  // Generate UUID for session token
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+  
+  let mapboxSessionToken = generateUUID();
+  let mapboxSearchTimeout = null;
+  
+  // Mapbox token - will be fetched from backend
+  let MAPBOX_TOKEN = null;
+  
+  // Get Mapbox token from backend
+  async function getMapboxToken() {
+    if (MAPBOX_TOKEN) return MAPBOX_TOKEN;
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/mapbox-token`);
+      if (response.ok) {
+        const data = await response.json();
+        MAPBOX_TOKEN = data.token;
+        return MAPBOX_TOKEN;
+      }
+    } catch (e) {
+      console.error("Failed to get Mapbox token:", e);
+    }
+    return null;
+  }
   
   // City autocomplete
   if (cityInput && citySuggestions) {

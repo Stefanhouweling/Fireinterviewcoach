@@ -3151,16 +3151,28 @@ Return ONLY the category and question.`
   }
   
   function toggleFlagQuestion(q) {
+    console.log("toggleFlagQuestion called with:", q);
+    if (!q || !q.template) {
+      console.error("toggleFlagQuestion: Invalid question object", q);
+      return;
+    }
+    
     const questionText = q.template;
     const index = flaggedQuestions.findIndex(fq => fq.question === questionText);
+    
+    const flagBtn = document.getElementById('flagQuestionBtn');
+    const flagIcon = document.getElementById('flagIcon');
+    const flagText = document.getElementById('flagText');
     
     if (index >= 0) {
       // Unflag
       flaggedQuestions.splice(index, 1);
-      const flagBtn = document.getElementById('flagQuestionBtn');
-      const flagIcon = document.getElementById('flagIcon');
+      console.log("Question unflagged");
       if (flagBtn && flagIcon) {
-        flagBtn.style.opacity = '0.6';
+        flagBtn.style.opacity = '0.8';
+        flagBtn.style.background = 'rgba(239, 68, 68, 0.15)';
+        flagBtn.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        if (flagText) flagText.textContent = 'Flag';
       }
     } else {
       // Flag
@@ -3169,13 +3181,27 @@ Return ONLY the category and question.`
         category: q.category || 'Unknown',
         flaggedAt: Date.now()
       });
-      const flagBtn = document.getElementById('flagQuestionBtn');
-      const flagIcon = document.getElementById('flagIcon');
+      console.log("Question flagged. Total flagged:", flaggedQuestions.length);
       if (flagBtn && flagIcon) {
         flagBtn.style.opacity = '1';
+        flagBtn.style.background = 'rgba(239, 68, 68, 0.3)';
+        flagBtn.style.borderColor = 'rgba(239, 68, 68, 0.6)';
+        if (flagText) flagText.textContent = 'Flagged';
       }
     }
     saveFlaggedQuestions();
+    updateFlaggedCount();
+    
+    // Show brief notification
+    const notification = document.createElement('div');
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10005; font-size: 0.9rem;';
+    notification.textContent = index >= 0 ? '✓ Question unflagged' : '✓ Question flagged';
+    document.body.appendChild(notification);
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transition = 'opacity 0.3s';
+      setTimeout(() => notification.remove(), 300);
+    }, 2000);
   }
   
   function updateFlaggedCount() {

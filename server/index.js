@@ -503,8 +503,8 @@ CRITICAL PERSONALIZATION REQUIREMENTS:
 - Use the candidate's name (${profileName ? profileName : 'if provided'}) very occasionally - only about 10-15% of the time, make it feel random
 - Reference their department "${profileDepartmentName || '[if provided]'}" when relevant
 - Reference their city "${profileCity || '[if provided]'}" and use city research details when appropriate
-- Reference their resume background (experience, certifications, skills) naturally when it fits
-- Make it feel like a real panel member who has reviewed their application is asking
+- Reference their COMPLETE resume background (ALL past jobs including non-fire jobs, experience, certifications, skills) naturally when it fits
+- Make it feel like a real panel member who has reviewed their ENTIRE application is asking
 
 ${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format asking about past experience (BEHAVIORAL question).' : 'Use "How would you handle..." format asking about a hypothetical situation (SITUATIONAL question).'} 
 

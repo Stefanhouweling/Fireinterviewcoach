@@ -961,6 +961,14 @@
       background: rgba(239, 68, 68, 0.2);
     }
     
+    /* Disabled select options styling */
+    select option:disabled {
+      color: #64748b !important;
+      background-color: rgba(100, 116, 139, 0.1) !important;
+      cursor: not-allowed !important;
+      opacity: 0.6;
+    }
+    
     /* Mobile-friendly select styling */
     select:not([multiple]) {
       -webkit-appearance: none;
@@ -1042,8 +1050,12 @@
 <div id="onboardingModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10001; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); overflow-y: auto;">
   <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 40px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);">
     <div style="text-align: center; margin-bottom: 30px;">
-      <h2 style="color: #ef4444; font-size: 2em; margin-bottom: 10px;">🎯 Let's Get Started</h2>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
+        <h2 style="color: #ef4444; font-size: 2em; margin: 0;">🎯 Let's Get Started</h2>
+        <span style="background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.5); color: #fbbf24; padding: 4px 12px; border-radius: 12px; font-size: 0.75em; font-weight: 600; letter-spacing: 0.5px;">V1</span>
+      </div>
       <p style="color: #cbd5e1; font-size: 1.1em;">Help us personalize your interview practice</p>
+      <p style="color: #94a3b8; font-size: 0.85em; margin-top: 8px;">Some features are in development and will be available soon</p>
     </div>
     
     <form id="onboardingForm" style="display: flex; flex-direction: column; gap: 20px;">
@@ -1081,11 +1093,12 @@
         <select id="onboardingJobType" required style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #e2e8f0; font-size: 0.95rem; cursor: pointer;">
           <option value="" id="onboardingJobTypePlaceholder">Select Position Type</option>
           <option value="Fire" id="onboardingJobTypeFire">Fire</option>
-          <option value="Police" id="onboardingJobTypePolice">Police</option>
-          <option value="Paramedic" id="onboardingJobTypeParamedic">Paramedic</option>
-          <option value="First Responder" id="onboardingJobTypeFirstResponder">First Responder</option>
-          <option value="Dispatcher" id="onboardingJobTypeDispatcher">Dispatcher</option>
+          <option value="Police" id="onboardingJobTypePolice" disabled style="color: #64748b; background: rgba(100, 116, 139, 0.1);">Police (Coming Soon)</option>
+          <option value="Paramedic" id="onboardingJobTypeParamedic" disabled style="color: #64748b; background: rgba(100, 116, 139, 0.1);">Paramedic (Coming Soon)</option>
+          <option value="First Responder" id="onboardingJobTypeFirstResponder" disabled style="color: #64748b; background: rgba(100, 116, 139, 0.1);">First Responder (Coming Soon)</option>
+          <option value="Dispatcher" id="onboardingJobTypeDispatcher" disabled style="color: #64748b; background: rgba(100, 116, 139, 0.1);">Dispatcher (Coming Soon)</option>
         </select>
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">Other position types will be available in future updates</p>
       </div>
 
       <!-- Department Name -->
@@ -1133,7 +1146,9 @@
 
 <div class="app" id="mainApp" style="display: none;">
   <header>
-    <div class="title" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+    <div class="title" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: relative;">
+      <!-- V1 Badge -->
+      <span style="position: absolute; top: 12px; right: 12px; background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.5); color: #fbbf24; padding: 4px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px; z-index: 10;">V1</span>
       <!-- Logo Only - Scaled to Fit Banner -->
       <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
         <img id="logoImage" src="banner-logo.png" alt="Interview Coach AI Logo" 

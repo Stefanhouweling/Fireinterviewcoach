@@ -875,6 +875,102 @@
       color: #94a3b8;
       font-size: 0.85rem;
     }
+    
+    /* Range Slider Styling for Mobile-Friendly Feedback Form */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(148, 163, 184, 0.2);
+      outline: none;
+      cursor: pointer;
+    }
+    
+    /* Webkit (Chrome, Safari, Edge) */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+      transition: all 0.2s;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 8px rgba(239, 68, 68, 0.6);
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(0.95);
+    }
+    
+    /* Firefox */
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+      transition: all 0.2s;
+    }
+    
+    input[type="range"]::-moz-range-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 8px rgba(239, 68, 68, 0.6);
+    }
+    
+    input[type="range"]::-moz-range-track {
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(148, 163, 184, 0.2);
+    }
+    
+    /* Multi-select dropdown styling for mobile */
+    select[multiple] {
+      min-height: 120px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #1e293b;
+      color: #fff;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    
+    select[multiple] option {
+      padding: 8px;
+      margin: 2px 0;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    select[multiple] option:checked {
+      background: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+    
+    select[multiple] option:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+    
+    /* Mobile-friendly select styling */
+    select:not([multiple]) {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg fill="%23cbd5e1" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+    }
   </style>
   <!-- PDF.js for PDF text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -3313,23 +3409,60 @@ Return ONLY the category and question.`
       });
     }
     
+    // Setup slider value updates
+    const questionQualitySlider = document.getElementById('feedbackQuestionQuality');
+    const aiFeedbackSlider = document.getElementById('feedbackAIFeedback');
+    const easeOfUseSlider = document.getElementById('feedbackEaseOfUse');
+    const recommendSlider = document.getElementById('feedbackRecommend');
+    
+    if (questionQualitySlider) {
+      questionQualitySlider.addEventListener('input', (e) => {
+        document.getElementById('questionQualityValue').textContent = e.target.value;
+      });
+    }
+    if (aiFeedbackSlider) {
+      aiFeedbackSlider.addEventListener('input', (e) => {
+        document.getElementById('aiFeedbackValue').textContent = e.target.value;
+      });
+    }
+    if (easeOfUseSlider) {
+      easeOfUseSlider.addEventListener('input', (e) => {
+        document.getElementById('easeOfUseValue').textContent = e.target.value;
+      });
+    }
+    if (recommendSlider) {
+      recommendSlider.addEventListener('input', (e) => {
+        document.getElementById('recommendValue').textContent = e.target.value;
+      });
+    }
+    
     if (feedbackForm) {
       feedbackForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const satisfaction = document.getElementById('feedbackSatisfaction').value;
-      const workingWell = document.getElementById('feedbackWorkingWell').value.trim();
-      const improvements = document.getElementById('feedbackImprovements').value.trim();
-      const additional = document.getElementById('feedbackAdditional').value.trim();
+      const questionQuality = document.getElementById('feedbackQuestionQuality')?.value || '5';
+      const aiFeedback = document.getElementById('feedbackAIFeedback')?.value || '5';
+      const easeOfUse = document.getElementById('feedbackEaseOfUse')?.value || '5';
+      const recommend = document.getElementById('feedbackRecommend')?.value || '5';
       
-      // Get selected categories
-      const categoryCheckboxes = feedbackForm.querySelectorAll('input[name="feedbackCategories"]:checked');
-      const selectedCategories = Array.from(categoryCheckboxes).map(cb => cb.value);
+      // Get selected items from multi-select dropdowns
+      const workingWellSelect = document.getElementById('feedbackWorkingWell');
+      const improvementsSelect = document.getElementById('feedbackImprovements');
+      const categoriesSelect = document.getElementById('feedbackCategories');
+      
+      const workingWell = workingWellSelect ? Array.from(workingWellSelect.selectedOptions).map(opt => opt.value) : [];
+      const improvements = improvementsSelect ? Array.from(improvementsSelect.selectedOptions).map(opt => opt.value) : [];
+      const selectedCategories = categoriesSelect ? Array.from(categoriesSelect.selectedOptions).map(opt => opt.value) : [];
+      
+      const additional = document.getElementById('feedbackAdditional')?.value.trim() || '';
       
       if (!satisfaction) {
         alert('Please select your overall satisfaction level.');
         return;
       }
+      
+      // Note: recommend slider validation removed - default value of 5 is acceptable
       
       const submitBtn = feedbackForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
@@ -3345,6 +3478,12 @@ Return ONLY the category and question.`
           body: JSON.stringify({
             sessionId: getSessionId(),
             satisfaction: satisfaction,
+            ratings: {
+              questionQuality: questionQuality,
+              aiFeedback: aiFeedback,
+              easeOfUse: easeOfUse,
+              recommend: recommend
+            },
             workingWell: workingWell,
             improvements: improvements,
             categories: selectedCategories,
@@ -4472,7 +4611,7 @@ Return ONLY the category and question.`
       <!-- Overall Satisfaction -->
       <div>
         <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">Overall Satisfaction *</label>
-        <select id="feedbackSatisfaction" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.95rem; cursor: pointer;">
+        <select id="feedbackSatisfaction" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 1rem; cursor: pointer;">
           <option value="">Select your satisfaction level</option>
           <option value="very-satisfied">😊 Very Satisfied</option>
           <option value="satisfied">🙂 Satisfied</option>
@@ -4482,65 +4621,115 @@ Return ONLY the category and question.`
         </select>
       </div>
       
-      <!-- What's Working Well -->
+      <!-- Rating Sliders -->
       <div>
-        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">What's working well?</label>
-        <textarea id="feedbackWorkingWell" placeholder="Tell us what you like about the Interview Coach..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; font-family: inherit; min-height: 80px; resize: vertical;"></textarea>
-      </div>
-      
-      <!-- What Could Be Improved -->
-      <div>
-        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">What could be improved?</label>
-        <textarea id="feedbackImprovements" placeholder="Share suggestions for improvement..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; font-family: inherit; min-height: 80px; resize: vertical;"></textarea>
-      </div>
-      
-      <!-- Categories They'd Like to See -->
-      <div>
-        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">Categories you'd like to see more of:</label>
-        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(15, 23, 42, 0.6); border-radius: 8px;">
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More Situational Questions" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More Situational Questions</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More Behavioral Questions" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More Behavioral Questions</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More Technical Questions" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More Technical Questions</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More Medical/EMR Questions" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More Medical/EMR Questions</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More Leadership Questions" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More Leadership Questions</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More City/Department Questions" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More City/Department Questions</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More Resume-Based Questions" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More Resume-Based Questions</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="Better AI Feedback" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>Better AI Feedback</span>
-          </label>
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-            <input type="checkbox" name="feedbackCategories" value="More Difficulty Options" style="margin-right: 8px; accent-color: #ef4444; cursor: pointer;">
-            <span>More Difficulty Options</span>
-          </label>
+        <label style="display: block; margin-bottom: 12px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">Rate Your Experience</label>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Question Quality -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: #cbd5e1; font-size: 0.85rem;">Question Quality</span>
+              <span id="questionQualityValue" style="color: #fbbf24; font-size: 0.85rem; font-weight: 600;">5</span>
+            </div>
+            <input type="range" id="feedbackQuestionQuality" min="1" max="10" value="5" step="1">
+            <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+              <span style="color: #64748b; font-size: 0.7rem;">Poor</span>
+              <span style="color: #64748b; font-size: 0.7rem;">Excellent</span>
+            </div>
+          </div>
+          
+          <!-- AI Feedback Quality -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: #cbd5e1; font-size: 0.85rem;">AI Feedback Quality</span>
+              <span id="aiFeedbackValue" style="color: #fbbf24; font-size: 0.85rem; font-weight: 600;">5</span>
+            </div>
+            <input type="range" id="feedbackAIFeedback" min="1" max="10" value="5" step="1">
+            <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+              <span style="color: #64748b; font-size: 0.7rem;">Poor</span>
+              <span style="color: #64748b; font-size: 0.7rem;">Excellent</span>
+            </div>
+          </div>
+          
+          <!-- Ease of Use -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: #cbd5e1; font-size: 0.85rem;">Ease of Use</span>
+              <span id="easeOfUseValue" style="color: #fbbf24; font-size: 0.85rem; font-weight: 600;">5</span>
+            </div>
+            <input type="range" id="feedbackEaseOfUse" min="1" max="10" value="5" step="1">
+            <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+              <span style="color: #64748b; font-size: 0.7rem;">Difficult</span>
+              <span style="color: #64748b; font-size: 0.7rem;">Very Easy</span>
+            </div>
+          </div>
         </div>
       </div>
       
-      <!-- Additional Feedback -->
+      <!-- What's Working Well - Quick Select -->
       <div>
-        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">Additional feedback (optional)</label>
-        <textarea id="feedbackAdditional" placeholder="Anything else you'd like to share..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; font-family: inherit; min-height: 100px; resize: vertical;"></textarea>
+        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">What's working well? (select all that apply)</label>
+        <select id="feedbackWorkingWell" multiple style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.95rem; cursor: pointer; min-height: 120px;">
+          <option value="good-questions">Great question variety</option>
+          <option value="ai-feedback">Helpful AI feedback</option>
+          <option value="easy-to-use">Easy to use</option>
+          <option value="resume-integration">Resume integration works well</option>
+          <option value="voice-recognition">Voice recognition is accurate</option>
+          <option value="mobile-friendly">Works well on mobile</option>
+          <option value="fast-loading">Fast and responsive</option>
+          <option value="helpful-tips">Helpful tips and suggestions</option>
+        </select>
+        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple</small>
+      </div>
+      
+      <!-- What Could Be Improved - Quick Select -->
+      <div>
+        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">What could be improved? (select all that apply)</label>
+        <select id="feedbackImprovements" multiple style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.95rem; cursor: pointer; min-height: 120px;">
+          <option value="more-questions">Need more question variety</option>
+          <option value="better-feedback">AI feedback could be better</option>
+          <option value="harder-to-use">Interface is confusing</option>
+          <option value="slow-loading">Too slow or laggy</option>
+          <option value="voice-issues">Voice recognition problems</option>
+          <option value="mobile-issues">Mobile experience needs work</option>
+          <option value="missing-features">Missing important features</option>
+          <option value="buggy">Experiencing bugs or errors</option>
+        </select>
+        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple</small>
+      </div>
+      
+      <!-- Categories They'd Like to See - Dropdown -->
+      <div>
+        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">Categories you'd like to see more of:</label>
+        <select id="feedbackCategories" multiple style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.95rem; cursor: pointer; min-height: 150px;">
+          <option value="More Situational Questions">More Situational Questions</option>
+          <option value="More Behavioral Questions">More Behavioral Questions</option>
+          <option value="More Technical Questions">More Technical Questions</option>
+          <option value="More Medical/EMR Questions">More Medical/EMR Questions</option>
+          <option value="More Leadership Questions">More Leadership Questions</option>
+          <option value="More City/Department Questions">More City/Department Questions</option>
+          <option value="More Resume-Based Questions">More Resume-Based Questions</option>
+          <option value="Better AI Feedback">Better AI Feedback</option>
+          <option value="More Difficulty Options">More Difficulty Options</option>
+        </select>
+        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple</small>
+      </div>
+      
+      <!-- Likelihood to Recommend - Slider -->
+      <div>
+        <label style="display: block; margin-bottom: 12px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">How likely are you to recommend this to others? *</label>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: #cbd5e1; font-size: 0.85rem;">Not Likely</span>
+          <span id="recommendValue" style="color: #fbbf24; font-size: 0.85rem; font-weight: 600;">5</span>
+          <span style="color: #cbd5e1; font-size: 0.85rem;">Very Likely</span>
+        </div>
+        <input type="range" id="feedbackRecommend" min="0" max="10" value="5" step="1" required>
+      </div>
+      
+      <!-- Additional Feedback (Optional) -->
+      <div>
+        <label style="display: block; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600;">Anything else? (optional)</label>
+        <textarea id="feedbackAdditional" placeholder="Any other comments..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; font-family: inherit; min-height: 60px; resize: vertical;"></textarea>
       </div>
       
       <!-- Submit Button -->

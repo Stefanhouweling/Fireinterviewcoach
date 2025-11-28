@@ -6580,11 +6580,19 @@ Return ONLY the category and question.`
   // Login/signup buttons are already handled by the existing event listeners below
   
   if (loginBtn) loginBtn.addEventListener('click', () => {
-    document.getElementById('loginModal').style.display = 'flex';
+    const loginModal = document.getElementById('loginModal');
+    if (loginModal) {
+      loginModal.style.display = 'flex';
+      autoFillReferralCodeInModals();
+    }
   });
   
   if (signupBtn) signupBtn.addEventListener('click', () => {
-    document.getElementById('signupModal').style.display = 'flex';
+    const signupModal = document.getElementById('signupModal');
+    if (signupModal) {
+      signupModal.style.display = 'flex';
+      autoFillReferralCodeInModals();
+    }
   });
   
   if (closeLoginModal) closeLoginModal.addEventListener('click', () => {
@@ -6612,7 +6620,10 @@ Return ONLY the category and question.`
       // Need to sign up first
       window.showCreditPurchaseAfterAuth = true;
       const signupModal = document.getElementById('signupModal');
-      if (signupModal) signupModal.style.display = 'flex';
+      if (signupModal) {
+        signupModal.style.display = 'flex';
+        autoFillReferralCodeInModals();
+      }
     } else {
       showCreditPurchaseModal();
     }

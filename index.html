@@ -1723,9 +1723,11 @@
           <p style="color: #94a3b8; font-size: 0.75rem; margin: 0 0 12px 0; font-style: italic;">
             💡 Test codes: TEST, UNLIMITED, or DEV (for testing)
           </p>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
             <input type="text" id="signupReferralCode" placeholder="Enter referral code" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center;" />
+            <button type="button" id="applySignupReferralCode" class="secondary" style="padding: 10px 16px; font-size: 0.9rem; white-space: nowrap; border: 1px solid rgba(251, 191, 36, 0.5);">Apply</button>
           </div>
+          <p id="signupReferralStatus" style="color: #86efac; font-size: 0.85rem; margin: 8px 0 0 0; display: none; font-weight: 600;"></p>
         </div>
         
         <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;">
@@ -1780,9 +1782,11 @@
           <p style="color: #94a3b8; font-size: 0.75rem; margin: 0 0 12px 0; font-style: italic;">
             💡 Test codes: TEST, UNLIMITED, or DEV (for testing)
           </p>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
             <input type="text" id="loginReferralCode" placeholder="Enter referral code" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center;" />
+            <button type="button" id="applyLoginReferralCode" class="secondary" style="padding: 10px 16px; font-size: 0.9rem; white-space: nowrap; border: 1px solid rgba(251, 191, 36, 0.5);">Apply</button>
           </div>
+          <p id="loginReferralStatus" style="color: #86efac; font-size: 0.85rem; margin: 8px 0 0 0; display: none; font-weight: 600;"></p>
         </div>
         
         <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;">
@@ -6003,6 +6007,9 @@ Return ONLY the category and question.`
       const password = document.getElementById('signupPassword').value;
       const errorEl = document.getElementById('signupError');
       
+      // Hide referral status when submitting
+      if (signupReferralStatus) signupReferralStatus.style.display = 'none';
+      
       try {
         // Get trial credits before signup
         const trialCredits = getTrialCreditsRemaining();
@@ -6023,6 +6030,14 @@ Return ONLY the category and question.`
           if (trialCredits > 0) {
             localStorage.removeItem('trial_credits_remaining');
           }
+          // Show success message if referral code was used
+          if (referralCode && signupReferralStatus) {
+            const codeUpper = referralCode.toUpperCase();
+            const isTestCode = codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV';
+            const creditsText = isTestCode ? 'unlimited' : '3';
+            signupReferralStatus.textContent = `✓ Referral code "${referralCode}" applied! You received ${creditsText} credits.`;
+            signupReferralStatus.style.display = 'block';
+          }
           updateAuthUI();
           await updateCreditsDisplay();
           document.getElementById('signupModal').style.display = 'none';
@@ -6042,6 +6057,40 @@ Return ONLY the category and question.`
         if (errorEl) {
           errorEl.textContent = 'Network error. Please try again.';
           errorEl.style.display = 'block';
+        }
+      }
+    });
+  }
+  
+  // Apply referral code button for login form
+  const applyLoginReferralCodeBtn = document.getElementById('applyLoginReferralCode');
+  const loginReferralCode = document.getElementById('loginReferralCode');
+  const loginReferralStatus = document.getElementById('loginReferralStatus');
+  
+  if (applyLoginReferralCodeBtn && loginReferralCode) {
+    applyLoginReferralCodeBtn.addEventListener('click', () => {
+      const code = loginReferralCode.value.trim().toUpperCase();
+      if (code) {
+        if (loginReferralStatus) {
+          loginReferralStatus.textContent = `✓ Code "${code}" will be applied when you log in`;
+          loginReferralStatus.style.display = 'block';
+        }
+      }
+    });
+  }
+  
+  // Apply referral code button for signup form
+  const applySignupReferralCodeBtn = document.getElementById('applySignupReferralCode');
+  const signupReferralCode = document.getElementById('signupReferralCode');
+  const signupReferralStatus = document.getElementById('signupReferralStatus');
+  
+  if (applySignupReferralCodeBtn && signupReferralCode) {
+    applySignupReferralCodeBtn.addEventListener('click', () => {
+      const code = signupReferralCode.value.trim().toUpperCase();
+      if (code) {
+        if (signupReferralStatus) {
+          signupReferralStatus.textContent = `✓ Code "${code}" will be applied when you sign up`;
+          signupReferralStatus.style.display = 'block';
         }
       }
     });
@@ -6075,6 +6124,11 @@ Return ONLY the category and question.`
           // Clear trial credits from localStorage after successful transfer
           if (trialCredits > 0) {
             localStorage.removeItem('trial_credits_remaining');
+          }
+          // Show success message if referral code was used
+          if (referralCode && loginReferralStatus) {
+            loginReferralStatus.textContent = `✓ Referral code "${referralCode}" applied! You received credits.`;
+            loginReferralStatus.style.display = 'block';
           }
           updateAuthUI();
           await updateCreditsDisplay();

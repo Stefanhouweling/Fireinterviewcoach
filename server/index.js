@@ -339,19 +339,21 @@ app.post('/api/auth/login', async (req, res) => {
       console.log(`[TRIAL CREDITS] Skipped transfer - user ${user.id} already has ${user.credits_balance} credits`);
     }
     
-    // Generate JWT token
+    // Generate JWT token with extended expiration if "Remember Me" is checked
+    const tokenExpiration = rememberMe ? '365d' : '30d'; // 1 year if remember me, 30 days otherwise
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
-      { expiresIn: '30d' }
+      { expiresIn: tokenExpiration }
     );
     
-    // Set cookie
+    // Set cookie with extended expiration if "Remember Me" is checked
+    const cookieMaxAge = rememberMe ? 365 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000; // 1 year or 30 days
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: cookieMaxAge,
       path: '/',
       domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
     };

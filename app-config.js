@@ -343,3 +343,4 @@ function getOnboardingText(key, replacements = {}) {
   const mappedKey = keyMap[key] || key;
   return getConfigText(mappedKey, replacements);
 }
+

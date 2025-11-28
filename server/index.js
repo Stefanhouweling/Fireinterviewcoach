@@ -7,7 +7,7 @@ const fetchModule = require('node-fetch');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
-const { User, Transaction, CreditLedger, Analytics } = require('./db');
+const { User, Transaction, CreditLedger, Analytics, Referral } = require('./db');
 const crypto = require('crypto');
 // Import question bank
 const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questionBank');
@@ -159,7 +159,7 @@ app.get('/api/analytics/check-secret', (req, res) => {
 // POST /api/auth/signup
 app.post('/api/auth/signup', async (req, res) => {
   try {
-    const { email, password, name, trialCredits } = req.body;
+    const { email, password, name, trialCredits, referralCode } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -173,6 +173,22 @@ app.post('/api/auth/signup', async (req, res) => {
     
     // Create user
     const user = await User.create(email, password, name);
+    
+    // Handle referral code if provided
+    if (referralCode) {
+      try {
+        const referral = Referral.useCode(referralCode, user.id, 3);
+        // Grant 3 credits to the new user
+        const newBalance = user.credits_balance + 3;
+        User.updateCredits(user.id, newBalance);
+        CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
+        user.credits_balance = newBalance;
+        console.log(`Referral code ${referralCode} used by user ${user.id}`);
+      } catch (refError) {
+        console.error('Referral code error:', refError.message);
+        // Don't fail signup if referral code is invalid, just log it
+      }
+    }
     
     // Transfer trial credits if provided
     if (trialCredits && trialCredits > 0) {
@@ -232,6 +248,23 @@ app.post('/api/auth/login', async (req, res) => {
     const isValid = await User.verifyPassword(user, password);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    // Handle referral code if provided (only for new users with 0 credits)
+    const { referralCode } = req.body;
+    if (referralCode && user.credits_balance === 0) {
+      try {
+        const referral = Referral.useCode(referralCode, user.id, 3);
+        // Grant 3 credits to the new user
+        const newBalance = user.credits_balance + 3;
+        User.updateCredits(user.id, newBalance);
+        CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
+        user.credits_balance = newBalance;
+        console.log(`Referral code ${referralCode} used by user ${user.id}`);
+      } catch (refError) {
+        console.error('Referral code error:', refError.message);
+        // Don't fail login if referral code is invalid
+      }
     }
     
     // Transfer trial credits if provided
@@ -370,6 +403,23 @@ app.post('/api/auth/google', async (req, res) => {
       }
     } else {
       console.log('User found - ID:', user.id);
+    }
+    
+    // Handle referral code if provided (for new signups via Google)
+    const { referralCode } = req.body;
+    if (referralCode && user.credits_balance === 0) {
+      try {
+        const referral = Referral.useCode(referralCode, user.id, 3);
+        // Grant 3 credits to the new user
+        const newBalance = user.credits_balance + 3;
+        User.updateCredits(user.id, newBalance);
+        CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
+        user.credits_balance = newBalance;
+        console.log(`Referral code ${referralCode} used by user ${user.id}`);
+      } catch (refError) {
+        console.error('Referral code error:', refError.message);
+        // Don't fail sign-in if referral code is invalid
+      }
     }
     
     // Transfer trial credits if provided (from localStorage)
@@ -532,10 +582,36 @@ app.get('/api/auth/purchase-history', authenticateToken, (req, res) => {
 
 // Credit bundle configurations
 const CREDIT_BUNDLES = {
-  starter: { credits: 20, priceCents: 999, name: 'Foundation' },
-  core: { credits: 75, priceCents: 2499, name: 'Execute', isPopular: true },
-  serious: { credits: 200, priceCents: 5999, name: 'Elevate' },
-  heavy: { credits: 500, priceCents: 11999, name: 'Dominate' }
+  starter: { 
+    credits: 20, 
+    priceCents: 999, 
+    name: 'Foundation',
+    description: 'Good for casual practice',
+    pricePerCredit: 0.50
+  },
+  core: { 
+    credits: 75, 
+    priceCents: 2499, 
+    name: 'Execute', 
+    isPopular: true,
+    description: 'Balanced prep + full feedback',
+    pricePerCredit: 0.33
+  },
+  serious: { 
+    credits: 200, 
+    priceCents: 4999, 
+    name: 'Elevate',
+    description: 'Serious interview training',
+    pricePerCredit: 0.25,
+    isBestValue: true
+  },
+  heavy: { 
+    credits: 500, 
+    priceCents: 8999, 
+    name: 'Dominate',
+    description: 'Used by applicants applying to multiple departments',
+    pricePerCredit: 0.18
+  }
 };
 
 // GET /api/credits/balance
@@ -575,7 +651,10 @@ app.get('/api/credits/bundles', (req, res) => {
       credits: bundle.credits,
       price_cents: bundle.priceCents,
       price_dollars: (bundle.priceCents / 100).toFixed(2),
-      isPopular: bundle.isPopular || false
+      price_per_credit: bundle.pricePerCredit ? `$${bundle.pricePerCredit.toFixed(2)}` : null,
+      description: bundle.description || '',
+      isPopular: bundle.isPopular || false,
+      isBestValue: bundle.isBestValue || false
     }))
   });
 });
@@ -702,6 +781,56 @@ app.post('/api/credits/webhook', express.raw({ type: 'application/json' }), asyn
   }
   
   res.json({ received: true });
+});
+
+// ========== REFERRAL ENDPOINTS ==========
+
+// GET /api/referrals/my-code - Get or generate user's referral code
+app.get('/api/referrals/my-code', authenticateToken, (req, res) => {
+  try {
+    const user = User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Check if user already has a referral code
+    const existingReferrals = Referral.getByReferrer(user.id);
+    let code = existingReferrals.length > 0 ? existingReferrals[0].referral_code : null;
+    
+    // Generate new code if doesn't exist
+    if (!code) {
+      code = Referral.generateCode(user.id);
+    }
+    
+    res.json({ referralCode: code });
+  } catch (error) {
+    console.error('Get referral code error:', error);
+    res.status(500).json({ error: 'Failed to get referral code', message: error.message });
+  }
+});
+
+// POST /api/referrals/validate - Validate a referral code (for display purposes)
+app.post('/api/referrals/validate', (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ error: 'Referral code is required' });
+    }
+    
+    const referral = Referral.findByCode(code);
+    if (!referral) {
+      return res.json({ valid: false, message: 'Invalid referral code' });
+    }
+    
+    if (referral.referred_user_id) {
+      return res.json({ valid: false, message: 'Referral code already used' });
+    }
+    
+    res.json({ valid: true, message: 'Valid referral code' });
+  } catch (error) {
+    console.error('Validate referral code error:', error);
+    res.status(500).json({ error: 'Failed to validate referral code', message: error.message });
+  }
 });
 
 // Test endpoint to verify Mapbox token is configured

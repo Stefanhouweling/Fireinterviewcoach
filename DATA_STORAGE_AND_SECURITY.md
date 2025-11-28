@@ -197,3 +197,4 @@ For better privacy and data protection:
 - **Stripe API Keys**: https://dashboard.stripe.com/apikeys
 - **Stripe Webhooks**: https://dashboard.stripe.com/webhooks
 - **Render Environment Variables**: Your Render Dashboard → Service → Environment tab
+

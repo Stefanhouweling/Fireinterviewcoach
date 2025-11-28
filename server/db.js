@@ -78,6 +78,22 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_analytics_country ON analytics_visits(country);
   CREATE INDEX IF NOT EXISTS idx_analytics_department ON analytics_visits(department_name);
   CREATE INDEX IF NOT EXISTS idx_analytics_first_visit ON analytics_visits(first_visit_at);
+
+  CREATE TABLE IF NOT EXISTS referrals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    referrer_user_id INTEGER NOT NULL,
+    referred_user_id INTEGER,
+    referral_code TEXT UNIQUE NOT NULL,
+    credits_granted INTEGER DEFAULT 0,
+    used_at TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (referrer_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (referred_user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(referral_code);
+  CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_user_id);
+  CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_user_id);
 `);
 
 // User operations
@@ -237,6 +253,74 @@ const Transaction = {
 const CreditLedger = {
   getByUserId(userId, limit = 50) {
     return creditLedgerQueries.getByUserId.all(userId, limit);
+  },
+
+  create(userId, change, reason) {
+    creditLedgerQueries.create.run(userId, change, reason);
+  }
+};
+
+// Referral operations
+const referralQueries = {
+  create: db.prepare(`
+    INSERT INTO referrals (referrer_user_id, referral_code)
+    VALUES (?, ?)
+  `),
+  findByCode: db.prepare('SELECT * FROM referrals WHERE referral_code = ?'),
+  findByReferrer: db.prepare('SELECT * FROM referrals WHERE referrer_user_id = ? ORDER BY created_at DESC'),
+  updateUsed: db.prepare(`
+    UPDATE referrals 
+    SET referred_user_id = ?, credits_granted = ?, used_at = CURRENT_TIMESTAMP 
+    WHERE referral_code = ? AND referred_user_id IS NULL
+  `),
+  getByReferredUser: db.prepare('SELECT * FROM referrals WHERE referred_user_id = ?')
+};
+
+// Referral model
+const Referral = {
+  generateCode(userId) {
+    // Generate a unique referral code: first 4 chars of user ID + random string
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const userIdPart = userId.toString().padStart(4, '0').substring(0, 4);
+    const code = `${userIdPart}${randomPart}`;
+    
+    // Check if code already exists (very unlikely, but be safe)
+    const existing = referralQueries.findByCode.get(code);
+    if (existing) {
+      // Retry with different random part
+      return this.generateCode(userId);
+    }
+    
+    referralQueries.create.run(userId, code);
+    return code;
+  },
+
+  findByCode(code) {
+    return referralQueries.findByCode.get(code);
+  },
+
+  useCode(code, referredUserId, creditsToGrant = 3) {
+    const referral = this.findByCode(code);
+    if (!referral) {
+      throw new Error('Invalid referral code');
+    }
+    if (referral.referred_user_id) {
+      throw new Error('Referral code already used');
+    }
+    if (referral.referrer_user_id === referredUserId) {
+      throw new Error('Cannot use your own referral code');
+    }
+    
+    referralQueries.updateUsed.run(referredUserId, creditsToGrant, code);
+    return referralQueries.findByCode.get(code);
+  },
+
+  getByReferrer(userId) {
+    return referralQueries.findByReferrer.all(userId);
+  },
+
+  getByReferredUser(userId) {
+    return referralQueries.getByReferredUser.all(userId);
   }
 };
 
@@ -288,6 +372,7 @@ module.exports = {
   Transaction,
   CreditLedger,
   Analytics,
+  Referral,
   userQueries,
   analyticsQueries
 };

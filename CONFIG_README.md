@@ -149,3 +149,4 @@ Each section is clearly labeled so you can find what you need quickly!
 ---
 
 **That's it!** One file, easy to edit, all your text in one place! 🎉
+

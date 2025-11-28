@@ -1670,6 +1670,19 @@
       <div id="creditBundlesContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-top: 20px;">
         <!-- Credit bundles will be loaded here -->
       </div>
+      
+      <!-- Referral Section -->
+      <div id="referralSection" style="margin-top: 30px; padding: 20px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px;">
+        <h4 style="color: #fbbf24; margin: 0 0 12px 0; font-size: 1.1rem;">Refer a Friend</h4>
+        <p style="color: #cbd5e1; font-size: 0.9rem; margin: 0 0 16px 0; line-height: 1.5;">
+          Share your referral code with friends. When they sign up and use your code, they'll get <strong style="color: #fbbf24;">3 full access credits</strong>!
+        </p>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="referralCodeDisplay" readonly style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-align: center;" />
+          <button id="copyReferralCode" class="secondary" style="padding: 10px 16px; font-size: 0.9rem;">Copy</button>
+        </div>
+        <p id="referralCodeStatus" style="color: #86efac; font-size: 0.85rem; margin: 8px 0 0 0; display: none;">Copied to clipboard!</p>
+      </div>
     </div>
   </div>
 </div>
@@ -1694,6 +1707,11 @@
         <div>
           <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Password</label>
           <input type="password" id="signupPassword" placeholder="At least 8 characters" required minlength="8" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+        </div>
+        <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Referral Code (Optional)</label>
+          <input type="text" id="signupReferralCode" placeholder="Enter a friend's referral code" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; text-transform: uppercase;" />
+          <p style="color: #94a3b8; font-size: 0.8rem; margin: 4px 0 0 0;">Get 3 free credits when you use a referral code!</p>
         </div>
         <div id="signupError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
         <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Sign Up</button>
@@ -5920,12 +5938,13 @@ Return ONLY the category and question.`
       try {
         // Get trial credits before signup
         const trialCredits = getTrialCreditsRemaining();
+        const referralCode = document.getElementById('signupReferralCode')?.value?.trim().toUpperCase() || null;
         
         const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ name, email, password, trialCredits })
+          body: JSON.stringify({ name, email, password, trialCredits, referralCode })
         });
         
         const data = await response.json();
@@ -6583,6 +6602,22 @@ Return ONLY the category and question.`
     const modal = document.getElementById('creditPurchaseModal');
     const container = document.getElementById('creditBundlesContainer');
     
+    // Load referral code
+    try {
+      const refResponse = await fetch(`${BACKEND_URL}/api/referrals/my-code`, {
+        credentials: 'include'
+      });
+      if (refResponse.ok) {
+        const refData = await refResponse.json();
+        const referralCodeInput = document.getElementById('referralCodeDisplay');
+        if (referralCodeInput) {
+          referralCodeInput.value = refData.referralCode || '';
+        }
+      }
+    } catch (error) {
+      console.error('Error loading referral code:', error);
+    }
+    
     try {
       const response = await fetch(`${BACKEND_URL}/api/credits/bundles`);
       const data = await response.json();
@@ -6590,17 +6625,23 @@ Return ONLY the category and question.`
       if (container) {
         container.innerHTML = data.bundles.map(bundle => {
           const isPopular = bundle.isPopular || false;
+          const isBestValue = bundle.isBestValue || false;
+          const highlightStyle = isPopular || isBestValue ? 'rgba(251, 191, 36, 0.1)' : '#0f172a';
+          const borderStyle = isPopular || isBestValue ? 'rgba(251, 191, 36, 0.5)' : 'rgba(148, 163, 184, 0.2)';
+          const badgeText = isPopular ? 'MOST POPULAR' : isBestValue ? 'BEST VALUE' : '';
+          
           return `
-          <div style="padding: 20px; background: ${isPopular ? 'rgba(251, 191, 36, 0.1)' : '#0f172a'}; border: 2px solid ${isPopular ? 'rgba(251, 191, 36, 0.5)' : 'rgba(148, 163, 184, 0.2)'}; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; ${isPopular ? 'box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);' : ''}" 
+          <div style="padding: 20px; background: ${highlightStyle}; border: 2px solid ${borderStyle}; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; ${isPopular || isBestValue ? 'box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);' : ''}" 
                onmouseover="this.style.borderColor='rgba(251, 191, 36, 0.5)'; this.style.transform='translateY(-2px)'" 
-               onmouseout="this.style.borderColor='${isPopular ? 'rgba(251, 191, 36, 0.5)' : 'rgba(148, 163, 184, 0.2)'}'; this.style.transform='translateY(0)'"
+               onmouseout="this.style.borderColor='${borderStyle}'; this.style.transform='translateY(0)'"
                onclick="purchaseCredits('${bundle.id}')">
-            ${isPopular ? '<div style="position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #0f172a; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Most Popular</div>' : ''}
-            <h3 style="margin: ${isPopular ? '12px' : '0'} 0 8px 0; color: #fbbf24; font-size: 1.2rem;">${bundle.name}</h3>
+               ${badgeText ? `<div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #0f172a; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">${badgeText}</div>` : ''}
+            <h3 style="margin: ${badgeText ? '16px' : '0'} 0 8px 0; color: #fbbf24; font-size: 1.2rem;">${bundle.name}</h3>
             <div style="font-size: 2rem; font-weight: 700; color: #fff; margin: 12px 0;">${bundle.credits}</div>
             <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">credits</div>
             <div style="color: #fbbf24; font-size: 1.5rem; font-weight: 600; margin: 16px 0;">$${bundle.price_dollars}</div>
-            <div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: ${isPopular ? '8px' : '0'};">~${bundle.credits} detailed questions</div>
+            ${bundle.price_per_credit ? `<div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 8px;">${bundle.price_per_credit} per Q</div>` : ''}
+            ${bundle.description ? `<div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: ${isPopular || isBestValue ? '8px' : '0'}; font-style: italic;">${bundle.description}</div>` : ''}
             ${isPopular ? '<div style="color: #fbbf24; font-size: 0.8rem; font-weight: 600; margin-top: 8px; padding: 8px; background: rgba(251, 191, 36, 0.15); border-radius: 6px;">Most effective for serious practice</div>' : ''}
           </div>
         `;

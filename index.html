@@ -2869,7 +2869,7 @@
   let motionScoreForAnswer = null;
 
   // ========== CREDIT SYSTEM ==========
-  let currentUser = null; // { id, email, name, credits_balance }
+  // Note: currentUser is already declared above in auth section (line 2549)
   const TRIAL_CREDITS_MAX = 3;
   const TRIAL_CREDITS_KEY = 'trial_credits_remaining';
   
@@ -2975,11 +2975,8 @@
   // Initialize on page load
   initializeTrialCredits();
   
-  // Check user status on load
-  (async () => {
-    await fetchCurrentUser();
-    updateCreditsDisplay();
-  })();
+  // Check user status on load (checkAuth already handles this)
+  // checkAuth() is called in DOMContentLoaded event listener below
   
   // ========== VOICE SELECTION ==========
   let selectedVoice = null;

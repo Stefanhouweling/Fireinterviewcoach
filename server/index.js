@@ -158,10 +158,14 @@ app.get('/health', (req, res) => {
 // GET /api/config - Get public configuration (like Google Client ID)
 app.get('/api/config', (req, res) => {
   const hasGoogleClientId = !!GOOGLE_CLIENT_ID;
-  console.log('Config request - GOOGLE_CLIENT_ID exists:', hasGoogleClientId);
+  console.log('[CONFIG] Request received - GOOGLE_CLIENT_ID exists:', hasGoogleClientId);
+  console.log('[CONFIG] GOOGLE_CLIENT_ID length:', GOOGLE_CLIENT_ID ? GOOGLE_CLIENT_ID.length : 0);
+  console.log('[CONFIG] GOOGLE_CLIENT_ID prefix:', GOOGLE_CLIENT_ID ? GOOGLE_CLIENT_ID.substring(0, 20) + '...' : 'null');
+  
   res.json({
     googleClientId: GOOGLE_CLIENT_ID || null,
-    configured: hasGoogleClientId
+    configured: hasGoogleClientId,
+    backendUrl: process.env.FRONTEND_URL || 'https://fire-interview-coach.onrender.com'
   });
 });
 

@@ -562,9 +562,9 @@ app.post('/api/auth/google', async (req, res) => {
 });
 
 // GET /api/auth/me
-app.get('/api/auth/me', authenticateToken, (req, res) => {
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
-    const user = User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -590,7 +590,7 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 app.put('/api/auth/profile', authenticateToken, async (req, res) => {
   try {
     const { name, password, currentPassword } = req.body;
-    const user = User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -598,8 +598,7 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
     
     // Update name if provided
     if (name !== undefined) {
-      User.updateProfile(user.id, name);
-      user.name = name;
+      await User.updateProfile(user.id, name);
     }
     
     // Update password if provided (only for email/password users)
@@ -616,14 +615,14 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
       // Update password
       const bcrypt = require('bcrypt');
       const passwordHash = await bcrypt.hash(password, 10);
-      const { userQueries } = require('./db');
-      userQueries.updatePassword.run(passwordHash, user.id);
+      const { query } = require('./db');
+      await query('UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [passwordHash, user.id]);
     } else if (password && user.provider !== 'email') {
       return res.status(400).json({ error: 'Password cannot be changed for OAuth accounts' });
     }
     
     // Refresh user data
-    const updatedUser = User.findById(user.id);
+    const updatedUser = await User.findById(user.id);
     
     res.json({
       success: true,
@@ -642,10 +641,10 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
 });
 
 // GET /api/auth/purchase-history - Get purchase history
-app.get('/api/auth/purchase-history', authenticateToken, (req, res) => {
+app.get('/api/auth/purchase-history', authenticateToken, async (req, res) => {
   try {
-    const transactions = Transaction.getByUserId(req.user.userId, 50);
-    const ledger = CreditLedger.getByUserId(req.user.userId, 100);
+    const transactions = await Transaction.getByUserId(req.user.userId, 50);
+    const ledger = await CreditLedger.getByUserId(req.user.userId, 100);
     
     res.json({
       transactions: transactions.map(t => ({
@@ -707,7 +706,7 @@ const CREDIT_BUNDLES = {
 };
 
 // GET /api/credits/balance
-app.get('/api/credits/balance', optionalAuth, (req, res) => {
+app.get('/api/credits/balance', optionalAuth, async (req, res) => {
   try {
     if (!req.user) {
       // Anonymous user - return trial credits info
@@ -718,7 +717,7 @@ app.get('/api/credits/balance', optionalAuth, (req, res) => {
       });
     }
     
-    const user = User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -763,7 +762,7 @@ app.post('/api/credits/create-checkout-session', authenticateToken, async (req, 
     }
     
     const bundle = CREDIT_BUNDLES[packId];
-    const user = User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
     
     if (!user) {
       console.error('User not found:', req.user.userId);
@@ -780,7 +779,7 @@ app.post('/api/credits/create-checkout-session', authenticateToken, async (req, 
     console.log('Stripe initialized, creating checkout session...');
     
     // Create transaction record
-    const transaction = Transaction.create(
+    const transaction = await Transaction.create(
       user.id,
       packId,
       bundle.credits,
@@ -817,7 +816,7 @@ app.post('/api/credits/create-checkout-session', authenticateToken, async (req, 
     });
     
     // Update transaction with payment intent ID
-    Transaction.updateStatus(transaction.id, 'processing');
+    await Transaction.updateStatus(transaction.id, 'processing');
     
     res.json({
       sessionId: session.id,
@@ -854,17 +853,17 @@ app.post('/api/credits/webhook', express.raw({ type: 'application/json' }), asyn
       const credits = parseInt(session.metadata.credits);
       
       // Get user to verify
-      const user = User.findById(userId);
+      const user = await User.findById(userId);
       if (!user) {
         console.error(`User ${userId} not found for webhook`);
         return;
       }
       
       // Add credits to user (transaction was already created in create-checkout-session)
-      User.addCredits(userId, credits, `purchase_${transactionId}`);
+      await User.addCredits(userId, credits, `purchase_${transactionId}`);
       
       // Update transaction status
-      Transaction.updateStatus(transactionId, 'completed');
+      await Transaction.updateStatus(transactionId, 'completed');
       
       console.log(`Credits added: ${credits} to user ${userId} from transaction ${transactionId}`);
     } catch (error) {
@@ -878,20 +877,20 @@ app.post('/api/credits/webhook', express.raw({ type: 'application/json' }), asyn
 // ========== REFERRAL ENDPOINTS ==========
 
 // GET /api/referrals/my-code - Get or generate user's referral code
-app.get('/api/referrals/my-code', authenticateToken, (req, res) => {
+app.get('/api/referrals/my-code', authenticateToken, async (req, res) => {
   try {
-    const user = User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
     
     // Check if user already has a referral code
-    const existingReferrals = Referral.getByReferrer(user.id);
+    const existingReferrals = await Referral.getByReferrer(user.id);
     let code = existingReferrals.length > 0 ? existingReferrals[0].referral_code : null;
     
     // Generate new code if doesn't exist
     if (!code) {
-      code = Referral.generateCode(user.id);
+      code = await Referral.generateCode(user.id);
     }
     
     res.json({ referralCode: code });
@@ -902,7 +901,7 @@ app.get('/api/referrals/my-code', authenticateToken, (req, res) => {
 });
 
 // POST /api/referrals/validate - Validate a referral code (for display purposes)
-app.post('/api/referrals/validate', (req, res) => {
+app.post('/api/referrals/validate', async (req, res) => {
   try {
     const { code } = req.body;
     if (!code) {
@@ -916,7 +915,7 @@ app.post('/api/referrals/validate', (req, res) => {
       return res.json({ valid: true, message: 'Valid test referral code - grants unlimited credits' });
     }
     
-    const referral = Referral.findByCode(code);
+    const referral = await Referral.findByCode(code);
     if (!referral) {
       return res.json({ valid: false, message: 'Invalid referral code' });
     }
@@ -933,14 +932,14 @@ app.post('/api/referrals/validate', (req, res) => {
 });
 
 // POST /api/referrals/redeem - Redeem a referral code for existing users
-app.post('/api/referrals/redeem', authenticateToken, (req, res) => {
+app.post('/api/referrals/redeem', authenticateToken, async (req, res) => {
   try {
     const { code } = req.body;
     if (!code) {
       return res.status(400).json({ error: 'Referral code is required' });
     }
     
-    const user = User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -950,16 +949,15 @@ app.post('/api/referrals/redeem', authenticateToken, (req, res) => {
     // Special test referral codes - always work, even if user has credits
     if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
       const testCredits = 9999;
-      const newBalance = user.credits_balance + testCredits;
-      User.updateCredits(user.id, newBalance);
-      CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} redeemed`);
+      await User.addCredits(user.id, testCredits, `Test referral code ${codeUpper} redeemed`);
+      const updatedUser = await User.findById(user.id);
       console.log(`Test referral code ${codeUpper} redeemed by user ${user.id} - granted ${testCredits} credits`);
-      return res.json({ success: true, creditsGranted: testCredits, newBalance });
+      return res.json({ success: true, creditsGranted: testCredits, newBalance: updatedUser.credits_balance });
     }
     
     // Regular referral code - just track it, don't grant credits to referred user
     try {
-      const referral = Referral.useCode(code, user.id, 0);
+      await Referral.useCode(code, user.id, 0);
       return res.json({ success: true, creditsGranted: 0, message: 'Referral code applied. Referrer will receive credits when you complete your first question.' });
     } catch (refError) {
       return res.status(400).json({ error: refError.message });
@@ -1711,10 +1709,10 @@ Return ONLY the category and question in that format.`
     // Track question answered in analytics
     if (sessionId) {
       try {
-        const visit = Analytics.findBySession(sessionId);
+        const visit = await Analytics.findBySession(sessionId);
         if (visit) {
           const newCount = (visit.questions_answered || 0) + 1;
-          Analytics.updateQuestions(sessionId, newCount);
+          await Analytics.updateQuestions(sessionId, newCount);
         }
       } catch (analyticsError) {
         console.error('Analytics tracking error:', analyticsError);
@@ -1798,7 +1796,7 @@ app.post('/api/analyze-answer', optionalAuth, async (req, res) => {
     
     if (req.user) {
       // Authenticated user - check paid credits
-      const user = User.findById(req.user.userId);
+      const user = await User.findById(req.user.userId);
       if (user && user.credits_balance > 0) {
         hasPaidCredits = true;
         canAccessDetailedFeedback = true;
@@ -2001,7 +1999,7 @@ The feedback MUST include:
     // Deduct credit for paid users (only after successful AI response)
     if (hasPaidCredits && req.user) {
       try {
-        User.deductCredit(req.user.userId, 'coached_question');
+        await User.deductCredit(req.user.userId, 'coached_question');
         console.log(`[CREDITS] Deducted 1 credit from user ${req.user.userId}`);
       } catch (creditError) {
         console.error('Error deducting credit:', creditError);
@@ -2012,15 +2010,16 @@ The feedback MUST include:
     // Grant referrer credits when referred user completes their first question
     if (req.user && questionCount === 1) {
       try {
-        const referrals = Referral.getByReferredUser(req.user.userId);
+        const referrals = await Referral.getByReferredUser(req.user.userId);
         if (referrals && referrals.length > 0) {
           // Find the first referral that hasn't credited the referrer yet
           const referral = referrals.find(r => r.referrer_credited === 0);
           if (referral && referral.referrer_user_id) {
             // Grant 3 credits to the referrer
-            User.addCredits(referral.referrer_user_id, 3, `Referral bonus - ${referral.referral_code} used`);
+            await User.addCredits(referral.referrer_user_id, 3, `Referral bonus - ${referral.referral_code} used`);
             // Mark referrer as credited
-            referralQueries.markReferrerCredited.run(req.user.userId);
+            const { query } = require('./db');
+            await query('UPDATE referrals SET referrer_credited = 1 WHERE referred_user_id = $1 AND referrer_credited = 0', [req.user.userId]);
             console.log(`[REFERRAL] Granted 3 credits to referrer ${referral.referrer_user_id} for referral code ${referral.referral_code}`);
           }
         }
@@ -2057,7 +2056,7 @@ The feedback MUST include:
     // Get updated credits balance for paid users
     let creditsRemaining = null;
     if (hasPaidCredits && req.user) {
-      const user = User.findById(req.user.userId);
+      const user = await User.findById(req.user.userId);
       creditsRemaining = user ? user.credits_balance : null;
     }
     
@@ -3433,7 +3432,7 @@ app.get('/api/areas-to-work-on', async (req, res) => {
 // ========== ANALYTICS ENDPOINTS ==========
 
 // POST /api/analytics/visit - Log a visit (called from frontend)
-app.post('/api/analytics/visit', optionalAuth, (req, res) => {
+app.post('/api/analytics/visit', optionalAuth, async (req, res) => {
   try {
     const { sessionId, city, stateProvince, country, departmentName, jobType } = req.body;
     
@@ -3446,11 +3445,11 @@ app.post('/api/analytics/visit', optionalAuth, (req, res) => {
     const ipHash = hashIP(clientIP);
     
     // Check if visit already exists for this session
-    let visit = Analytics.findBySession(sessionId);
+    let visit = await Analytics.findBySession(sessionId);
     
     if (!visit) {
       // Create new visit record
-      visit = Analytics.create(
+      visit = await Analytics.create(
         sessionId,
         req.user?.userId || null,
         ipHash,
@@ -3462,39 +3461,26 @@ app.post('/api/analytics/visit', optionalAuth, (req, res) => {
       );
     } else {
       // Update last visit time and increment visit count
-      Analytics.updateLastVisit(sessionId);
+      await Analytics.updateLastVisit(sessionId);
       
       // Update user_id if user logged in
       if (req.user?.userId && !visit.user_id) {
-        const { db, userQueries } = require('./db');
-        if (!userQueries.updateVisitUserId) {
-          userQueries.updateVisitUserId = db.prepare('UPDATE analytics_visits SET user_id = ? WHERE session_id = ?');
-        }
-        userQueries.updateVisitUserId.run(req.user.userId, sessionId);
+        const { query } = require('./db');
+        await query('UPDATE analytics_visits SET user_id = $1 WHERE session_id = $2', [req.user.userId, sessionId]);
       }
       
       // Update location/department info if provided and different
       if (city || stateProvince || country || departmentName || jobType) {
-        const { db, analyticsQueries } = require('./db');
-        if (!analyticsQueries.updateVisitInfo) {
-          analyticsQueries.updateVisitInfo = db.prepare(`
-            UPDATE analytics_visits 
-            SET city = COALESCE(?, city),
-                state_province = COALESCE(?, state_province),
-                country = COALESCE(?, country),
-                department_name = COALESCE(?, department_name),
-                job_type = COALESCE(?, job_type)
-            WHERE session_id = ?
-          `);
-        }
-        analyticsQueries.updateVisitInfo.run(
-          city || null,
-          stateProvince || null,
-          country || null,
-          departmentName || null,
-          jobType || null,
-          sessionId
-        );
+        const { query } = require('./db');
+        await query(`
+          UPDATE analytics_visits 
+          SET city = COALESCE($1, city),
+              state_province = COALESCE($2, state_province),
+              country = COALESCE($3, country),
+              department_name = COALESCE($4, department_name),
+              job_type = COALESCE($5, job_type)
+          WHERE session_id = $6
+        `, [city || null, stateProvince || null, country || null, departmentName || null, jobType || null, sessionId]);
       }
     }
     
@@ -3506,7 +3492,7 @@ app.post('/api/analytics/visit', optionalAuth, (req, res) => {
 });
 
 // POST /api/analytics/question - Track question answered
-app.post('/api/analytics/question', optionalAuth, (req, res) => {
+app.post('/api/analytics/question', optionalAuth, async (req, res) => {
   try {
     const { sessionId } = req.body;
     
@@ -3514,12 +3500,12 @@ app.post('/api/analytics/question', optionalAuth, (req, res) => {
       return res.status(400).json({ error: 'Session ID is required' });
     }
     
-    let visit = Analytics.findBySession(sessionId);
+    let visit = await Analytics.findBySession(sessionId);
     
     if (visit) {
       // Increment questions answered
       const newCount = (visit.questions_answered || 0) + 1;
-      Analytics.updateQuestions(sessionId, newCount);
+      await Analytics.updateQuestions(sessionId, newCount);
     }
     
     res.json({ success: true });
@@ -3578,11 +3564,11 @@ app.get('/api/analytics/dashboard', (req, res) => {
     }
     
     // Get all analytics data
-    const stats = Analytics.getStats();
-    const visits = Analytics.getAll(1000);
-    const byDepartment = Analytics.getByDepartment();
-    const byCountry = Analytics.getByCountry();
-    const byDate = Analytics.getByDate(30);
+    const stats = await Analytics.getStats();
+    const visits = await Analytics.getAll(1000);
+    const byDepartment = await Analytics.getByDepartment();
+    const byCountry = await Analytics.getByCountry();
+    const byDate = await Analytics.getByDate(30);
     
     // Format visits for display (remove IP hash for privacy, keep only anonymized data)
     const formattedVisits = visits.map(v => ({
@@ -3959,7 +3945,7 @@ app.get('/api/analytics/dashboard', (req, res) => {
 });
 
 // DIAGNOSTIC ENDPOINT: Find all accounts by email (for debugging credit issues)
-app.get('/api/admin/find-accounts', (req, res) => {
+app.get('/api/admin/find-accounts', async (req, res) => {
   try {
     const { email, secret } = req.query;
     
@@ -3968,7 +3954,7 @@ app.get('/api/admin/find-accounts', (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     
-    const { db } = require('./db');
+    const { query } = require('./db');
     
     let accounts = [];
     let allAccounts = [];
@@ -3978,68 +3964,66 @@ app.get('/api/admin/find-accounts', (req, res) => {
     
     if (email) {
       // Find all accounts with this email (case-insensitive)
-      accounts = db.prepare(`
+      const accountsResult = await query(`
         SELECT id, email, provider, provider_id, credits_balance, created_at, updated_at
         FROM users
-        WHERE LOWER(email) = LOWER(?)
+        WHERE LOWER(email) = LOWER($1)
         ORDER BY created_at DESC
-      `).all(email);
-      
-      // Also search for partial email matches
-      const partialMatches = db.prepare(`
-        SELECT id, email, provider, provider_id, credits_balance, created_at
-        FROM users
-        WHERE LOWER(email) LIKE LOWER(?)
-        ORDER BY created_at DESC
-        LIMIT 10
-      `).all(`%${email.split('@')[0]}%`);
+      `, [email]);
+      accounts = accountsResult.rows;
       
       // Get credit ledger for the email accounts
       if (accounts.length > 0) {
-        creditHistory = db.prepare(`
+        const userIds = accounts.map(a => a.id);
+        const historyResult = await query(`
           SELECT user_id, change, reason, created_at
           FROM credit_ledger
-          WHERE user_id IN (${accounts.map(a => a.id).join(',')})
+          WHERE user_id = ANY($1)
           ORDER BY created_at DESC
           LIMIT 50
-        `).all();
+        `, [userIds]);
+        creditHistory = historyResult.rows;
       }
     }
     
     // Get ALL accounts in the database
-    allAccounts = db.prepare(`
+    const allAccountsResult = await query(`
       SELECT id, email, provider, provider_id, credits_balance, created_at
       FROM users
       ORDER BY created_at DESC
       LIMIT 50
-    `).all();
+    `);
+    allAccounts = allAccountsResult.rows;
     
     // Find accounts with high credit balances
-    highCreditAccounts = db.prepare(`
+    const highCreditResult = await query(`
       SELECT id, email, provider, provider_id, credits_balance, created_at
       FROM users
       WHERE credits_balance > 0
       ORDER BY credits_balance DESC
       LIMIT 20
-    `).all();
+    `);
+    highCreditAccounts = highCreditResult.rows;
     
     // Get all transactions with high credit amounts
-    transactions = db.prepare(`
+    const transactionsResult = await query(`
       SELECT id, user_id, pack_id, credits_purchased, amount_paid_cents, status, created_at
       FROM transactions
       WHERE credits_purchased > 0
       ORDER BY created_at DESC
       LIMIT 20
-    `).all();
+    `);
+    transactions = transactionsResult.rows;
     
     // Get all credit ledger entries with large changes
-    const largeCreditChanges = db.prepare(`
+    const largeCreditResult = await query(`
       SELECT user_id, change, reason, created_at
       FROM credit_ledger
       WHERE ABS(change) > 100
       ORDER BY created_at DESC
       LIMIT 20
-    `).all();
+    `);
+    const largeCreditChanges = largeCreditResult.rows;
     
     res.json({
       email: email || 'all',
@@ -4064,7 +4048,7 @@ app.get('/api/admin/find-accounts', (req, res) => {
 });
 
 // MERGE ENDPOINT: Merge two accounts (transfer credits from source to target)
-app.post('/api/admin/merge-accounts', (req, res) => {
+app.post('/api/admin/merge-accounts', async (req, res) => {
   try {
     const { sourceUserId, targetUserId, secret } = req.body;
     
@@ -4081,11 +4065,9 @@ app.post('/api/admin/merge-accounts', (req, res) => {
       return res.status(400).json({ error: 'Cannot merge account with itself' });
     }
     
-    const { db } = require('./db');
-    
     // Get both users
-    const sourceUser = User.findById(sourceUserId);
-    const targetUser = User.findById(targetUserId);
+    const sourceUser = await User.findById(sourceUserId);
+    const targetUser = await User.findById(targetUserId);
     
     if (!sourceUser || !targetUser) {
       return res.status(404).json({ error: 'One or both users not found' });
@@ -4095,25 +4077,20 @@ app.post('/api/admin/merge-accounts', (req, res) => {
     
     // Transfer credits
     if (sourceUser.credits_balance > 0) {
-      const newBalance = targetUser.credits_balance + sourceUser.credits_balance;
-      User.updateCredits(targetUserId, newBalance);
-      CreditLedger.create(targetUserId, sourceUser.credits_balance, `Merged from account ${sourceUserId} (${sourceUser.email})`);
+      await User.addCredits(targetUserId, sourceUser.credits_balance, `Merged from account ${sourceUserId} (${sourceUser.email})`);
       console.log(`[MERGE] Transferred ${sourceUser.credits_balance} credits to account ${targetUserId}`);
     }
     
     // Update source account provider_id to point to target (so future logins use target)
     if (sourceUser.provider === 'google' && sourceUser.provider_id) {
-      const { userQueries } = require('./db');
-      if (!userQueries.updateProviderId) {
-        userQueries.updateProviderId = db.prepare('UPDATE users SET provider_id = ? WHERE id = ?');
-      }
+      const { query } = require('./db');
       // Copy provider_id from source to target so both work
-      userQueries.updateProviderId.run(sourceUser.provider_id, targetUserId);
+      await query('UPDATE users SET provider_id = $1 WHERE id = $2', [sourceUser.provider_id, targetUserId]);
       console.log(`[MERGE] Updated provider_id for account ${targetUserId}`);
     }
     
     // Get updated target user
-    const updatedTarget = User.findById(targetUserId);
+    const updatedTarget = await User.findById(targetUserId);
     
     res.json({
       success: true,

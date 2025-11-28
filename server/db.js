@@ -336,13 +336,14 @@ const Referral = {
       throw new Error('Cannot use your own referral code');
     }
     
-    // PREVENT ABUSE: Check if this user has already used this referral code before
+    // PREVENT ABUSE: Check if this user has already used ANY referral code from this referrer
+    // This prevents the same user from using multiple referral codes from the same person
     const existingUsage = await query(
-      'SELECT * FROM referrals WHERE referral_code = $1 AND referred_user_id = $2',
-      [code, referredUserId]
+      'SELECT * FROM referrals WHERE referrer_user_id = $1 AND referred_user_id = $2',
+      [referral.referrer_user_id, referredUserId]
     );
     if (existingUsage.rows.length > 0) {
-      throw new Error('You have already used this referral code. Each referral code can only be used once per account.');
+      throw new Error('You have already used a referral code from this person. Each account can only use one referral code per referrer. Please create a new account to use a different referral code.');
     }
     
     await query(`

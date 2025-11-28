@@ -414,23 +414,34 @@
     
     /* Extra small devices */
     @media (max-width: 360px) {
-      h1 {
-        font-size: 1.1rem;
+      .app {
+        padding: 10px;
       }
       
-      h1 span.logo {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
+      header {
+        padding: 12px 10px;
+      }
+      
+      header .title img#logoImage {
+        max-height: 65px;
+      }
+      
+      h1 {
+        font-size: 1.2rem;
       }
       
       .card {
         padding: 14px;
       }
       
+      input[type="checkbox"] {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      
       button {
         font-size: 0.85rem;
-        padding: 12px 16px;
+        padding: 11px 14px;
       }
     }
 
@@ -2815,18 +2826,24 @@
   
   // ========== CREDIT SYSTEM ==========
   // Trial credits tracking (localStorage for anonymous users)
+  // Trial credits management - CRITICAL: Preserve on page refresh
   function getTrialCreditsRemaining() {
     const stored = localStorage.getItem('trial_credits_remaining');
-    if (stored === null) {
-      // Initialize with 3 trial credits
+    if (stored === null || stored === undefined) {
+      // Only initialize if truly missing (first visit)
       localStorage.setItem('trial_credits_remaining', '3');
+      console.log('[TRIAL CREDITS] First visit - initialized with 3 credits');
       return 3;
     }
-    return parseInt(stored) || 0;
+    const credits = parseInt(stored, 10);
+    console.log('[TRIAL CREDITS] Retrieved from localStorage:', credits);
+    return isNaN(credits) ? 0 : credits;
   }
   
   function setTrialCreditsRemaining(count) {
-    localStorage.setItem('trial_credits_remaining', count.toString());
+    const safeCount = Math.max(0, Math.min(3, parseInt(count, 10) || 0));
+    localStorage.setItem('trial_credits_remaining', safeCount.toString());
+    console.log('[TRIAL CREDITS] Updated to:', safeCount);
     updateTrialCreditsDisplay();
   }
   
@@ -3213,31 +3230,24 @@
   let motionScoreForAnswer = null;
 
   // ========== CREDIT SYSTEM ==========
-  // Note: currentUser is already declared above in auth section (line 2549)
+  // Note: currentUser is already declared above in auth section
   const TRIAL_CREDITS_MAX = 3;
   const TRIAL_CREDITS_KEY = 'trial_credits_remaining';
   
-  // Initialize trial credits
+  // Initialize trial credits - only if not already set (preserve existing credits)
   function initializeTrialCredits() {
-    if (!localStorage.getItem(TRIAL_CREDITS_KEY)) {
+    const existing = localStorage.getItem(TRIAL_CREDITS_KEY);
+    if (existing === null || existing === undefined) {
+      // Only initialize if truly missing
       localStorage.setItem(TRIAL_CREDITS_KEY, TRIAL_CREDITS_MAX.toString());
+      console.log('[TRIAL CREDITS] Initialized with', TRIAL_CREDITS_MAX, 'credits');
+    } else {
+      console.log('[TRIAL CREDITS] Preserved existing credits:', existing);
     }
   }
   
-  // Get trial credits remaining
-  function getTrialCreditsRemaining() {
-    const stored = localStorage.getItem(TRIAL_CREDITS_KEY);
-    return stored ? parseInt(stored, 10) : TRIAL_CREDITS_MAX;
-  }
-  
-  // Consume a trial credit
-  function consumeTrialCredit() {
-    const current = getTrialCreditsRemaining();
-    if (current > 0) {
-      localStorage.setItem(TRIAL_CREDITS_KEY, (current - 1).toString());
-      updateTrialCreditsDisplay();
-    }
-  }
+  // Get trial credits remaining - use the function already defined above
+  // (Removed duplicate - using the one at line 2829)
   
   // Check if user can use a question
   function canUseQuestion() {
@@ -6462,24 +6472,41 @@ Return ONLY the category and question.`
       try {
         // Ensure BACKEND_URL is defined (should be from first script tag)
         if (typeof BACKEND_URL === 'undefined') {
-          console.error('BACKEND_URL is not defined - check script loading order');
+          console.error('[GOOGLE SIGN-IN] BACKEND_URL is not defined - check script loading order');
           return;
         }
-        const configRes = await fetch(`${BACKEND_URL}/api/config`);
+        
+        console.log('[GOOGLE SIGN-IN] Fetching config from:', `${BACKEND_URL}/api/config`);
+        const configRes = await fetch(`${BACKEND_URL}/api/config`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
         if (configRes.ok) {
           const config = await configRes.json();
           googleClientId = config.googleClientId || null;
-          console.log('Google Client ID from config:', googleClientId ? 'Found' : 'Not found', config);
+          console.log('[GOOGLE SIGN-IN] Config response:', config);
+          console.log('[GOOGLE SIGN-IN] Google Client ID:', googleClientId ? `Found (${googleClientId.substring(0, 20)}...)` : 'NOT FOUND');
+          
+          if (!googleClientId) {
+            console.error('[GOOGLE SIGN-IN] Google Client ID is null in config response. Check backend GOOGLE_CLIENT_ID environment variable.');
+            return;
+          }
         } else {
-          console.error('Config endpoint returned error:', configRes.status);
+          const errorText = await configRes.text();
+          console.error('[GOOGLE SIGN-IN] Config endpoint error:', configRes.status, errorText);
+          return;
         }
       } catch (e) {
-        console.error('Could not fetch Google Client ID:', e);
+        console.error('[GOOGLE SIGN-IN] Failed to fetch config:', e);
+        console.error('[GOOGLE SIGN-IN] Error details:', e.message, e.stack);
         return;
       }
       
       if (!googleClientId) {
-        console.warn('Google Client ID not configured - check backend environment variables');
+        console.error('[GOOGLE SIGN-IN] Google Client ID not available after fetch');
         return;
       }
       
@@ -6537,8 +6564,25 @@ Return ONLY the category and question.`
       }
       
       if (!googleClientId) {
-        alert('Google Sign-In is not configured. Please ensure GOOGLE_CLIENT_ID is set in your backend environment variables on Render, and restart the backend service.');
-        return;
+        console.error('[GOOGLE SIGN-IN] No client ID available - attempting to fetch again...');
+        try {
+          const configRes = await fetch(`${BACKEND_URL}/api/config`);
+          if (configRes.ok) {
+            const config = await configRes.json();
+            googleClientId = config.googleClientId;
+            if (!googleClientId) {
+              alert('Google Sign-In is not configured on the backend. Please ensure GOOGLE_CLIENT_ID is set in your Render environment variables and the backend service has been restarted.');
+              return;
+            }
+          } else {
+            alert('Unable to connect to backend. Please check your connection and try again.');
+            return;
+          }
+        } catch (e) {
+          console.error('[GOOGLE SIGN-IN] Failed to fetch config on button click:', e);
+          alert('Unable to connect to backend. Please check your connection and try again.');
+          return;
+        }
       }
       
       // Use button-based sign-in (more reliable than One Tap)

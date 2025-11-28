@@ -7106,7 +7106,7 @@ Return ONLY the category and question.`
     };
     
     // Try Web Share API first (native sharing on mobile/desktop)
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    if (navigator.share) {
       try {
         await navigator.share(shareData);
         if (referralCodeStatus) {

@@ -6710,6 +6710,14 @@ Return ONLY the category and question.`
         }
       } else {
         console.error('Failed to load referral code:', refResponse.status);
+        if (refResponse.status === 401 || refResponse.status === 403) {
+          handleAuthError();
+          // Close modal and show login
+          if (modal) modal.style.display = 'none';
+          const loginModal = document.getElementById('loginModal');
+          if (loginModal) loginModal.style.display = 'flex';
+          return;
+        }
         const referralCodeInput = document.getElementById('referralCodeDisplay');
         if (referralCodeInput) {
           referralCodeInput.value = 'Error loading code';
@@ -6759,6 +6767,8 @@ Return ONLY the category and question.`
         `;
         }).join('');
       }
+      
+      if (modal) modal.style.display = 'flex';
     } catch (error) {
       console.error('Error loading credit bundles:', error);
     }

@@ -31,9 +31,12 @@ const openai = new OpenAI({
 });
 
 // Middleware
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://fire-interview-coach.onrender.com';
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  credentials: true
+  origin: FRONTEND_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(cookieParser());
@@ -219,12 +222,20 @@ app.post('/api/auth/signup', async (req, res) => {
     );
     
     // Set cookie
-    res.cookie('authToken', token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: '/'
+    };
+    
+    // In production, set domain if needed (Render uses .onrender.com)
+    if (process.env.NODE_ENV === 'production') {
+      // Don't set domain - let browser handle it based on the request origin
+    }
+    
+    res.cookie('authToken', token, cookieOptions);
     
     res.json({
       success: true,
@@ -309,12 +320,20 @@ app.post('/api/auth/login', async (req, res) => {
     );
     
     // Set cookie
-    res.cookie('authToken', token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: '/'
+    };
+    
+    // In production, set domain if needed (Render uses .onrender.com)
+    if (process.env.NODE_ENV === 'production') {
+      // Don't set domain - let browser handle it based on the request origin
+    }
+    
+    res.cookie('authToken', token, cookieOptions);
     
     res.json({
       success: true,
@@ -485,12 +504,20 @@ app.post('/api/auth/google', async (req, res) => {
     );
     
     // Set cookie
-    res.cookie('authToken', token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: '/'
+    };
+    
+    // In production, set domain if needed (Render uses .onrender.com)
+    if (process.env.NODE_ENV === 'production') {
+      // Don't set domain - let browser handle it based on the request origin
+    }
+    
+    res.cookie('authToken', token, cookieOptions);
     
     console.log('Google auth successful for user:', user.email);
     res.json({

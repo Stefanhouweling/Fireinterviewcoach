@@ -6359,6 +6359,11 @@ Return ONLY the category and question.`
       
       // Get client ID from backend
       try {
+        // Ensure BACKEND_URL is defined (should be from first script tag)
+        if (typeof BACKEND_URL === 'undefined') {
+          console.error('BACKEND_URL is not defined - check script loading order');
+          return;
+        }
         const configRes = await fetch(`${BACKEND_URL}/api/config`);
         if (configRes.ok) {
           const config = await configRes.json();

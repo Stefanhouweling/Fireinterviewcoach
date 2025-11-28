@@ -1304,7 +1304,7 @@ The feedback MUST include:
         },
         {
           role: "user",
-          content: "You are an expert firefighter interview coach. Your goal is to help candidates develop better answers.\n\n" +
+          content: ("You are an expert firefighter interview coach. Your goal is to help candidates develop better answers.\n\n" +
             "Interview Question: " + question + "\n" +
             `Question Category: ${category || 'General'}\n\n` +
             "Candidate's Answer:\n" +
@@ -1373,7 +1373,7 @@ The feedback MUST include:
             "- Do NOT use star symbols or plain asterisks for formatting.\n" +
             "- Keep each bullet to 1–2 short sentences.\n" +
             "- Avoid walls of text – this should feel light, skimmable, and coach-like.\n" +
-            "- Be encouraging but very specific and honest about what needs to improve."
+            "- Be encouraging but very specific and honest about what needs to improve.")
         }
       ]
     });

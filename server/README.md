@@ -14,7 +14,7 @@ cp env.example .env
 
 3. Fill in your API keys in `.env`:
 - `OPENAI_API_KEY` - Your OpenAI API key
-- `ELEVENLABS_API_KEY` - Your ElevenLabs API key
+- `MAPBOX_TOKEN` - Your Mapbox API token (for city/location search)
 - `FRONTEND_URL` - Your frontend URL (for CORS)
 - `PORT` - Server port (default: 3001)
 
@@ -26,6 +26,8 @@ npm start
 ## API Endpoints
 
 - `GET /health` - Health check
+- `GET /api/mapbox-token` - Get Mapbox API token (for frontend)
+- `GET /api/mapbox-search` - Proxy Mapbox search requests (avoids CORS)
 - `POST /api/question` - Generate interview question
 - `POST /api/followup` - Generate follow-up question
 - `POST /api/analyze-answer` - Analyze candidate's answer

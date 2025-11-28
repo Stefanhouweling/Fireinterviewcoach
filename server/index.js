@@ -110,6 +110,13 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Fire Interview Coach API is running' });
 });
 
+// GET /api/config - Get public configuration (like Google Client ID)
+app.get('/api/config', (req, res) => {
+  res.json({
+    googleClientId: GOOGLE_CLIENT_ID || null
+  });
+});
+
 // ========== AUTHENTICATION ENDPOINTS ==========
 
 // POST /api/auth/signup

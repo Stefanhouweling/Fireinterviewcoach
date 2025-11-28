@@ -956,13 +956,20 @@ IMPORTANT: The question MUST stay within the "${selectedCategory}" category. Do 
     } else if (practiceMode === "simulation") {
       questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) for an interview simulation.${personalizationContext}
 
+CRITICAL REQUIREMENTS FOR NEW PROBIE:
+- This candidate is a BRAND NEW PROBIE FIREFIGHTER (entry-level, no firefighting experience yet)
+- ONLY ~10% of questions should be fire-related. ~90% should be GENERAL behavioral/situational questions
+- DO NOT ask about leading teams, making command decisions, or managing others
+- DO ask about following orders, learning, being part of a team, respecting chain of command, adapting to new environments
+- Questions should reflect an entry-level position where they follow instructions and learn from experienced firefighters
+
 CRITICAL PERSONALIZATION REQUIREMENTS:
-- RANDOMLY decide whether to personalize - most questions should be GENERAL firefighter questions
+- RANDOMLY decide whether to personalize - most questions should be GENERAL questions
 - Use the candidate's name (${profileName ? profileName : 'if provided'}) very rarely - only about 10-15% of questions, make it feel completely random
 - Reference their department "${profileDepartmentName || '[if provided]'}" only occasionally - about 20-30% of questions. Most questions should NOT mention the department
 - Reference their city "${profileCity || '[if provided]'}" only occasionally - about 20-30% of questions. Most questions should be general
 - Reference their COMPLETE resume background (ALL past jobs including non-fire jobs, experience, certifications, skills) naturally when it fits, but don't force it
-- Most questions should be general firefighter questions that apply to any candidate
+- Most questions should be general questions that apply to any candidate
 - Make personalization feel random and natural - don't include department/name in every question
 
 ${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format asking about past experience (BEHAVIORAL question).' : 'Use "How would you handle..." format asking about a hypothetical situation (SITUATIONAL question).'} 
@@ -1014,21 +1021,44 @@ Remember: Most questions should be GENERAL. Personalization should feel RANDOM.`
       messages: [
         {
           role: "system",
-          content: `You are an expert firefighter interview panel member. Your role is to generate realistic and challenging interview questions that:
+          content: `You are an expert firefighter interview panel member. Your role is to generate realistic and challenging interview questions for a BRAND NEW PROBIE FIREFIGHTER (entry-level candidate with no firefighting experience yet).
 
-1. RANDOMLY decide whether to personalize - MOST questions should be GENERAL firefighter questions that apply to any candidate
-2. Only occasionally (20-30% of questions) reference the candidate's department or city - make it feel random
-3. Only very rarely (10-15% of questions) address the candidate by name - make it feel completely random
-4. Most questions should be general and not mention specific departments, cities, or names
-5. Test behavioral competencies, technical knowledge, and situational judgment
-6. Reference their COMPLETE background naturally when relevant, but don't force it
-7. Test judgment, ethics, chain of command, and decision-making
-8. Ensure questions are UNIQUE and cover diverse topics/areas
-9. Vary between behavioral ("Tell us about a time...") and situational ("How would you handle...") questions
+CRITICAL REQUIREMENTS:
+1. ONLY ~10% of questions should be fire-related. The remaining ~90% should be GENERAL behavioral/situational questions that could apply to any profession or made-up scenarios.
+2. This candidate is a BRAND NEW PROBIE - they are NOT a captain, officer, or leader. Questions should reflect an entry-level position:
+   - DO NOT ask "how would you keep YOUR team safe" (they don't have a team)
+   - DO NOT ask about leading others or managing a team
+   - DO NOT ask about making command decisions
+   - DO ask about following orders, learning, being part of a team, respecting chain of command
+   - DO ask about how they would handle being new, learning protocols, working under supervision
+3. RANDOMLY decide whether to personalize - MOST questions should be GENERAL questions that apply to any candidate
+4. Only occasionally (20-30% of questions) reference the candidate's department or city - make it feel random
+5. Only very rarely (10-15% of questions) address the candidate by name - make it feel completely random
+6. Most questions should be general and not mention specific departments, cities, or names
+7. Test behavioral competencies, judgment, ethics, following instructions, teamwork, and situational judgment
+8. Reference their COMPLETE background naturally when relevant, but don't force it
+9. Ensure questions are UNIQUE and cover diverse topics/areas
+10. Vary between behavioral ("Tell us about a time...") and situational ("How would you handle...") questions
+
+QUESTION TOPIC DISTRIBUTION:
+- ~10% fire-related scenarios (safety protocols, following fireground procedures, learning firefighting basics)
+- ~90% general scenarios (conflict resolution, following orders, teamwork, ethics, communication, stress management, adapting to new environments, etc.)
+
+EXAMPLES OF APPROPRIATE QUESTIONS FOR A NEW PROBIE:
+- "How would you handle a situation if you felt you weren't treated fairly?"
+- "Tell us about a time when you had to follow instructions you didn't fully understand."
+- "How would you handle a situation where a senior colleague asks you to do something that conflicts with what your supervisor told you?"
+- "Describe a time when you had to work as part of a team under pressure."
+- "How would you approach learning a completely new skill or procedure?"
+
+EXAMPLES OF INAPPROPRIATE QUESTIONS (DO NOT GENERATE):
+- "How would you keep YOUR team safe?" (they don't have a team - they ARE part of a team)
+- "How would you lead your crew in an emergency?" (they're not a leader)
+- "What would you do if you had to make a command decision?" (they follow commands, not give them)
 
 CRITICAL EXCEPTION: If the category is "City & Department Specific", you MUST generate KNOWLEDGE-TESTING questions (Who/What/When/How many) about specific facts, NOT behavioral or situational questions. For this category only, ask about factual information like fire chief's name, union number, department size, mayor's name, etc.
 
-CRITICAL: Most questions should be GENERAL. Personalization should feel RANDOM and NATURAL - don't include department name or candidate name in every question. About 70-80% of questions should be general firefighter questions.`
+CRITICAL: Most questions should be GENERAL. Personalization should feel RANDOM and NATURAL - don't include department name or candidate name in every question. About 70-80% of questions should be general questions.`
         },
         {
           role: "user",
@@ -1068,7 +1098,7 @@ ${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !=
 ` : `- Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
 - Keep it broad and applicable to all candidates, not overly specific to their resume
 `}
-- Examples of good questions:
+- Examples of good questions (REMEMBER: Only ~10% fire-related, ~90% general):
 ${selectedCategory === "City & Department Specific" ? `  * KNOWLEDGE QUESTIONS (REQUIRED for this category - use city research data):
     * Leadership: "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?" "Who are the deputy chiefs?"
     * Union: "What is the local union number for ${profileDepartmentName || 'the fire department'}?" "Who is the union president?"
@@ -1079,11 +1109,20 @@ ${selectedCategory === "City & Department Specific" ? `  * KNOWLEDGE QUESTIONS (
     * City Context: "What are the main industries in ${profileCity || 'this city'}?" "What is the population of ${profileCity || 'this city'}?"
     * Equipment: "What specialized equipment does ${profileDepartmentName || 'this department'} have?" "What technical rescue capabilities does ${profileDepartmentName || 'this department'} have?"
     * Values: "What are the core values of ${profileDepartmentName || 'this department'}?" "What is the mission statement of ${profileDepartmentName || 'this department'}?"
-  * FORBIDDEN: "How would you handle..." or "Tell us about a time..." (these are behavioral/situational, NOT knowledge questions)` : `  * Behavioral/Situational questions:
+  * FORBIDDEN: "How would you handle..." or "Tell us about a time..." (these are behavioral/situational, NOT knowledge questions)` : `  * GENERAL Behavioral/Situational questions (90% of questions should be like these):
   * "How would you handle a situation if you felt you weren't treated fairly?"
-  * "How would you handle a leader where you question their leadership, would you still respect them?"
+  * "Tell us about a time when you had to follow instructions you didn't fully understand."
+  * "How would you handle a situation where two people you respect give you conflicting instructions?"
+  * "Describe a time when you had to work as part of a team under pressure."
+  * "How would you approach learning a completely new skill or procedure?"
+  * "Tell us about a time when you had to adapt to a completely new environment."
+  * "How would you handle a situation where you see someone doing something unsafe?"
+  * "Describe a time when you had to communicate something difficult to a supervisor."
+  * FIRE-RELATED questions (only ~10% of questions - use sparingly):
   * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
-    * Resume-based example: "Given your experience with [specific certification/experience from resume], how would you approach a situation where you need to apply that knowledge under pressure?"`}
+  * "If you were on a fire scene and noticed a safety violation, how would you address it as a new probie?"
+  * FORBIDDEN for new probie: "How would you keep YOUR team safe?" (they don't have a team - they ARE part of a team)
+  * FORBIDDEN for new probie: "How would you lead your crew?" (they're not a leader - they follow leaders)`}
 - Test: ${selectedCategory === "City & Department Specific" ? 'candidate knowledge of specific facts about the city and department' : 'chain of command, ethics, judgment, decision-making, conflict resolution'}
 - CRITICAL: The question MUST be completely different from any question already asked (see list above)
 ${practiceMode === "simulation" ? `- If resume is provided and mode allows, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates

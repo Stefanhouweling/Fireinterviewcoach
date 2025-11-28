@@ -211,9 +211,16 @@ app.post('/api/auth/signup', async (req, res) => {
           await User.addCredits(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
-          // Regular referral code - just track it, don't grant credits to referred user
+          // Regular referral code - track it
           await Referral.useCode(referralCode, user.id, 0);
           console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
+          
+          // SPECIAL CASE: If user used all trial credits before signing up (trialCredits === 0),
+          // grant them 1 full access credit so they can complete that first question for the referrer
+          if (trialCredits === 0 || (trialCredits !== undefined && parseInt(trialCredits) === 0)) {
+            await User.addCredits(user.id, 1, `Referral code bonus - 1 credit to complete first question (trial credits already used)`);
+            console.log(`[REFERRAL] Granted 1 credit to user ${user.id} who used trial credits before signup with referral code ${referralCode}`);
+          }
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
@@ -297,9 +304,16 @@ app.post('/api/auth/login', async (req, res) => {
           await User.addCredits(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
-          // Regular referral code - just track it, don't grant credits to referred user
+          // Regular referral code - track it
           await Referral.useCode(referralCode, user.id, 0);
           console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
+          
+          // SPECIAL CASE: If user used all trial credits before logging in (trialCredits === 0),
+          // grant them 1 full access credit so they can complete that first question for the referrer
+          if (trialCredits === 0 || (trialCredits !== undefined && parseInt(trialCredits) === 0)) {
+            await User.addCredits(user.id, 1, `Referral code bonus - 1 credit to complete first question (trial credits already used)`);
+            console.log(`[REFERRAL] Granted 1 credit to user ${user.id} who used trial credits before login with referral code ${referralCode}`);
+          }
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
@@ -497,9 +511,16 @@ app.post('/api/auth/google', async (req, res) => {
           await User.addCredits(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
-          // Regular referral code - just track it, don't grant credits to referred user
+          // Regular referral code - track it
           await Referral.useCode(referralCode, user.id, 0);
           console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
+          
+          // SPECIAL CASE: If user used all trial credits before Google sign-in (trialCredits === 0),
+          // grant them 1 full access credit so they can complete that first question for the referrer
+          if (trialCredits === 0 || (trialCredits !== undefined && parseInt(trialCredits) === 0)) {
+            await User.addCredits(user.id, 1, `Referral code bonus - 1 credit to complete first question (trial credits already used)`);
+            console.log(`[REFERRAL] Granted 1 credit to user ${user.id} who used trial credits before Google sign-in with referral code ${referralCode}`);
+          }
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);

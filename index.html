@@ -1283,18 +1283,6 @@
 <div class="app" id="mainApp" style="display: none;">
   <header>
     <div class="title" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0 24px;">
-      <!-- Right side: Credits/Login -->
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <span id="headerCredits" style="color: #94a3b8; font-size: 0.9rem; font-weight: 500;">3 free questions left</span>
-        <button id="headerLoginBtn" class="ghost" style="display: none;">Log In</button>
-        <button id="headerSignupBtn" class="ghost" style="display: none;">Sign Up</button>
-        <div id="headerUserMenu" style="display: none;">
-          <button id="headerUserBtn" class="ghost" style="position: relative;">
-            <span id="headerUserName"></span>
-          </button>
-        </div>
-      </div>
-      
       <!-- Logo - Left Side -->
       <div style="display: flex; align-items: center; justify-content: flex-start; flex: 1;">
         <img id="logoImage" src="banner-logo.png" alt="Interview Coach AI Logo" 
@@ -2577,26 +2565,23 @@
   
   // Update authentication UI
   function updateAuthUI() {
-    const headerLoginBtn = document.getElementById('headerLoginBtn');
-    const headerSignupBtn = document.getElementById('headerSignupBtn');
-    const headerUserMenu = document.getElementById('headerUserMenu');
-    const headerUserName = document.getElementById('headerUserName');
+    const authButtons = document.getElementById('authButtons');
+    const userMenu = document.getElementById('userMenu');
+    const userEmail = document.getElementById('userEmail');
     
     if (currentUser) {
       // Logged in - show user menu, hide login/signup
-      if (headerLoginBtn) headerLoginBtn.style.display = 'none';
-      if (headerSignupBtn) headerSignupBtn.style.display = 'none';
-      if (headerUserMenu) {
-        headerUserMenu.style.display = 'block';
-        if (headerUserName) {
-          headerUserName.textContent = currentUser.name || currentUser.email || 'User';
+      if (authButtons) authButtons.style.display = 'none';
+      if (userMenu) {
+        userMenu.style.display = 'block';
+        if (userEmail) {
+          userEmail.textContent = currentUser.name || currentUser.email || 'User';
         }
       }
     } else {
       // Not logged in - show login/signup, hide user menu
-      if (headerLoginBtn) headerLoginBtn.style.display = 'inline-flex';
-      if (headerSignupBtn) headerSignupBtn.style.display = 'inline-flex';
-      if (headerUserMenu) headerUserMenu.style.display = 'none';
+      if (authButtons) authButtons.style.display = 'flex';
+      if (userMenu) userMenu.style.display = 'none';
     }
     
     // Update credits display
@@ -2605,9 +2590,6 @@
   
   // Update credits display
   async function updateCreditsDisplay() {
-    const creditsEl = document.getElementById('headerCredits');
-    if (!creditsEl) return;
-    
     if (!currentUser) {
       updateTrialCreditsDisplay();
       return;
@@ -2627,10 +2609,17 @@
       console.error('Error updating credits display:', error);
     }
     
-    // Update header display
-    if (creditsEl && currentUser) {
-      creditsEl.textContent = `Credits: ${currentUser.credits_balance}`;
-      creditsEl.style.color = currentUser.credits_balance > 0 ? '#86efac' : '#fca5a5';
+    // Update credits display
+    const creditsCountEl = document.getElementById('creditsCount');
+    const creditsDisplay = document.getElementById('creditsDisplay');
+    const trialCreditsDisplay = document.getElementById('trialCreditsDisplay');
+    
+    if (currentUser) {
+      if (creditsCountEl) {
+        creditsCountEl.textContent = currentUser.credits_balance || 0;
+      }
+      if (creditsDisplay) creditsDisplay.style.display = 'flex';
+      if (trialCreditsDisplay) trialCreditsDisplay.style.display = 'none';
     }
   }
   
@@ -2638,10 +2627,15 @@
   function updateTrialCreditsDisplay() {
     if (!currentUser) {
       const remaining = getTrialCreditsRemaining();
-      const creditsEl = document.getElementById('headerCredits');
-      if (creditsEl) {
-        creditsEl.textContent = `${remaining} free questions left`;
+      const trialCreditsCountEl = document.getElementById('trialCreditsCount');
+      const creditsDisplay = document.getElementById('creditsDisplay');
+      const trialCreditsDisplay = document.getElementById('trialCreditsDisplay');
+      
+      if (trialCreditsCountEl) {
+        trialCreditsCountEl.textContent = remaining;
       }
+      if (creditsDisplay) creditsDisplay.style.display = 'none';
+      if (trialCreditsDisplay) trialCreditsDisplay.style.display = 'flex';
     }
   }
   
@@ -2916,10 +2910,15 @@
   function updateTrialCreditsDisplay() {
     if (!currentUser) {
       const remaining = getTrialCreditsRemaining();
-      const creditsEl = document.getElementById('headerCredits');
-      if (creditsEl) {
-        creditsEl.textContent = `${remaining} free questions left`;
+      const trialCreditsCountEl = document.getElementById('trialCreditsCount');
+      const creditsDisplay = document.getElementById('creditsDisplay');
+      const trialCreditsDisplay = document.getElementById('trialCreditsDisplay');
+      
+      if (trialCreditsCountEl) {
+        trialCreditsCountEl.textContent = remaining;
       }
+      if (creditsDisplay) creditsDisplay.style.display = 'none';
+      if (trialCreditsDisplay) trialCreditsDisplay.style.display = 'flex';
     }
   }
   
@@ -5831,18 +5830,7 @@ Return ONLY the category and question.`
   const userMenuDropdown = document.getElementById('userMenuDropdown');
   
   // Header button handlers
-  const headerLoginBtn = document.getElementById('headerLoginBtn');
-  const headerSignupBtn = document.getElementById('headerSignupBtn');
-  
-  if (headerLoginBtn) headerLoginBtn.addEventListener('click', () => {
-    const modal = document.getElementById('loginModal');
-    if (modal) modal.style.display = 'flex';
-  });
-  
-  if (headerSignupBtn) headerSignupBtn.addEventListener('click', () => {
-    const modal = document.getElementById('signupModal');
-    if (modal) modal.style.display = 'flex';
-  });
+  // Login/signup buttons are already handled by the existing event listeners below
   
   if (loginBtn) loginBtn.addEventListener('click', () => {
     document.getElementById('loginModal').style.display = 'flex';

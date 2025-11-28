@@ -2819,9 +2819,8 @@
   // Debug console removed - no longer needed
 
   // ========== API CONFIGURATION ==========
-  // Note: BACKEND_URL and all state variables (onboardingData, resumeText, currentUser, authToken, etc.)
-  // are declared in the FIRST script tag (starting at line 1996) to ensure they're available 
-  // before any code tries to use them
+  // Note: BACKEND_URL and all state variables are declared in the FIRST script tag (line 1996)
+  // to ensure they're available before any code tries to use them
   
   // Always use backend service (API keys are hidden on the server)
   const USE_BACKEND = true;
@@ -2916,34 +2915,69 @@
   
   // Check authentication on page load
   async function checkAuth() {
+    // Ensure BACKEND_URL is available
+    if (typeof BACKEND_URL === 'undefined') {
+      console.error('[AUTH] BACKEND_URL not defined - cannot check auth');
+      return;
+    }
+    
     try {
       const response = await authenticatedFetch(`${BACKEND_URL}/api/auth/me`);
       
       if (response.ok) {
         currentUser = await response.json();
+        // Store user in localStorage as backup for network errors
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
         // Update token from cookie or keep existing
         authToken = getAuthToken();
         updateAuthUI();
         await updateCreditsDisplay();
+        console.log('[AUTH] Successfully authenticated user:', currentUser.email);
       } else {
-        // Clear user state on 401/403
+        // Only clear user state on actual auth errors (401/403), not network errors
         if (response.status === 401 || response.status === 403) {
+          console.log('[AUTH] Token invalid or expired - clearing auth state');
           handleAuthError();
         } else {
-          currentUser = null;
-          authToken = null;
-          setAuthToken(null);
-          updateAuthUI();
-          updateTrialCreditsDisplay();
+          // Other errors (500, network issues) - don't clear auth, just log
+          console.warn('[AUTH] Auth check failed with status:', response.status, '- preserving existing auth state');
+          // Try to preserve existing user state from localStorage if available
+          const storedUser = localStorage.getItem('currentUser');
+          if (storedUser) {
+            try {
+              currentUser = JSON.parse(storedUser);
+              console.log('[AUTH] Using stored user data due to network error');
+              updateAuthUI();
+            } catch (e) {
+              console.error('[AUTH] Failed to parse stored user:', e);
+            }
+          }
         }
       }
     } catch (error) {
-      console.error('Auth check error:', error);
-      currentUser = null;
-      authToken = null;
-      setAuthToken(null);
-      updateAuthUI();
-      updateTrialCreditsDisplay();
+      // Network errors or other exceptions - don't clear auth state
+      console.error('[AUTH] Auth check error (network/exception):', error.message);
+      console.log('[AUTH] Preserving existing auth state due to network error');
+      
+      // Try to restore from localStorage if we have a token
+      const token = getAuthToken();
+      if (token) {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          try {
+            currentUser = JSON.parse(storedUser);
+            console.log('[AUTH] Restored user from localStorage due to network error');
+            updateAuthUI();
+          } catch (e) {
+            console.error('[AUTH] Failed to restore user from localStorage:', e);
+          }
+        }
+      } else {
+        // No token at all - user is truly not logged in
+        currentUser = null;
+        updateAuthUI();
+        updateTrialCreditsDisplay();
+      }
     }
   }
   
@@ -3085,7 +3119,7 @@
         // Check if City & Department Specific is selected and research is not ready
         if (selectedCategory === "City & Department Specific") {
           const savedOnboarding = localStorage.getItem("onboardingData");
-          let onboardingData = null;
+          // onboardingData is already declared in first script tag
           if (savedOnboarding) {
             try {
               onboardingData = JSON.parse(savedOnboarding);

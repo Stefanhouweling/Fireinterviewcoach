@@ -2447,7 +2447,7 @@ app.post('/api/research-city', async (req, res) => {
               }
             ],
             temperature: 0.1,
-            max_tokens: 50
+            max_tokens: 60  // Limited to 50-70 tokens for concise fact responses
           });
           
           factResult = searchResponse.choices[0].message.content.trim();

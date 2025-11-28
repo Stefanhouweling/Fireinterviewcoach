@@ -3235,15 +3235,344 @@ app.get('/api/analytics/dashboard', (req, res) => {
       last_visit_at: v.last_visit_at
     }));
     
-    res.json({
-      stats,
-      visits: formattedVisits,
-      breakdown: {
-        by_department: byDepartment,
-        by_country: byCountry,
-        by_date: byDate
+    // Check if client wants JSON (for API access)
+    const wantsJSON = req.query.format === 'json' || req.headers.accept?.includes('application/json');
+    
+    if (wantsJSON) {
+      return res.json({
+        stats,
+        visits: formattedVisits,
+        breakdown: {
+          by_department: byDepartment,
+          by_country: byCountry,
+          by_date: byDate
+        }
+      });
+    }
+    
+    // Return beautiful HTML dashboard
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard - Fire Interview Coach</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #fbbf24;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 40px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    .stat-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.2);
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .section {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    
+    .section-title {
+      color: #fbbf24;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th {
+      background: rgba(30, 41, 59, 0.6);
+      color: #fbbf24;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+      color: #e2e8f0;
+      font-size: 0.9rem;
+    }
+    
+    tr:hover {
+      background: rgba(251, 191, 36, 0.05);
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .badge-primary {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+    
+    .badge-success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+    
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .breakdown-item {
+      background: rgba(30, 41, 59, 0.4);
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 3px solid #fbbf24;
+    }
+    
+    .breakdown-label {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    
+    .breakdown-value {
+      color: #fbbf24;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+    
+    .refresh-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #0f172a;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+      transition: transform 0.2s;
+    }
+    
+    .refresh-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
-    });
+      
+      table {
+        font-size: 0.8rem;
+      }
+      
+      th, td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Analytics Dashboard</h1>
+    <p class="subtitle">Fire Interview Coach - Visitor Analytics</p>
+    
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">${stats.total_visits || 0}</div>
+        <div class="stat-label">Total Visits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.unique_sessions || 0}</div>
+        <div class="stat-label">Unique Sessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.registered_users || 0}</div>
+        <div class="stat-label">Registered Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.total_questions || 0}</div>
+        <div class="stat-label">Questions Answered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.countries || 0}</div>
+        <div class="stat-label">Countries</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.departments || 0}</div>
+        <div class="stat-label">Departments</div>
+      </div>
+    </div>
+    
+    <!-- Breakdowns -->
+    <div class="breakdown-grid" style="margin-bottom: 30px;">
+      <div class="section">
+        <h2 class="section-title">Top Departments</h2>
+        ${byDepartment.length > 0 ? byDepartment.map(d => `
+          <div class="breakdown-item" style="margin-bottom: 12px;">
+            <div class="breakdown-label">${d.department_name || 'Unknown'}</div>
+            <div class="breakdown-value">${d.count} visits</div>
+          </div>
+        `).join('') : '<div class="empty-state">No department data yet</div>'}
+      </div>
+      
+      <div class="section">
+        <h2 class="section-title">Top Countries</h2>
+        ${byCountry.length > 0 ? byCountry.map(c => `
+          <div class="breakdown-item" style="margin-bottom: 12px;">
+            <div class="breakdown-label">${c.country || 'Unknown'}</div>
+            <div class="breakdown-value">${c.count} visits</div>
+          </div>
+        `).join('') : '<div class="empty-state">No country data yet</div>'}
+      </div>
+    </div>
+    
+    <!-- Recent Visits -->
+    <div class="section">
+      <h2 class="section-title">Recent Visits (Last ${formattedVisits.length})</h2>
+      ${formattedVisits.length > 0 ? `
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Department</th>
+                <th>Job Type</th>
+                <th>Questions</th>
+                <th>User</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${formattedVisits.map(v => `
+                <tr>
+                  <td>${new Date(v.first_visit_at).toLocaleDateString()}</td>
+                  <td>${[v.city, v.state_province, v.country].filter(Boolean).join(', ') || 'Unknown'}</td>
+                  <td>${v.department_name || '-'}</td>
+                  <td><span class="badge badge-primary">${v.job_type || '-'}</span></td>
+                  <td><span class="badge badge-success">${v.questions_answered || 0}</span></td>
+                  <td>${v.user_id ? '<span class="badge badge-success">Registered</span>' : '<span class="badge">Anonymous</span>'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : '<div class="empty-state">No visits recorded yet</div>'}
+    </div>
+    
+    <!-- Daily Stats -->
+    <div class="section">
+      <h2 class="section-title">Daily Visits (Last 30 Days)</h2>
+      ${byDate.length > 0 ? `
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Visits</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${byDate.map(d => `
+                <tr>
+                  <td>${new Date(d.date).toLocaleDateString()}</td>
+                  <td><span class="badge badge-primary">${d.count}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : '<div class="empty-state">No daily data yet</div>'}
+    </div>
+  </div>
+  
+  <button class="refresh-btn" onclick="window.location.reload()">🔄 Refresh</button>
+</body>
+</html>
+    `;
+    
+    res.send(html);
   } catch (error) {
     console.error('Analytics dashboard error:', error);
     res.status(500).json({ error: 'Failed to get analytics', message: error.message });

@@ -79,7 +79,6 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_analytics_country ON analytics_visits(country);
   CREATE INDEX IF NOT EXISTS idx_analytics_department ON analytics_visits(department_name);
   CREATE INDEX IF NOT EXISTS idx_analytics_first_visit ON analytics_visits(first_visit_at);
-`);
 
   CREATE TABLE IF NOT EXISTS referrals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

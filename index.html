@@ -6741,6 +6741,29 @@ Return ONLY the category and question.`
     }
   }
   
+  // Referral code copy functionality
+  const copyReferralCodeBtn = document.getElementById('copyReferralCode');
+  const referralCodeDisplay = document.getElementById('referralCodeDisplay');
+  const referralCodeStatus = document.getElementById('referralCodeStatus');
+  
+  if (copyReferralCodeBtn && referralCodeDisplay) {
+    copyReferralCodeBtn.addEventListener('click', () => {
+      referralCodeDisplay.select();
+      referralCodeDisplay.setSelectionRange(0, 99999); // For mobile devices
+      try {
+        document.execCommand('copy');
+        if (referralCodeStatus) {
+          referralCodeStatus.style.display = 'block';
+          setTimeout(() => {
+            referralCodeStatus.style.display = 'none';
+          }, 2000);
+        }
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    });
+  }
+  
   // Make functions globally accessible
   window.showPaywallIfNeeded = showPaywallIfNeeded;
   window.showCreditPurchaseModal = showCreditPurchaseModal;

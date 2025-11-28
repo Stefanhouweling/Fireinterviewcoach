@@ -3159,9 +3159,25 @@ app.get('/api/analytics/dashboard', (req, res) => {
   try {
     const { secret } = req.query;
     
-    // Verify secret key
-    if (secret !== ANALYTICS_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized - invalid secret key' });
+    // Debug logging (remove in production if needed)
+    console.log('Analytics dashboard access attempt');
+    console.log('Provided secret:', secret ? secret.substring(0, 8) + '...' : 'none');
+    console.log('Expected secret:', ANALYTICS_SECRET ? ANALYTICS_SECRET.substring(0, 8) + '...' : 'not set');
+    console.log('Secrets match:', secret === ANALYTICS_SECRET);
+    
+    // Verify secret key (trim whitespace to handle copy/paste issues)
+    const providedSecret = secret ? secret.trim() : '';
+    const expectedSecret = ANALYTICS_SECRET ? ANALYTICS_SECRET.trim() : '';
+    
+    if (!expectedSecret) {
+      return res.status(500).json({ error: 'Analytics secret not configured on server' });
+    }
+    
+    if (providedSecret !== expectedSecret) {
+      return res.status(401).json({ 
+        error: 'Unauthorized - invalid secret key',
+        hint: 'Check that ANALYTICS_SECRET environment variable is set correctly in Render'
+      });
     }
     
     // Get all analytics data

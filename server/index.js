@@ -279,7 +279,7 @@ app.post('/api/auth/signup', async (req, res) => {
 // POST /api/auth/login
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password, trialCredits, referralCode } = req.body;
+    const { email, password, trialCredits, referralCode, rememberMe } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });

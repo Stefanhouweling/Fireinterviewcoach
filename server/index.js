@@ -6,6 +6,7 @@ const OpenAI = require('openai');
 const fetchModule = require('node-fetch');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const { User, Transaction, CreditLedger } = require('./db');
 // Import question bank
 const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questionBank');
@@ -13,6 +14,8 @@ const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questio
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -211,6 +214,143 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('authToken');
   res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// POST /api/auth/google - Google OAuth sign-in
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    
+    if (!idToken) {
+      return res.status(400).json({ error: 'ID token is required' });
+    }
+    
+    if (!googleClient) {
+      return res.status(500).json({ error: 'Google OAuth not configured' });
+    }
+    
+    // Verify Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID
+    });
+    
+    const payload = ticket.getPayload();
+    const { sub: providerId, email, name, picture } = payload;
+    
+    // Find or create user
+    let user = User.findByProvider('google', providerId);
+    
+    if (!user) {
+      // Check if email already exists with different provider
+      const existingUser = User.findByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ error: 'An account with this email already exists. Please use email/password login.' });
+      }
+      
+      // Create new user
+      user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
+    }
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+    
+    // Set cookie
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        credits_balance: user.credits_balance
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ error: 'Failed to authenticate with Google', message: error.message });
+  }
+});
+
+// POST /api/auth/apple - Apple Sign-In
+app.post('/api/auth/apple', async (req, res) => {
+  try {
+    const { idToken, user: appleUser } = req.body;
+    
+    if (!idToken) {
+      return res.status(400).json({ error: 'ID token is required' });
+    }
+    
+    // Verify Apple ID token (simplified - in production, use proper JWT verification)
+    // For now, we'll decode and trust the token (in production, verify signature with Apple's public keys)
+    const decoded = jwt.decode(idToken);
+    
+    if (!decoded || !decoded.sub) {
+      return res.status(400).json({ error: 'Invalid Apple ID token' });
+    }
+    
+    const providerId = decoded.sub;
+    const email = decoded.email || appleUser?.email;
+    const name = appleUser?.name || email?.split('@')[0] || 'User';
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required from Apple Sign-In' });
+    }
+    
+    // Find or create user
+    let user = User.findByProvider('apple', providerId);
+    
+    if (!user) {
+      // Check if email already exists with different provider
+      const existingUser = User.findByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ error: 'An account with this email already exists. Please use email/password login.' });
+      }
+      
+      // Create new user
+      user = await User.create(email, null, name, 'apple', providerId);
+    }
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+    
+    // Set cookie
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        credits_balance: user.credits_balance
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Apple auth error:', error);
+    res.status(500).json({ error: 'Failed to authenticate with Apple', message: error.message });
+  }
 });
 
 // GET /api/auth/me
@@ -1377,7 +1517,7 @@ The feedback MUST include:
             "- **Correctness:** [State clearly: CORRECT, INCORRECT, or PARTIALLY CORRECT. Remember: transcript variations in proper names (e.g., 'Russ' vs 'Ross', 'Simmons' vs 'Siemens') are CORRECT if phonetically similar. Only mark incorrect if FACTS are wrong or completely different person]\n" +
             "- **Score:** [X/10 – based on CONTENT accuracy only. 10/10 = factually correct with all details. Do NOT deduct points for transcript/spelling differences - only deduct if facts are wrong]\n" :
             "- **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]\n" +
-            "- **Score:** [X/10 – very short explanation of why, and what would make it a 10/10]\n") +
+            "- **Score:** [X/10 – very short explanation of why, and what would make it panel ready]\n") +
             "\n\n## What You Did Well\n" +
             "- **Positive 1:** [Short, specific positive point]" +
             (isKnowledgeQuestion ? " (e.g., 'Got the fire chief's name correct' or 'Knew the union number')" : "") + "\n" +

@@ -1105,6 +1105,7 @@
   </style>
   <!-- PDF.js for PDF text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
     // Configure PDF.js worker to fix deprecation warning
     if (typeof pdfjsLib !== 'undefined') {
@@ -1692,6 +1693,23 @@
         </div>
         <div id="signupError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
         <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Sign Up</button>
+        
+        <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;">
+          <div style="flex: 1; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
+          <span style="color: #94a3b8; font-size: 0.85rem;">or</span>
+          <div style="flex: 1; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
+        </div>
+        
+        <button type="button" id="googleSignupBtn" style="width: 100%; padding: 12px; background: #fff; color: #333; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#fff'">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.96-2.184l-2.908-2.258c-.806.54-1.837.86-3.052.86-2.347 0-4.33-1.585-5.04-3.715H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.96 10.703c-.18-.54-.282-1.117-.282-1.703s.102-1.163.282-1.703V4.965H.957C.348 6.175 0 7.55 0 9s.348 2.825.957 4.035l3.003-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.965L3.96 7.297C4.67 5.167 6.653 3.58 9 3.58z"/></svg>
+          Continue with Google
+        </button>
+        
+        <button type="button" id="appleSignupBtn" style="width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='#000'">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path d="M13.281 2.25c-1.125 0-2.531.75-3.375 1.781-.844 1.031-1.313 2.344-1.125 3.656 1.219.094 2.531-.563 3.375-1.594.844-1.031 1.313-2.344 1.125-3.843zm.938 3.844c-1.406 0-2.531.938-3.375.938-.938 0-1.969-.844-3.281-.844-1.688 0-3.281 1.031-4.313 2.719-1.875 3.188-1.5 7.875 1.313 10.5.938.938 2.063 1.969 3.469 1.969 1.125 0 1.594-.656 3-.656 1.406 0 1.781.656 3 .656 1.406 0 2.438-.938 3.375-1.875 1.125-1.125 1.594-1.688 2.531-2.906-1.688-.75-2.813-2.344-2.813-4.313 0-1.688.938-3.094 2.344-4.125-1.125-1.594-2.813-2.531-4.219-2.531z"/></svg>
+          Continue with Apple
+        </button>
+        
         <div style="text-align: center; margin-top: 8px;">
           <span style="color: #94a3b8; font-size: 0.85rem;">Already have an account? </span>
           <button type="button" id="switchToLogin" class="ghost" style="padding: 0; text-decoration: underline;">Log in</button>
@@ -1720,6 +1738,23 @@
         </div>
         <div id="loginError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
         <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Log In</button>
+        
+        <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;">
+          <div style="flex: 1; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
+          <span style="color: #94a3b8; font-size: 0.85rem;">or</span>
+          <div style="flex: 1; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
+        </div>
+        
+        <button type="button" id="googleLoginBtn" style="width: 100%; padding: 12px; background: #fff; color: #333; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#fff'">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.96-2.184l-2.908-2.258c-.806.54-1.837.86-3.052.86-2.347 0-4.33-1.585-5.04-3.715H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.96 10.703c-.18-.54-.282-1.117-.282-1.703s.102-1.163.282-1.703V4.965H.957C.348 6.175 0 7.55 0 9s.348 2.825.957 4.035l3.003-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.965L3.96 7.297C4.67 5.167 6.653 3.58 9 3.58z"/></svg>
+          Continue with Google
+        </button>
+        
+        <button type="button" id="appleLoginBtn" style="width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='#000'">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path d="M13.281 2.25c-1.125 0-2.531.75-3.375 1.781-.844 1.031-1.313 2.344-1.125 3.656 1.219.094 2.531-.563 3.375-1.594.844-1.031 1.313-2.344 1.125-3.843zm.938 3.844c-1.406 0-2.531.938-3.375.938-.938 0-1.969-.844-3.281-.844-1.688 0-3.281 1.031-4.313 2.719-1.875 3.188-1.5 7.875 1.313 10.5.938.938 2.063 1.969 3.469 1.969 1.125 0 1.594-.656 3-.656 1.406 0 1.781.656 3 .656 1.406 0 2.438-.938 3.375-1.875 1.125-1.125 1.594-1.688 2.531-2.906-1.688-.75-2.813-2.344-2.813-4.313 0-1.688.938-3.094 2.344-4.125-1.125-1.594-2.813-2.531-4.219-2.531z"/></svg>
+          Continue with Apple
+        </button>
+        
         <div style="text-align: center; margin-top: 8px;">
           <span style="color: #94a3b8; font-size: 0.85rem;">Don't have an account? </span>
           <button type="button" id="switchToSignup" class="ghost" style="padding: 0; text-decoration: underline;">Sign up</button>
@@ -5937,6 +5972,205 @@ Return ONLY the category and question.`
       if (loginModal) loginModal.style.display = 'none';
       if (signupModal) signupModal.style.display = 'flex';
     });
+  }
+  
+  // Google Sign-In handlers
+  const googleSignupBtn = document.getElementById('googleSignupBtn');
+  const googleLoginBtn = document.getElementById('googleLoginBtn');
+  
+  async function handleGoogleSignIn() {
+    try {
+      // Wait for Google Identity Services to load
+      if (!window.google || !window.google.accounts) {
+        await new Promise((resolve) => {
+          const checkGoogle = setInterval(() => {
+            if (window.google && window.google.accounts) {
+              clearInterval(checkGoogle);
+              resolve();
+            }
+          }, 100);
+          setTimeout(() => {
+            clearInterval(checkGoogle);
+            resolve();
+          }, 5000);
+        });
+      }
+      
+      if (!window.google || !window.google.accounts) {
+        alert('Google Sign-In is not available. Please configure GOOGLE_CLIENT_ID in your environment variables.');
+        return;
+      }
+      
+      // Get client ID from backend config endpoint or use environment
+      let clientId = '';
+      try {
+        const configRes = await fetch(`${BACKEND_URL}/api/config`);
+        if (configRes.ok) {
+          const config = await configRes.json();
+          clientId = config.googleClientId || '';
+        }
+      } catch (e) {
+        console.log('Could not fetch config, Google Sign-In may not work');
+      }
+      
+      if (!clientId) {
+        alert('Google Sign-In is not configured. Please set GOOGLE_CLIENT_ID in your backend environment variables.');
+        return;
+      }
+      
+      // Initialize Google Sign-In
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredential
+      });
+      
+      // Trigger sign-in
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Fallback: show One Tap manually
+          window.google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: 'email profile',
+            callback: async (tokenResponse) => {
+              // Get user info and create account
+              const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: { 'Authorization': `Bearer ${tokenResponse.access_token}` }
+              });
+              const userInfo = await userInfoRes.json();
+              
+              // For OAuth flow, we'd need to get ID token differently
+              // For now, show message
+              alert('Please use the Google Sign-In popup that appeared, or use email/password.');
+            }
+          }).requestAccessToken();
+        }
+      });
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      alert('Google Sign-In is not yet configured. Please use email/password.');
+    }
+  }
+  
+  async function handleGoogleCredential(response) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ idToken: response.credential })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        currentUser = data.user;
+        updateAuthUI();
+        await updateCreditsDisplay();
+        
+        const signupModal = document.getElementById('signupModal');
+        const loginModal = document.getElementById('loginModal');
+        if (signupModal) signupModal.style.display = 'none';
+        if (loginModal) loginModal.style.display = 'none';
+        
+        if (window.showCreditPurchaseAfterAuth) {
+          window.showCreditPurchaseAfterAuth = false;
+          setTimeout(() => showCreditPurchaseModal(), 100);
+        }
+      } else {
+        alert(data.error || 'Failed to sign in with Google');
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      alert('Network error. Please try again.');
+    }
+  }
+  
+  if (googleSignupBtn) {
+    googleSignupBtn.addEventListener('click', handleGoogleSignIn);
+  }
+  
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', handleGoogleSignIn);
+  }
+  
+  // Apple Sign-In handlers
+  const appleSignupBtn = document.getElementById('appleSignupBtn');
+  const appleLoginBtn = document.getElementById('appleLoginBtn');
+  
+  async function handleAppleSignIn() {
+    try {
+      if (!window.AppleID) {
+        // Load Apple Sign-In script
+        const script = document.createElement('script');
+        script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
+        script.onload = () => {
+          window.AppleID.auth.init({
+            clientId: '', // Will need Apple Client ID
+            scope: 'name email',
+            redirectURI: window.location.origin,
+            usePopup: true
+          });
+        };
+        document.head.appendChild(script);
+      }
+      
+      window.AppleID.auth.signIn({
+        requestedScopes: ['name', 'email']
+      }).then((response) => {
+        handleAppleCredential(response);
+      }).catch((error) => {
+        console.error('Apple Sign-In error:', error);
+        alert('Apple Sign-In is not yet configured. Please use email/password.');
+      });
+    } catch (error) {
+      console.error('Apple Sign-In error:', error);
+      alert('Apple Sign-In is not yet configured. Please use email/password.');
+    }
+  }
+  
+  async function handleAppleCredential(response) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/apple`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          idToken: response.id_token,
+          user: response.user
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        currentUser = data.user;
+        updateAuthUI();
+        await updateCreditsDisplay();
+        
+        const signupModal = document.getElementById('signupModal');
+        const loginModal = document.getElementById('loginModal');
+        if (signupModal) signupModal.style.display = 'none';
+        if (loginModal) loginModal.style.display = 'none';
+        
+        if (window.showCreditPurchaseAfterAuth) {
+          window.showCreditPurchaseAfterAuth = false;
+          setTimeout(() => showCreditPurchaseModal(), 100);
+        }
+      } else {
+        alert(data.error || 'Failed to sign in with Apple');
+      }
+    } catch (error) {
+      console.error('Apple auth error:', error);
+      alert('Network error. Please try again.');
+    }
+  }
+  
+  if (appleSignupBtn) {
+    appleSignupBtn.addEventListener('click', handleAppleSignIn);
+  }
+  
+  if (appleLoginBtn) {
+    appleLoginBtn.addEventListener('click', handleAppleSignIn);
   }
   
   // Header button handlers

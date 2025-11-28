@@ -22,10 +22,14 @@ db.exec(`
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT,
     name TEXT,
+    provider TEXT DEFAULT 'email',
+    provider_id TEXT,
     credits_balance INTEGER DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
+  
+  CREATE INDEX IF NOT EXISTS idx_users_provider ON users(provider, provider_id);
 
   CREATE TABLE IF NOT EXISTS credit_ledger (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,10 +61,11 @@ db.exec(`
 // User operations
 const userQueries = {
   create: db.prepare(`
-    INSERT INTO users (email, password_hash, name, credits_balance)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO users (email, password_hash, name, provider, provider_id, credits_balance)
+    VALUES (?, ?, ?, ?, ?, ?)
   `),
   findByEmail: db.prepare('SELECT * FROM users WHERE email = ?'),
+  findByProvider: db.prepare('SELECT * FROM users WHERE provider = ? AND provider_id = ?'),
   findById: db.prepare('SELECT * FROM users WHERE id = ?'),
   updateCredits: db.prepare('UPDATE users SET credits_balance = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'),
   updateProfile: db.prepare('UPDATE users SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
@@ -88,14 +93,18 @@ const transactionQueries = {
 
 // User model
 const User = {
-  async create(email, password, name = null) {
+  async create(email, password, name = null, provider = 'email', providerId = null) {
     const passwordHash = password ? await bcrypt.hash(password, 10) : null;
-    const result = userQueries.create.run(email, passwordHash, name, 0);
+    const result = userQueries.create.run(email, passwordHash, name, provider, providerId, 0);
     return this.findById(result.lastInsertRowid);
   },
 
   findByEmail(email) {
     return userQueries.findByEmail.get(email);
+  },
+  
+  findByProvider(provider, providerId) {
+    return userQueries.findByProvider.get(provider, providerId);
   },
 
   findById(id) {

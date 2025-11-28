@@ -279,7 +279,7 @@ app.post('/api/auth/signup', async (req, res) => {
 // POST /api/auth/login
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password, trialCredits } = req.body;
+    const { email, password, trialCredits, referralCode } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -298,7 +298,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
     
     // Handle referral code if provided (only for new users with 0 credits)
-    const { referralCode, trialCredits } = req.body;
     if (referralCode && user.credits_balance === 0) {
       try {
         const codeUpper = referralCode.toUpperCase().trim();

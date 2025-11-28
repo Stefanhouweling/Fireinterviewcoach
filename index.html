@@ -6008,33 +6008,16 @@ Return ONLY the category and question.`
         return;
       }
       
-      // Initialize Google Sign-In
+      // Initialize Google Sign-In with One Tap
       window.google.accounts.id.initialize({
         client_id: clientId,
-        callback: handleGoogleCredential
+        callback: handleGoogleCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true
       });
       
-      // Trigger sign-in
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Fallback: show One Tap manually
-          window.google.accounts.oauth2.initTokenClient({
-            client_id: clientId,
-            scope: 'email profile',
-            callback: async (tokenResponse) => {
-              // Get user info and create account
-              const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                headers: { 'Authorization': `Bearer ${tokenResponse.access_token}` }
-              });
-              const userInfo = await userInfoRes.json();
-              
-              // For OAuth flow, we'd need to get ID token differently
-              // For now, show message
-              alert('Please use the Google Sign-In popup that appeared, or use email/password.');
-            }
-          }).requestAccessToken();
-        }
-      });
+      // Show One Tap prompt
+      window.google.accounts.id.prompt();
     } catch (error) {
       console.error('Google Sign-In error:', error);
       alert('Google Sign-In is not yet configured. Please use email/password.');

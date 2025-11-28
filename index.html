@@ -5116,6 +5116,7 @@ Return ONLY the category and question.`
     let html = "";
     let inList = false;
     let inPremiumSection = false;
+    let inBlurredContentSection = false; // Track sections where only content should be blurred
     
     lines.forEach((line, index) => {
       const trimmed = line.trim();
@@ -5134,26 +5135,48 @@ Return ONLY the category and question.`
         let sectionTitle = trimmed.substring(3).trim();
         sectionTitle = cleanText(sectionTitle); // Remove trailing dashes
         
-        // Check if this is the premium section that should be blurred for trial users
+        // Check if this is the premium section that should be fully blurred for trial users
         const isPremiumSection = sectionTitle.toLowerCase().includes('panel-ready') || 
                                  sectionTitle.toLowerCase().includes('10/10') ||
                                  sectionTitle.toLowerCase().includes('detailed');
         
+        // Check if this is a section where only content should be blurred (not the title)
+        const isBlurredContentSection = isTrialWithoutAccess && (
+          sectionTitle.toLowerCase().includes('what to improve') ||
+          sectionTitle.toLowerCase().includes('star or approach') ||
+          sectionTitle.toLowerCase().includes('approach overview')
+        );
+        
         if (isPremiumSection && isTrialWithoutAccess) {
-          // Start premium locked section
+          // Start premium locked section (fully blurred)
           inPremiumSection = true;
+          inBlurredContentSection = false;
           html += `<div id="premiumSection" style="position: relative; margin-top: ${html ? '24px' : '0'}; margin-bottom: 12px; padding: 16px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px;">`;
           html += `<h4 style="margin: 0 0 12px 0; color: #fbbf24; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
             <span>🔒</span>
             <span>${convertMarkdownBold(sectionTitle)}</span>
           </h4>`;
           html += `<div style="filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.5;">`;
+        } else if (isBlurredContentSection) {
+          // Start section where only content is blurred (title visible)
+          inBlurredContentSection = true;
+          inPremiumSection = false;
+          // Close premium section if we were in one
+          if (inPremiumSection) {
+            html += `</div></div>`;
+            inPremiumSection = false;
+          }
+          html += `<h4 style="margin-top: ${html ? '24px' : '0'}; margin-bottom: 12px; color: #fbbf24; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span>🔒</span>
+            <span>${convertMarkdownBold(sectionTitle)}</span>
+          </h4>`;
         } else {
           // Close premium section if we were in one
           if (inPremiumSection) {
             html += `</div></div>`;
             inPremiumSection = false;
           }
+          inBlurredContentSection = false;
           html += `<h4 style="margin-top: ${html ? '24px' : '0'}; margin-bottom: 12px; color: #fbbf24; font-size: 1.1rem; font-weight: 600;">${convertMarkdownBold(sectionTitle)}</h4>`;
         }
       }
@@ -5167,8 +5190,24 @@ Return ONLY the category and question.`
         content = cleanText(content);
         // Remove markdown formatting artifacts
         content = content.replace(/^\*\*/, '').replace(/\*\*$/, '');
-        // Content is already inside blur div if inPremiumSection is true
-        html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">• ${convertMarkdownBold(content)}</div>`;
+        
+        // For blurred content sections, blur only the content after the label
+        if (inBlurredContentSection && content.match(/^\*\*[^*]+\*\*:/)) {
+          const parts = content.match(/^\*\*([^*]+)\*\*:\s*(.*)/);
+          if (parts && parts.length === 3) {
+            const label = parts[1];
+            const value = parts[2].trim();
+            html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">
+              • <strong style="color: #fbbf24;">${label}:</strong> 
+              <span style="filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.5; display: inline-block;">${convertMarkdownBold(value)}</span>
+            </div>`;
+          } else {
+            html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">• ${convertMarkdownBold(content)}</div>`;
+          }
+        } else {
+          // Content is already inside blur div if inPremiumSection is true
+          html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">• ${convertMarkdownBold(content)}</div>`;
+        }
       }
       // Regular paragraphs
       else if (trimmed.length > 0) {
@@ -5196,11 +5235,20 @@ Return ONLY the category and question.`
           if (parts && parts.length === 3) {
             const label = parts[1];
             const value = parts[2].trim();
-            // Content is already inside blur div if inPremiumSection is true
-            html += `<div style="margin-bottom: 8px; line-height: 1.6;">
-              <strong style="color: #fbbf24;">${label}:</strong> 
-              <span style="color: #e5e7eb;">${convertMarkdownBold(value)}</span>
-            </div>`;
+            
+            // For blurred content sections, blur only the value (content after label)
+            if (inBlurredContentSection) {
+              html += `<div style="margin-bottom: 8px; line-height: 1.6;">
+                <strong style="color: #fbbf24;">${label}:</strong> 
+                <span style="filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.5; display: inline-block;">${convertMarkdownBold(value)}</span>
+              </div>`;
+            } else {
+              // Content is already inside blur div if inPremiumSection is true
+              html += `<div style="margin-bottom: 8px; line-height: 1.6;">
+                <strong style="color: #fbbf24;">${label}:</strong> 
+                <span style="color: #e5e7eb;">${convertMarkdownBold(value)}</span>
+              </div>`;
+            }
           } else {
             html += `<div style="margin-bottom: 8px; line-height: 1.6;">${convertMarkdownBold(content)}</div>`;
           }
@@ -5233,6 +5281,14 @@ Return ONLY the category and question.`
       html += `</div></div>`; // Close blur div and premium section div
       html += `<div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; text-align: center;">
         <p style="color: #fbbf24; margin: 0 0 8px 0; font-weight: 600;">Full 10/10 answer & detailed coaching are available after upgrading.</p>
+        <button class="primary" onclick="showPaywallIfNeeded()" style="padding: 8px 16px; margin-top: 8px;">Buy Credits to Unlock</button>
+      </div>`;
+    }
+    
+    // Add unlock message after blurred content sections
+    if (inBlurredContentSection && isTrialWithoutAccess) {
+      html += `<div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; text-align: center;">
+        <p style="color: #fbbf24; margin: 0 0 8px 0; font-weight: 600;">Detailed feedback is available after upgrading.</p>
         <button class="primary" onclick="showPaywallIfNeeded()" style="padding: 8px 16px; margin-top: 8px;">Buy Credits to Unlock</button>
       </div>`;
     }

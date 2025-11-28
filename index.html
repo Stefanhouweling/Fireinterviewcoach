@@ -2688,6 +2688,30 @@
   // Always use backend service (API keys are hidden on the server)
   const USE_BACKEND = true;
   
+  // ========== BASIC DATA & STATE (declared early to avoid TDZ errors) ==========
+  
+  // Onboarding data
+  let onboardingData = {
+    country: "",
+    stateProvince: "",
+    city: "",
+    jobType: "",
+    departmentName: "",
+    name: null,
+    voicePreference: null,
+    cityResearch: null // Will be populated by backend
+  };
+  
+  let resumeText = "";
+  let resumeKeywords = [];
+  let resumeAnalysis = null; // AI-parsed resume data
+  let currentUser = null;
+  let authToken = null;
+  
+  // Practice mode: "simulation" (random) or "specific" (category-based)
+  let practiceMode = "simulation";
+  let selectedCategory = "";
+  
   // ========== CREDIT SYSTEM ==========
   // Trial credits tracking (localStorage for anonymous users)
   function getTrialCreditsRemaining() {

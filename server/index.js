@@ -74,11 +74,14 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      config: 'GET /api/config',
       auth: {
         signup: 'POST /api/auth/signup',
         login: 'POST /api/auth/login',
         logout: 'POST /api/auth/logout',
-        me: 'GET /api/auth/me'
+        me: 'GET /api/auth/me',
+        google: 'POST /api/auth/google',
+        apple: 'POST /api/auth/apple'
       },
       credits: {
         createCheckout: 'POST /api/credits/create-checkout-session',

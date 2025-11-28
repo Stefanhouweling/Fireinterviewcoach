@@ -6797,29 +6797,27 @@ Return ONLY the category and question.`
     }
   }
   
-  // Referral code redemption handler
-  const redeemReferralCodeBtn = document.getElementById('redeemReferralCodeBtn');
-  const redeemReferralCode = document.getElementById('redeemReferralCode');
-  const redeemReferralStatus = document.getElementById('redeemReferralStatus');
-  const redeemReferralError = document.getElementById('redeemReferralError');
+  // Redeem referral code handler (in dropdown menu)
+  const dropdownRedeemReferralCodeBtn = document.getElementById('dropdownRedeemReferralCodeBtn');
+  const dropdownRedeemReferralCode = document.getElementById('dropdownRedeemReferralCode');
+  const dropdownRedeemReferralStatus = document.getElementById('dropdownRedeemReferralStatus');
+  const dropdownRedeemReferralError = document.getElementById('dropdownRedeemReferralError');
   
-  if (redeemReferralCodeBtn) {
-    redeemReferralCodeBtn.addEventListener('click', async () => {
-      if (!redeemReferralCode || !currentUser) return;
-      
-      const code = redeemReferralCode.value.trim().toUpperCase();
+  function handleReferralCodeRedemption(inputElement, statusElement, errorElement) {
+    return async () => {
+      const code = inputElement.value.trim().toUpperCase();
       if (!code) {
-        if (redeemReferralError) {
-          redeemReferralError.textContent = 'Please enter a referral code';
-          redeemReferralError.style.display = 'block';
+        if (errorElement) {
+          errorElement.textContent = 'Please enter a referral code';
+          errorElement.style.display = 'block';
         }
-        if (redeemReferralStatus) redeemReferralStatus.style.display = 'none';
+        if (statusElement) statusElement.style.display = 'none';
         return;
       }
       
       // Hide previous messages
-      if (redeemReferralStatus) redeemReferralStatus.style.display = 'none';
-      if (redeemReferralError) redeemReferralError.style.display = 'none';
+      if (statusElement) statusElement.style.display = 'none';
+      if (errorElement) errorElement.style.display = 'none';
       
       try {
         // Check if it's a test code - these always work
@@ -6838,9 +6836,9 @@ Return ONLY the category and question.`
             
             const validateData = await validateRes.json();
             if (!validateData.valid) {
-              if (redeemReferralError) {
-                redeemReferralError.textContent = validateData.message || 'Invalid referral code';
-                redeemReferralError.style.display = 'block';
+              if (errorElement) {
+                errorElement.textContent = validateData.message || 'Invalid referral code';
+                errorElement.style.display = 'block';
               }
               return;
             }
@@ -6860,16 +6858,14 @@ Return ONLY the category and question.`
         const redeemData = await redeemRes.json();
         
         if (redeemRes.ok && redeemData.success) {
-          if (redeemReferralStatus) {
-            const creditsText = isTestCode ? 'unlimited' : redeemData.creditsGranted;
-            redeemReferralStatus.textContent = `Referral code redeemed! You received ${creditsText} credits.`;
-            redeemReferralStatus.style.display = 'block';
+          if (statusElement) {
+            const creditsText = isTestCode ? 'unlimited' : (redeemData.creditsGranted || '3');
+            statusElement.textContent = `✓ Redeemed! +${creditsText} credits`;
+            statusElement.style.display = 'block';
           }
           
-          // Refresh user data
-          const meRes = await fetch(`${BACKEND_URL}/api/auth/me`, {
-            credentials: 'include'
-          });
+          // Refresh user data and credits display
+          const meRes = await authenticatedFetch(`${BACKEND_URL}/api/auth/me`);
           if (meRes.ok) {
             const userData = await meRes.json();
             currentUser = userData;
@@ -6878,32 +6874,48 @@ Return ONLY the category and question.`
             loadCreditHistory(); // Refresh credit history
           }
           
-          redeemReferralCode.value = '';
+          inputElement.value = '';
+          
+          // Clear success message after 3 seconds
+          setTimeout(() => {
+            if (statusElement) statusElement.style.display = 'none';
+          }, 3000);
         } else {
           if (redeemRes.status === 401 || redeemRes.status === 403) {
             // Authentication error - clear state and show login
             handleAuthError();
-            if (redeemReferralError) {
-              redeemReferralError.textContent = 'Your session expired. Please log in again to redeem codes.';
-              redeemReferralError.style.display = 'block';
+            if (errorElement) {
+              errorElement.textContent = 'Session expired. Please log in again.';
+              errorElement.style.display = 'block';
             }
-            // Close settings modal and show login
-            if (settingsModal) settingsModal.style.display = 'none';
-            const loginModal = document.getElementById('loginModal');
-            if (loginModal) loginModal.style.display = 'flex';
           } else {
-            if (redeemReferralError) {
-              redeemReferralError.textContent = redeemData.error || 'Failed to redeem referral code';
-              redeemReferralError.style.display = 'block';
+            if (errorElement) {
+              errorElement.textContent = redeemData.error || 'Failed to redeem referral code';
+              errorElement.style.display = 'block';
             }
           }
         }
       } catch (error) {
         console.error('Redeem referral code error:', error);
-        if (redeemReferralError) {
-          redeemReferralError.textContent = 'Error redeeming code. Please try again.';
-          redeemReferralError.style.display = 'block';
+        if (errorElement) {
+          errorElement.textContent = 'Error redeeming code. Please try again.';
+          errorElement.style.display = 'block';
         }
+      }
+    };
+  }
+  
+  if (dropdownRedeemReferralCodeBtn && dropdownRedeemReferralCode) {
+    dropdownRedeemReferralCodeBtn.addEventListener('click', handleReferralCodeRedemption(
+      dropdownRedeemReferralCode,
+      dropdownRedeemReferralStatus,
+      dropdownRedeemReferralError
+    ));
+    
+    // Also allow Enter key to submit
+    dropdownRedeemReferralCode.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        dropdownRedeemReferralCodeBtn.click();
       }
     });
   }

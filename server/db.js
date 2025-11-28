@@ -56,6 +56,28 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_credit_ledger_user_id ON credit_ledger(user_id);
   CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
   CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+
+  CREATE TABLE IF NOT EXISTS analytics_visits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    user_id INTEGER,
+    ip_hash TEXT,
+    city TEXT,
+    state_province TEXT,
+    country TEXT,
+    department_name TEXT,
+    job_type TEXT,
+    questions_answered INTEGER DEFAULT 0,
+    first_visit_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    last_visit_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_analytics_session_id ON analytics_visits(session_id);
+  CREATE INDEX IF NOT EXISTS idx_analytics_user_id ON analytics_visits(user_id);
+  CREATE INDEX IF NOT EXISTS idx_analytics_country ON analytics_visits(country);
+  CREATE INDEX IF NOT EXISTS idx_analytics_department ON analytics_visits(department_name);
+  CREATE INDEX IF NOT EXISTS idx_analytics_first_visit ON analytics_visits(first_visit_at);
 `);
 
 // User operations
@@ -90,6 +112,31 @@ const transactionQueries = {
   findByPaymentIntent: db.prepare('SELECT * FROM transactions WHERE stripe_payment_intent_id = ?'),
   updateStatus: db.prepare('UPDATE transactions SET status = ? WHERE id = ?'),
   getByUserId: db.prepare('SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT ?')
+};
+
+// Analytics operations
+const analyticsQueries = {
+  create: db.prepare(`
+    INSERT INTO analytics_visits (session_id, user_id, ip_hash, city, state_province, country, department_name, job_type)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `),
+  findBySession: db.prepare('SELECT * FROM analytics_visits WHERE session_id = ?'),
+  updateQuestions: db.prepare('UPDATE analytics_visits SET questions_answered = ?, last_visit_at = CURRENT_TIMESTAMP WHERE session_id = ?'),
+  updateLastVisit: db.prepare('UPDATE analytics_visits SET last_visit_at = CURRENT_TIMESTAMP WHERE session_id = ?'),
+  getAll: db.prepare('SELECT * FROM analytics_visits ORDER BY first_visit_at DESC LIMIT ?'),
+  getStats: db.prepare(`
+    SELECT 
+      COUNT(*) as total_visits,
+      COUNT(DISTINCT session_id) as unique_sessions,
+      COUNT(DISTINCT user_id) as registered_users,
+      SUM(questions_answered) as total_questions,
+      COUNT(DISTINCT country) as countries,
+      COUNT(DISTINCT department_name) as departments
+    FROM analytics_visits
+  `),
+  getByDepartment: db.prepare('SELECT department_name, COUNT(*) as count FROM analytics_visits WHERE department_name IS NOT NULL GROUP BY department_name ORDER BY count DESC'),
+  getByCountry: db.prepare('SELECT country, COUNT(*) as count FROM analytics_visits WHERE country IS NOT NULL GROUP BY country ORDER BY count DESC'),
+  getByDate: db.prepare('SELECT DATE(first_visit_at) as date, COUNT(*) as count FROM analytics_visits GROUP BY DATE(first_visit_at) ORDER BY date DESC LIMIT ?')
 };
 
 // User model
@@ -193,9 +240,54 @@ const CreditLedger = {
   }
 };
 
+// Analytics model
+const Analytics = {
+  create(sessionId, userId, ipHash, city, stateProvince, country, departmentName, jobType) {
+    analyticsQueries.create.run(sessionId, userId || null, ipHash, city || null, stateProvince || null, country || null, departmentName || null, jobType || null);
+    return this.findBySession(sessionId);
+  },
+  
+  findBySession(sessionId) {
+    return analyticsQueries.findBySession.get(sessionId);
+  },
+  
+  updateQuestions(sessionId, questionsAnswered) {
+    analyticsQueries.updateQuestions.run(questionsAnswered, sessionId);
+    return this.findBySession(sessionId);
+  },
+  
+  updateLastVisit(sessionId) {
+    analyticsQueries.updateLastVisit.run(sessionId);
+    return this.findBySession(sessionId);
+  },
+  
+  getAll(limit = 1000) {
+    return analyticsQueries.getAll.all(limit);
+  },
+  
+  getStats() {
+    return analyticsQueries.getStats.get();
+  },
+  
+  getByDepartment() {
+    return analyticsQueries.getByDepartment.all();
+  },
+  
+  getByCountry() {
+    return analyticsQueries.getByCountry.all();
+  },
+  
+  getByDate(limit = 30) {
+    return analyticsQueries.getByDate.all(limit);
+  }
+};
+
 module.exports = {
   db,
   User,
   Transaction,
-  CreditLedger
+  CreditLedger,
+  Analytics,
+  userQueries,
+  analyticsQueries
 };

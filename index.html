@@ -2520,6 +2520,27 @@
       localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
       localStorage.setItem("onboardingComplete", "true");
       
+      // Log visit to analytics
+      try {
+        const sessionId = getSessionId();
+        await fetch(`${BACKEND_URL}/api/analytics/visit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            sessionId,
+            city: cityName,
+            stateProvince,
+            country,
+            departmentName,
+            jobType
+          })
+        });
+      } catch (analyticsError) {
+        console.error('Analytics logging error:', analyticsError);
+        // Don't block user flow if analytics fails
+      }
+      
       // Set voice preference immediately
       if (onboardingData.voicePreference) {
         selectedVoicePreference = onboardingData.voicePreference;

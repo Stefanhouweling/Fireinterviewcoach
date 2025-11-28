@@ -7,7 +7,8 @@ const fetchModule = require('node-fetch');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
-const { User, Transaction, CreditLedger } = require('./db');
+const { User, Transaction, CreditLedger, Analytics } = require('./db');
+const crypto = require('crypto');
 // Import question bank
 const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questionBank');
 
@@ -16,6 +17,13 @@ const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
+const ANALYTICS_SECRET = process.env.ANALYTICS_SECRET || 'change-this-secret-key-for-analytics';
+
+// Helper function to hash IP addresses for privacy
+function hashIP(ip) {
+  if (!ip) return null;
+  return crypto.createHash('sha256').update(ip + ANALYTICS_SECRET).digest('hex').substring(0, 16);
+}
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -29,6 +37,15 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+// Helper to get client IP (respects proxies)
+function getClientIP(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.headers['x-real-ip'] || 
+         req.connection?.remoteAddress || 
+         req.socket?.remoteAddress ||
+         null;
+}
 
 // Authentication middleware
 function authenticateToken(req, res, next) {
@@ -80,7 +97,14 @@ app.get('/', (req, res) => {
         login: 'POST /api/auth/login',
         logout: 'POST /api/auth/logout',
         me: 'GET /api/auth/me',
-        google: 'POST /api/auth/google'
+        google: 'POST /api/auth/google',
+        profile: 'PUT /api/auth/profile',
+        purchaseHistory: 'GET /api/auth/purchase-history'
+      },
+      analytics: {
+        visit: 'POST /api/analytics/visit',
+        question: 'POST /api/analytics/question',
+        dashboard: 'GET /api/analytics/dashboard?secret=YOUR_SECRET'
       },
       credits: {
         createCheckout: 'POST /api/credits/create-checkout-session',
@@ -1360,6 +1384,20 @@ Return ONLY the category and question in that format.`
     
     const category = categoryMatch ? categoryMatch[1].trim() : "General";
     const question = questionMatch ? questionMatch[1].trim() : content.trim();
+
+    // Track question answered in analytics
+    if (sessionId) {
+      try {
+        const visit = Analytics.findBySession(sessionId);
+        if (visit) {
+          const newCount = (visit.questions_answered || 0) + 1;
+          Analytics.updateQuestions(sessionId, newCount);
+        }
+      } catch (analyticsError) {
+        console.error('Analytics tracking error:', analyticsError);
+        // Don't fail the request if analytics fails
+      }
+    }
 
     res.json({
       category,
@@ -3041,7 +3079,130 @@ app.get('/api/areas-to-work-on', async (req, res) => {
 });
 
 // Start server
+// ========== ANALYTICS ENDPOINTS ==========
+
+// POST /api/analytics/visit - Log a visit (called from frontend)
+app.post('/api/analytics/visit', optionalAuth, (req, res) => {
+  try {
+    const { sessionId, city, stateProvince, country, departmentName, jobType } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+    
+    // Get client IP and hash it for privacy
+    const clientIP = getClientIP(req);
+    const ipHash = hashIP(clientIP);
+    
+    // Check if visit already exists
+    let visit = Analytics.findBySession(sessionId);
+    
+    if (!visit) {
+      // Create new visit record
+      visit = Analytics.create(
+        sessionId,
+        req.user?.userId || null,
+        ipHash,
+        city || null,
+        stateProvince || null,
+        country || null,
+        departmentName || null,
+        jobType || null
+      );
+    } else {
+      // Update last visit time
+      Analytics.updateLastVisit(sessionId);
+      
+      // Update user_id if user logged in
+      if (req.user?.userId && !visit.user_id) {
+        const { db, userQueries } = require('./db');
+        if (!userQueries.updateVisitUserId) {
+          userQueries.updateVisitUserId = db.prepare('UPDATE analytics_visits SET user_id = ? WHERE session_id = ?');
+        }
+        userQueries.updateVisitUserId.run(req.user.userId, sessionId);
+      }
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Analytics visit error:', error);
+    res.status(500).json({ error: 'Failed to log visit', message: error.message });
+  }
+});
+
+// POST /api/analytics/question - Track question answered
+app.post('/api/analytics/question', optionalAuth, (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+    
+    let visit = Analytics.findBySession(sessionId);
+    
+    if (visit) {
+      // Increment questions answered
+      const newCount = (visit.questions_answered || 0) + 1;
+      Analytics.updateQuestions(sessionId, newCount);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Analytics question error:', error);
+    res.status(500).json({ error: 'Failed to track question', message: error.message });
+  }
+});
+
+// GET /api/analytics/dashboard - Admin analytics dashboard (requires secret key)
+app.get('/api/analytics/dashboard', (req, res) => {
+  try {
+    const { secret } = req.query;
+    
+    // Verify secret key
+    if (secret !== ANALYTICS_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized - invalid secret key' });
+    }
+    
+    // Get all analytics data
+    const stats = Analytics.getStats();
+    const visits = Analytics.getAll(1000);
+    const byDepartment = Analytics.getByDepartment();
+    const byCountry = Analytics.getByCountry();
+    const byDate = Analytics.getByDate(30);
+    
+    // Format visits for display (remove IP hash for privacy, keep only anonymized data)
+    const formattedVisits = visits.map(v => ({
+      id: v.id,
+      session_id: v.session_id.substring(0, 8) + '...', // Partial session ID only
+      user_id: v.user_id || null,
+      city: v.city,
+      state_province: v.state_province,
+      country: v.country,
+      department_name: v.department_name,
+      job_type: v.job_type,
+      questions_answered: v.questions_answered,
+      first_visit_at: v.first_visit_at,
+      last_visit_at: v.last_visit_at
+    }));
+    
+    res.json({
+      stats,
+      visits: formattedVisits,
+      breakdown: {
+        by_department: byDepartment,
+        by_country: byCountry,
+        by_date: byDate
+      }
+    });
+  } catch (error) {
+    console.error('Analytics dashboard error:', error);
+    res.status(500).json({ error: 'Failed to get analytics', message: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🔥 Fire Interview Coach API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`Analytics dashboard: http://localhost:${PORT}/api/analytics/dashboard?secret=${ANALYTICS_SECRET}`);
 });

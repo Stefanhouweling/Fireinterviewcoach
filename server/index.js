@@ -1999,6 +1999,27 @@ The feedback MUST include:
       }
     }
     
+    // Grant referrer credits when referred user completes their first question
+    if (req.user && questionCount === 1) {
+      try {
+        const referrals = Referral.getByReferredUser(req.user.userId);
+        if (referrals && referrals.length > 0) {
+          // Find the first referral that hasn't credited the referrer yet
+          const referral = referrals.find(r => r.referrer_credited === 0);
+          if (referral && referral.referrer_user_id) {
+            // Grant 3 credits to the referrer
+            User.addCredits(referral.referrer_user_id, 3, `Referral bonus - ${referral.referral_code} used`);
+            // Mark referrer as credited
+            referralQueries.markReferrerCredited.run(req.user.userId);
+            console.log(`[REFERRAL] Granted 3 credits to referrer ${referral.referrer_user_id} for referral code ${referral.referral_code}`);
+          }
+        }
+      } catch (refError) {
+        console.error('Error granting referrer credits:', refError);
+        // Don't fail the request if referral credit fails
+      }
+    }
+    
     // Track answer analysis after 5 questions for "areas to work on" feature
     if (sessionId && questionCount && questionCount >= 5) {
       try {

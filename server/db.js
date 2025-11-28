@@ -85,6 +85,7 @@ db.exec(`
     referred_user_id INTEGER,
     referral_code TEXT UNIQUE NOT NULL,
     credits_granted INTEGER DEFAULT 0,
+    referrer_credited INTEGER DEFAULT 0,
     used_at TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (referrer_user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -273,6 +274,11 @@ const referralQueries = {
     SET referred_user_id = ?, credits_granted = ?, used_at = CURRENT_TIMESTAMP 
     WHERE referral_code = ? AND referred_user_id IS NULL
   `),
+  markReferrerCredited: db.prepare(`
+    UPDATE referrals 
+    SET referrer_credited = 1 
+    WHERE referred_user_id = ? AND referrer_credited = 0
+  `),
   getByReferredUser: db.prepare('SELECT * FROM referrals WHERE referred_user_id = ?')
 };
 
@@ -374,5 +380,6 @@ module.exports = {
   Analytics,
   Referral,
   userQueries,
-  analyticsQueries
+  analyticsQueries,
+  referralQueries
 };

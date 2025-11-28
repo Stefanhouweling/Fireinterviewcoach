@@ -6186,7 +6186,18 @@ Return ONLY the category and question.`
       try {
         // Get trial credits before login
         const trialCredits = getTrialCreditsRemaining();
-        const referralCode = document.getElementById('loginReferralCode')?.value?.trim().toUpperCase() || null;
+        
+        // Get referral code from input or localStorage (from URL)
+        let referralCode = loginReferralCode ? loginReferralCode.value.trim() : '';
+        if (!referralCode) {
+          const pendingCode = localStorage.getItem('pendingReferralCode');
+          if (pendingCode) {
+            referralCode = pendingCode;
+            // Auto-fill the input field
+            if (loginReferralCode) loginReferralCode.value = referralCode;
+          }
+        }
+        if (referralCode) referralCode = referralCode.toUpperCase();
         
         const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
           method: 'POST',

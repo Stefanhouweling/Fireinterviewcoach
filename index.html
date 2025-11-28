@@ -7201,13 +7201,12 @@ Return ONLY the category and question.`
     const shareText = `Sharing the interview coach I'm using — it pushes you to answer stronger and think sharper.\n\nIf you give one question a go, it helps me out and gets you some solid practice.\n\n${shareUrl}`;
     
     // Try Web Share API first (native sharing on mobile/desktop)
-    // Combine text and URL into text field to ensure full message is shared
+    // Put everything in text field - some platforms ignore url if text is provided
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Fire Interview Coach - Referral Code',
-          text: shareText,
-          url: shareUrl
+          title: 'Fire Interview Coach',
+          text: shareText
         });
         if (referralCodeStatus) {
           referralCodeStatus.textContent = '✓ Shared!';

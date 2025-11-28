@@ -292,76 +292,6 @@ app.post('/api/auth/google', async (req, res) => {
   }
 });
 
-// POST /api/auth/apple - Apple Sign-In
-app.post('/api/auth/apple', async (req, res) => {
-  try {
-    const { idToken, user: appleUser } = req.body;
-    
-    if (!idToken) {
-      return res.status(400).json({ error: 'ID token is required' });
-    }
-    
-    // Verify Apple ID token (simplified - in production, use proper JWT verification)
-    // For now, we'll decode and trust the token (in production, verify signature with Apple's public keys)
-    const decoded = jwt.decode(idToken);
-    
-    if (!decoded || !decoded.sub) {
-      return res.status(400).json({ error: 'Invalid Apple ID token' });
-    }
-    
-    const providerId = decoded.sub;
-    const email = decoded.email || appleUser?.email;
-    const name = appleUser?.name || email?.split('@')[0] || 'User';
-    
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required from Apple Sign-In' });
-    }
-    
-    // Find or create user
-    let user = User.findByProvider('apple', providerId);
-    
-    if (!user) {
-      // Check if email already exists with different provider
-      const existingUser = User.findByEmail(email);
-      if (existingUser) {
-        return res.status(409).json({ error: 'An account with this email already exists. Please use email/password login.' });
-      }
-      
-      // Create new user
-      user = await User.create(email, null, name, 'apple', providerId);
-    }
-    
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '30d' }
-    );
-    
-    // Set cookie
-    res.cookie('authToken', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
-    
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        credits_balance: user.credits_balance
-      },
-      token
-    });
-  } catch (error) {
-    console.error('Apple auth error:', error);
-    res.status(500).json({ error: 'Failed to authenticate with Apple', message: error.message });
-  }
-});
-
 // GET /api/auth/me
 app.get('/api/auth/me', authenticateToken, (req, res) => {
   try {
@@ -387,10 +317,10 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 
 // Credit bundle configurations
 const CREDIT_BUNDLES = {
-  starter: { credits: 20, priceCents: 999, name: 'Essential' },
-  core: { credits: 75, priceCents: 2499, name: 'Professional', isPopular: true },
-  serious: { credits: 200, priceCents: 5999, name: 'Intensive' },
-  heavy: { credits: 500, priceCents: 11999, name: 'Mastery' }
+  starter: { credits: 20, priceCents: 999, name: 'Foundation' },
+  core: { credits: 75, priceCents: 2499, name: 'Execute', isPopular: true },
+  serious: { credits: 200, priceCents: 5999, name: 'Elevate' },
+  heavy: { credits: 500, priceCents: 11999, name: 'Dominate' }
 };
 
 // GET /api/credits/balance

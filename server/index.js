@@ -2381,14 +2381,26 @@ app.post('/api/research-city', async (req, res) => {
     // Perform actual web searches for critical facts using OpenAI's web search capability
     console.log('Performing web searches for current information...');
     
-    // Reduced to most critical searches only (5 instead of 17) for speed
-    // Run in parallel batches to speed up significantly
+    // All 17 critical searches for comprehensive research
+    // Run in parallel batches of 2 for speed
     const criticalSearches = [
       { query: `current fire chief ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'fire chief name' },
+      { query: `current deputy chief assistant chief ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'deputy chiefs' },
       { query: `current mayor ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'mayor name' },
-      { query: `${departmentName} union number ${city} ${country}`, fact: 'union number' },
+      { query: `city council public safety committee ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'city council members' },
+      { query: `city manager chief administrative officer ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'city manager' },
+      { query: `${departmentName} union number IAFF local ${city} ${country}`, fact: 'union number' },
+      { query: `${departmentName} union president ${city} ${country} 2024 2025`, fact: 'union president' },
       { query: `${departmentName} number of fire stations ${city} ${country} 2024 2025`, fact: 'number of fire stations' },
-      { query: `${departmentName} number of members staff ${city} ${country} 2024 2025`, fact: 'number of members' }
+      { query: `${departmentName} number of members staff firefighters ${city} ${country} 2024 2025`, fact: 'number of members' },
+      { query: `${departmentName} established founded history ${city} ${country}`, fact: 'department history' },
+      { query: `${departmentName} mission statement values motto ${city} ${country}`, fact: 'department mission' },
+      { query: `${departmentName} community programs initiatives ${city} ${country} 2024 2025`, fact: 'community programs' },
+      { query: `${departmentName} equipment apparatus capabilities ${city} ${country} 2024 2025`, fact: 'equipment information' },
+      { query: `${departmentName} response areas coverage zones ${city} ${country}`, fact: 'response areas' },
+      { query: `population demographics ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'city demographics' },
+      { query: `major industries economic drivers ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'city industries' },
+      { query: `${city} emergency services structure fire police EMS ${stateProvince || ''} ${country} 2024 2025`, fact: 'emergency services structure' }
     ];
 
     let verifiedFacts = {};
@@ -2435,7 +2447,7 @@ app.post('/api/research-city', async (req, res) => {
               }
             ],
             temperature: 0.1,
-            max_tokens: 200  // Increased from 50 for more detailed, accurate responses
+            max_tokens: 50
           });
           
           factResult = searchResponse.choices[0].message.content.trim();
@@ -2644,7 +2656,7 @@ Only include information that you can verify through web search. If you cannot f
         }
       ],
       temperature: 0.1, // Very low temperature for maximum accuracy
-      max_tokens: 1500
+      max_tokens: 3000  // Increased from 1500 for more comprehensive, detailed research responses
     });
 
     const research = response.choices[0].message.content;

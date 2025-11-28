@@ -2861,10 +2861,12 @@
   
   // Helper function to handle 401 errors globally
   function handleAuthError() {
-    console.log('Authentication error detected - clearing user state');
+    console.log('[AUTH] Authentication error detected - clearing user state');
     currentUser = null;
     authToken = null;
     setAuthToken(null);
+    // Clear stored user backup
+    localStorage.removeItem('currentUser');
     // Clear cookie
     document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.onrender.com;';
     document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -6243,6 +6245,8 @@ Return ONLY the category and question.`
         
         if (response.ok) {
           currentUser = data.user;
+          // Store user in localStorage as backup
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
           // Store token in localStorage as fallback
           if (data.token) {
             authToken = data.token;
@@ -6330,6 +6334,7 @@ Return ONLY the category and question.`
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
+      const rememberMe = document.getElementById('rememberMe')?.checked || false;
       const errorEl = document.getElementById('loginError');
       
       try {
@@ -6359,6 +6364,8 @@ Return ONLY the category and question.`
         
         if (response.ok) {
           currentUser = data.user;
+          // Store user in localStorage as backup
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
           // Store token in localStorage as fallback
           if (data.token) {
             authToken = data.token;
@@ -6680,6 +6687,8 @@ Return ONLY the category and question.`
             
             if (res.ok) {
               currentUser = data.user;
+          // Store user in localStorage as backup
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
               // Store token in localStorage as fallback
               if (data.token) {
                 authToken = data.token;
@@ -6937,6 +6946,8 @@ Return ONLY the category and question.`
         
         if (res.ok) {
           currentUser = data.user;
+          // Store user in localStorage as backup
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
           updateAuthUI();
           
           if (profileSuccess) {

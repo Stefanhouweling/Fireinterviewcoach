@@ -68,7 +68,8 @@ const userQueries = {
   findByProvider: db.prepare('SELECT * FROM users WHERE provider = ? AND provider_id = ?'),
   findById: db.prepare('SELECT * FROM users WHERE id = ?'),
   updateCredits: db.prepare('UPDATE users SET credits_balance = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'),
-  updateProfile: db.prepare('UPDATE users SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+  updateProfile: db.prepare('UPDATE users SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'),
+  updatePassword: db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
 };
 
 // Credit ledger operations

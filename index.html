@@ -1331,7 +1331,10 @@
       <!-- Credits & Auth - Right Side -->
       <div id="headerAuthSection" style="display: flex; align-items: center; gap: 16px; flex-shrink: 0;">
         <!-- Credits Display (shown when logged in) -->
-        <div id="creditsDisplay" style="display: none; padding: 8px 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; font-size: 0.9rem;">
+        <div id="creditsDisplay" style="display: none; padding: 8px 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;" 
+             onmouseover="this.style.background='rgba(251, 191, 36, 0.15)'; this.style.borderColor='rgba(251, 191, 36, 0.5)'" 
+             onmouseout="this.style.background='rgba(251, 191, 36, 0.1)'; this.style.borderColor='rgba(251, 191, 36, 0.3)'"
+             onclick="showCreditPurchaseModal()">
           <span style="color: #fbbf24; font-weight: 600;">Credits: <span id="creditsCount">0</span></span>
         </div>
         
@@ -1366,6 +1369,7 @@
             <span>▼</span>
           </button>
           <div id="userMenuDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: #1e293b; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 8px; min-width: 200px; z-index: 1000;">
+            <button id="settingsBtn" class="ghost" style="width: 100%; text-align: left; padding: 8px 12px; font-size: 0.9rem; margin-bottom: 4px;">Settings</button>
             <button id="logoutBtn" class="ghost" style="width: 100%; text-align: left; padding: 8px 12px; font-size: 0.9rem;">Log out</button>
           </div>
         </div>
@@ -1750,6 +1754,67 @@
           <button type="button" id="switchToSignup" class="ghost" style="padding: 0; text-decoration: underline;">Sign up</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal-overlay" style="display: none;">
+  <div class="modal" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header">
+      <h3>Settings</h3>
+      <button class="modal-close" id="closeSettingsModal" type="button">×</button>
+    </div>
+    <div class="modal-content">
+      <!-- Profile Section -->
+      <div style="margin-bottom: 32px;">
+        <h4 style="color: #fbbf24; margin-bottom: 16px; font-size: 1.1rem;">Profile</h4>
+        <form id="profileForm" style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Name</label>
+            <input type="text" id="settingsName" placeholder="Your name" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+          </div>
+          <div>
+            <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Email</label>
+            <input type="email" id="settingsEmail" disabled style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #64748b; font-size: 0.9rem; cursor: not-allowed;" />
+            <small style="color: #94a3b8; font-size: 0.8rem;">Email cannot be changed</small>
+          </div>
+          <div id="passwordSection" style="display: none;">
+            <h5 style="color: #cbd5e1; margin: 16px 0 8px 0; font-size: 0.95rem;">Change Password</h5>
+            <div>
+              <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Current Password</label>
+              <input type="password" id="settingsCurrentPassword" placeholder="Current password" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+            </div>
+            <div>
+              <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">New Password</label>
+              <input type="password" id="settingsNewPassword" placeholder="New password (min 8 characters)" minlength="8" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+            </div>
+            <div>
+              <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Confirm New Password</label>
+              <input type="password" id="settingsConfirmPassword" placeholder="Confirm new password" minlength="8" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+            </div>
+          </div>
+          <div id="profileError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
+          <div id="profileSuccess" style="color: #86efac; font-size: 0.85rem; display: none;"></div>
+          <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Save Changes</button>
+        </form>
+      </div>
+      
+      <!-- Purchase History Section -->
+      <div style="margin-bottom: 32px;">
+        <h4 style="color: #fbbf24; margin-bottom: 16px; font-size: 1.1rem;">Purchase History</h4>
+        <div id="purchaseHistory" style="min-height: 100px;">
+          <div style="color: #94a3b8; text-align: center; padding: 20px;">Loading...</div>
+        </div>
+      </div>
+      
+      <!-- Credit History Section -->
+      <div>
+        <h4 style="color: #fbbf24; margin-bottom: 16px; font-size: 1.1rem;">Credit History</h4>
+        <div id="creditHistory" style="min-height: 100px;">
+          <div style="color: #94a3b8; text-align: center; padding: 20px;">Loading...</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -5832,17 +5897,24 @@ Return ONLY the category and question.`
       const errorEl = document.getElementById('signupError');
       
       try {
+        // Get trial credits before signup
+        const trialCredits = getTrialCreditsRemaining();
+        
         const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ name, email, password })
+          body: JSON.stringify({ name, email, password, trialCredits })
         });
         
         const data = await response.json();
         
         if (response.ok) {
           currentUser = data.user;
+          // Clear trial credits from localStorage after successful transfer
+          if (trialCredits > 0) {
+            localStorage.removeItem('trial_credits_remaining');
+          }
           updateAuthUI();
           await updateCreditsDisplay();
           document.getElementById('signupModal').style.display = 'none';
@@ -5877,17 +5949,24 @@ Return ONLY the category and question.`
       const errorEl = document.getElementById('loginError');
       
       try {
+        // Get trial credits before login
+        const trialCredits = getTrialCreditsRemaining();
+        
         const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password, trialCredits })
         });
         
         const data = await response.json();
         
         if (response.ok) {
           currentUser = data.user;
+          // Clear trial credits from localStorage after successful transfer
+          if (trialCredits > 0) {
+            localStorage.removeItem('trial_credits_remaining');
+          }
           updateAuthUI();
           await updateCreditsDisplay();
           const loginModal = document.getElementById('loginModal');
@@ -6088,6 +6167,9 @@ Return ONLY the category and question.`
             
             const userInfo = await userInfoRes.json();
             
+            // Get trial credits before Google sign-in
+            const trialCredits = getTrialCreditsRemaining();
+            
             // Now get ID token using the access token
             // We need to use the ID token for backend verification
             // For now, we'll send the access token and let backend verify
@@ -6097,7 +6179,8 @@ Return ONLY the category and question.`
               credentials: 'include',
               body: JSON.stringify({ 
                 accessToken: tokenResponse.access_token,
-                userInfo: userInfo
+                userInfo: userInfo,
+                trialCredits: trialCredits
               })
             });
             
@@ -6105,6 +6188,10 @@ Return ONLY the category and question.`
             
             if (res.ok) {
               currentUser = data.user;
+              // Clear trial credits from localStorage after successful transfer
+              if (trialCredits > 0) {
+                localStorage.removeItem('trial_credits_remaining');
+              }
               updateAuthUI();
               await updateCreditsDisplay();
               
@@ -6232,6 +6319,237 @@ Return ONLY the category and question.`
       userMenuDropdown.style.display = userMenuDropdown.style.display === 'none' ? 'block' : 'none';
     }
   });
+  
+  // Close user menu when clicking outside
+  document.addEventListener('click', (e) => {
+    const userMenu = document.getElementById('userMenu');
+    const userMenuDropdown = document.getElementById('userMenuDropdown');
+    if (userMenu && userMenuDropdown && !userMenu.contains(e.target)) {
+      userMenuDropdown.style.display = 'none';
+    }
+  });
+  
+  // Settings button handler
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const closeSettingsModal = document.getElementById('closeSettingsModal');
+  
+  function showSettingsModal() {
+    if (!settingsModal || !currentUser) return;
+    
+    // Populate form with current user data
+    const settingsName = document.getElementById('settingsName');
+    const settingsEmail = document.getElementById('settingsEmail');
+    const passwordSection = document.getElementById('passwordSection');
+    
+    if (settingsName) settingsName.value = currentUser.name || '';
+    if (settingsEmail) settingsEmail.value = currentUser.email || '';
+    
+    // Show password section only for email/password users
+    if (passwordSection) {
+      passwordSection.style.display = (currentUser.provider === 'email') ? 'block' : 'none';
+    }
+    
+    // Load purchase history
+    loadPurchaseHistory();
+    loadCreditHistory();
+    
+    settingsModal.style.display = 'flex';
+    const userMenuDropdown = document.getElementById('userMenuDropdown');
+    if (userMenuDropdown) userMenuDropdown.style.display = 'none';
+  }
+  
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', showSettingsModal);
+  }
+  
+  if (closeSettingsModal) {
+    closeSettingsModal.addEventListener('click', () => {
+      if (settingsModal) settingsModal.style.display = 'none';
+    });
+  }
+  
+  // Profile form handler
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const profileError = document.getElementById('profileError');
+      const profileSuccess = document.getElementById('profileSuccess');
+      const settingsName = document.getElementById('settingsName');
+      const settingsCurrentPassword = document.getElementById('settingsCurrentPassword');
+      const settingsNewPassword = document.getElementById('settingsNewPassword');
+      const settingsConfirmPassword = document.getElementById('settingsConfirmPassword');
+      
+      if (profileError) profileError.style.display = 'none';
+      if (profileSuccess) profileSuccess.style.display = 'none';
+      
+      // Validate password if changing
+      if (settingsNewPassword && settingsNewPassword.value) {
+        if (settingsNewPassword.value !== settingsConfirmPassword.value) {
+          if (profileError) {
+            profileError.textContent = 'New passwords do not match';
+            profileError.style.display = 'block';
+          }
+          return;
+        }
+        if (settingsNewPassword.value.length < 8) {
+          if (profileError) {
+            profileError.textContent = 'Password must be at least 8 characters';
+            profileError.style.display = 'block';
+          }
+          return;
+        }
+      }
+      
+      try {
+        const updateData = {
+          name: settingsName ? settingsName.value : undefined
+        };
+        
+        // Add password if provided
+        if (settingsNewPassword && settingsNewPassword.value) {
+          updateData.password = settingsNewPassword.value;
+          updateData.currentPassword = settingsCurrentPassword ? settingsCurrentPassword.value : '';
+        }
+        
+        const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(updateData)
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          currentUser = data.user;
+          updateAuthUI();
+          
+          if (profileSuccess) {
+            profileSuccess.textContent = 'Profile updated successfully!';
+            profileSuccess.style.display = 'block';
+          }
+          
+          // Clear password fields
+          if (settingsCurrentPassword) settingsCurrentPassword.value = '';
+          if (settingsNewPassword) settingsNewPassword.value = '';
+          if (settingsConfirmPassword) settingsConfirmPassword.value = '';
+          
+          setTimeout(() => {
+            if (profileSuccess) profileSuccess.style.display = 'none';
+          }, 3000);
+        } else {
+          if (profileError) {
+            profileError.textContent = data.error || 'Failed to update profile';
+            profileError.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Update profile error:', error);
+        if (profileError) {
+          profileError.textContent = 'Network error. Please try again.';
+          profileError.style.display = 'block';
+        }
+      }
+    });
+  }
+  
+  async function loadPurchaseHistory() {
+    const purchaseHistory = document.getElementById('purchaseHistory');
+    if (!purchaseHistory) return;
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/purchase-history`, {
+        credentials: 'include'
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.transactions) {
+        if (data.transactions.length === 0) {
+          purchaseHistory.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 20px;">No purchases yet</div>';
+        } else {
+          // Get bundle names from backend
+          const bundlesRes = await fetch(`${BACKEND_URL}/api/credits/bundles`);
+          const bundlesData = await bundlesRes.json();
+          const bundleMap = {};
+          if (bundlesData.bundles) {
+            bundlesData.bundles.forEach(b => {
+              bundleMap[b.id] = b.name;
+            });
+          }
+          
+          purchaseHistory.innerHTML = data.transactions.map(t => {
+            const date = new Date(t.created_at).toLocaleDateString();
+            const amount = (t.amount_paid_cents / 100).toFixed(2);
+            const bundleName = bundleMap[t.pack_id] || t.pack_id;
+            return `
+              <div style="padding: 12px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="color: #fbbf24; font-weight: 600;">${bundleName} Pack</div>
+                    <div style="color: #94a3b8; font-size: 0.85rem;">${t.credits_purchased} credits • ${date}</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="color: #fff; font-weight: 600;">$${amount}</div>
+                    <div style="color: ${t.status === 'completed' ? '#86efac' : '#fbbf24'}; font-size: 0.85rem; text-transform: capitalize;">${t.status}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } else {
+        purchaseHistory.innerHTML = '<div style="color: #fca5a5; text-align: center; padding: 20px;">Failed to load purchase history</div>';
+      }
+    } catch (error) {
+      console.error('Load purchase history error:', error);
+      purchaseHistory.innerHTML = '<div style="color: #fca5a5; text-align: center; padding: 20px;">Error loading purchase history</div>';
+    }
+  }
+  
+  async function loadCreditHistory() {
+    const creditHistory = document.getElementById('creditHistory');
+    if (!creditHistory) return;
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/purchase-history`, {
+        credentials: 'include'
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.credit_history) {
+        if (data.credit_history.length === 0) {
+          creditHistory.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 20px;">No credit history yet</div>';
+        } else {
+          creditHistory.innerHTML = data.credit_history.slice(0, 20).map(l => {
+            const date = new Date(l.created_at).toLocaleDateString();
+            const changeColor = l.change > 0 ? '#86efac' : '#fca5a5';
+            const changeSign = l.change > 0 ? '+' : '';
+            return `
+              <div style="padding: 12px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="color: #cbd5e1; font-size: 0.9rem;">${l.reason}</div>
+                  <div style="color: ${changeColor}; font-weight: 600;">${changeSign}${l.change}</div>
+                </div>
+                <div style="color: #94a3b8; font-size: 0.8rem; margin-top: 4px;">${date}</div>
+              </div>
+            `;
+          }).join('');
+        }
+      } else {
+        creditHistory.innerHTML = '<div style="color: #fca5a5; text-align: center; padding: 20px;">Failed to load credit history</div>';
+      }
+    } catch (error) {
+      console.error('Load credit history error:', error);
+      creditHistory.innerHTML = '<div style="color: #fca5a5; text-align: center; padding: 20px;">Error loading credit history</div>';
+    }
+  }
+  
+  // Make showSettingsModal available globally
+  window.showSettingsModal = showSettingsModal;
   
   // Credit purchase modal
   async function showCreditPurchaseModal() {

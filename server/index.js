@@ -124,7 +124,7 @@ app.get('/api/config', (req, res) => {
 // POST /api/auth/signup
 app.post('/api/auth/signup', async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, trialCredits } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -138,6 +138,14 @@ app.post('/api/auth/signup', async (req, res) => {
     
     // Create user
     const user = await User.create(email, password, name);
+    
+    // Transfer trial credits if provided
+    if (trialCredits && trialCredits > 0) {
+      const newBalance = user.credits_balance + trialCredits;
+      User.updateCredits(user.id, newBalance);
+      CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on signup');
+      user.credits_balance = newBalance;
+    }
     
     // Generate JWT token
     const token = jwt.sign(
@@ -173,7 +181,7 @@ app.post('/api/auth/signup', async (req, res) => {
 // POST /api/auth/login
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, trialCredits } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -189,6 +197,14 @@ app.post('/api/auth/login', async (req, res) => {
     const isValid = await User.verifyPassword(user, password);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    // Transfer trial credits if provided
+    if (trialCredits && trialCredits > 0) {
+      const newBalance = user.credits_balance + trialCredits;
+      User.updateCredits(user.id, newBalance);
+      CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on login');
+      user.credits_balance = newBalance;
     }
     
     // Generate JWT token
@@ -290,6 +306,15 @@ app.post('/api/auth/google', async (req, res) => {
       user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
     }
     
+    // Transfer trial credits if provided (from localStorage)
+    const { trialCredits } = req.body;
+    if (trialCredits && trialCredits > 0 && user.credits_balance === 0) {
+      const newBalance = user.credits_balance + trialCredits;
+      User.updateCredits(user.id, newBalance);
+      CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on Google sign-in');
+      user.credits_balance = newBalance;
+    }
+    
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
@@ -334,11 +359,96 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
       email: user.email,
       name: user.name,
       credits_balance: user.credits_balance,
+      provider: user.provider || 'email',
       created_at: user.created_at
     });
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user', message: error.message });
+  }
+});
+
+// PUT /api/auth/profile - Update user profile
+app.put('/api/auth/profile', authenticateToken, async (req, res) => {
+  try {
+    const { name, password, currentPassword } = req.body;
+    const user = User.findById(req.user.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Update name if provided
+    if (name !== undefined) {
+      User.updateProfile(user.id, name);
+      user.name = name;
+    }
+    
+    // Update password if provided (only for email/password users)
+    if (password && user.provider === 'email') {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Current password is required to change password' });
+      }
+      
+      const isValid = await User.verifyPassword(user, currentPassword);
+      if (!isValid) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+      
+      // Update password
+      const bcrypt = require('bcrypt');
+      const passwordHash = await bcrypt.hash(password, 10);
+      const { userQueries } = require('./db');
+      userQueries.updatePassword.run(passwordHash, user.id);
+    } else if (password && user.provider !== 'email') {
+      return res.status(400).json({ error: 'Password cannot be changed for OAuth accounts' });
+    }
+    
+    // Refresh user data
+    const updatedUser = User.findById(user.id);
+    
+    res.json({
+      success: true,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        credits_balance: updatedUser.credits_balance,
+        provider: updatedUser.provider || 'email'
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile', message: error.message });
+  }
+});
+
+// GET /api/auth/purchase-history - Get purchase history
+app.get('/api/auth/purchase-history', authenticateToken, (req, res) => {
+  try {
+    const transactions = Transaction.getByUserId(req.user.userId, 50);
+    const ledger = CreditLedger.getByUserId(req.user.userId, 100);
+    
+    res.json({
+      transactions: transactions.map(t => ({
+        id: t.id,
+        pack_id: t.pack_id,
+        credits_purchased: t.credits_purchased,
+        amount_paid_cents: t.amount_paid_cents,
+        currency: t.currency,
+        status: t.status,
+        created_at: t.created_at
+      })),
+      credit_history: ledger.map(l => ({
+        id: l.id,
+        change: l.change,
+        reason: l.reason,
+        created_at: l.created_at
+      }))
+    });
+  } catch (error) {
+    console.error('Get purchase history error:', error);
+    res.status(500).json({ error: 'Failed to get purchase history', message: error.message });
   }
 });
 

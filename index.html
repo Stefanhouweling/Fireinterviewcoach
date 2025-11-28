@@ -6015,8 +6015,41 @@ Return ONLY the category and question.`
 
 <!-- ========== AUTHENTICATION & CREDIT SYSTEM EVENT LISTENERS ========== -->
 <script>
+  // Check for referral code in URL and store it
+  function checkReferralCodeFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode && refCode.trim()) {
+      const code = refCode.trim().toUpperCase();
+      // Store in localStorage so it can be used during signup/login
+      localStorage.setItem('pendingReferralCode', code);
+      console.log('Referral code detected in URL:', code);
+      
+      // Show a subtle notification that referral code was detected
+      setTimeout(() => {
+        const notification = document.createElement('div');
+        notification.id = 'referralCodeNotification';
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(251, 191, 36, 0.95); color: #000; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px;';
+        notification.innerHTML = `🎁 Referral code detected! It will be applied when you sign up.`;
+        document.body.appendChild(notification);
+        
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 5000);
+      }, 500);
+      
+      // Clean up URL (remove ref parameter) for cleaner sharing
+      const newUrl = window.location.pathname + (window.location.hash || '');
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }
+  
   // Initialize auth on page load
   document.addEventListener('DOMContentLoaded', () => {
+    checkReferralCodeFromURL();
     checkAuth();
     updateTrialCreditsDisplay();
   });
@@ -6037,6 +6070,17 @@ Return ONLY the category and question.`
       try {
         // Get trial credits before signup
         const trialCredits = getTrialCreditsRemaining();
+        
+        // Get referral code from input or localStorage (from URL)
+        let referralCode = signupReferralCode ? signupReferralCode.value.trim() : '';
+        if (!referralCode) {
+          const pendingCode = localStorage.getItem('pendingReferralCode');
+          if (pendingCode) {
+            referralCode = pendingCode;
+            // Auto-fill the input field
+            if (signupReferralCode) signupReferralCode.value = referralCode;
+          }
+        }
         const referralCode = document.getElementById('signupReferralCode')?.value?.trim().toUpperCase() || null;
         
         const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
@@ -6069,6 +6113,8 @@ Return ONLY the category and question.`
               signupReferralStatus.textContent = `✓ Referral code "${referralCode}" applied!`;
             }
             signupReferralStatus.style.display = 'block';
+            // Clear pending referral code from localStorage after successful use
+            localStorage.removeItem('pendingReferralCode');
           }
           updateAuthUI();
           await updateCreditsDisplay();
@@ -6172,6 +6218,8 @@ Return ONLY the category and question.`
               loginReferralStatus.textContent = `✓ Referral code "${referralCode}" applied!`;
             }
             loginReferralStatus.style.display = 'block';
+            // Clear pending referral code from localStorage after successful use
+            localStorage.removeItem('pendingReferralCode');
           }
           updateAuthUI();
           await updateCreditsDisplay();
@@ -6829,11 +6877,8 @@ Return ONLY the category and question.`
         
         if (redeemRes.ok && redeemData.success) {
           if (statusElement) {
-            if (isTestCode) {
-              statusElement.textContent = `✓ Test code redeemed! Unlimited credits granted.`;
-            } else {
-              statusElement.textContent = `✓ Referral code applied! Referrer will get credits when you complete your first question.`;
-            }
+            const creditsText = isTestCode ? 'unlimited' : (redeemData.creditsGranted || '3');
+            statusElement.textContent = `✓ Redeemed! +${creditsText} credits`;
             statusElement.style.display = 'block';
           }
           
@@ -7103,7 +7148,8 @@ Return ONLY the category and question.`
       return;
     }
     
-    const shareText = `I've been using Fire Interview Coach to practice for firefighter interviews. It's an AI-powered tool that gives you personalized feedback on your answers.\n\nIf you're interested, you can use my referral code ${code} when you sign up.\n\n${window.location.origin}`;
+    const shareUrl = `${window.location.origin}?ref=${code}`;
+    const shareText = `I've been using Fire Interview Coach to practice for firefighter interviews. It's an AI-powered tool that gives you personalized feedback on your answers.\n\nIf you're interested, use my referral link to sign up.\n\n${shareUrl}`;
     
     // Try Web Share API first (native sharing on mobile/desktop)
     // Combine text and URL into text field to ensure full message is shared
@@ -7111,7 +7157,8 @@ Return ONLY the category and question.`
       try {
         await navigator.share({
           title: 'Fire Interview Coach - Referral Code',
-          text: shareText
+          text: shareText,
+          url: shareUrl
         });
         if (referralCodeStatus) {
           referralCodeStatus.textContent = '✓ Shared!';

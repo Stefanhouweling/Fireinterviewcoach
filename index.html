@@ -2854,9 +2854,7 @@
     
     // For logged-in users, fetch latest balance
     try {
-      const response = await fetch(`${BACKEND_URL}/api/credits/balance`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${BACKEND_URL}/api/credits/balance`);
       
       if (response.ok) {
         const data = await response.json();
@@ -3193,9 +3191,7 @@
   // Get current user from backend
   async function fetchCurrentUser() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${BACKEND_URL}/api/auth/me`);
       
       if (response.ok) {
         const user = await response.json();
@@ -3945,7 +3941,7 @@ Return ONLY the category and question.`
     // Always use backend
     {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/followup`, {
+        const response = await authenticatedFetch(`${BACKEND_URL}/api/followup`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -6659,9 +6655,10 @@ Return ONLY the category and question.`
           updateData.currentPassword = settingsCurrentPassword ? settingsCurrentPassword.value : '';
         }
         
-        const res = await authenticatedFetch(`${BACKEND_URL}/api/auth/profile`, {
+        const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(updateData)
         });
         
@@ -7020,9 +7017,7 @@ Return ONLY the category and question.`
           // Token expired or invalid - try to refresh user session first
           console.log('Auth token issue, attempting to refresh user session...');
           try {
-            const meResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
-              credentials: 'include'
-            });
+            const meResponse = await authenticatedFetch(`${BACKEND_URL}/api/auth/me`);
             if (meResponse.ok) {
               const userData = await meResponse.json();
               currentUser = userData;

@@ -529,7 +529,12 @@ app.post('/api/auth/google', async (req, res) => {
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
-        // Don't fail sign-in if referral code is invalid
+        // Return error to frontend so user knows why referral code failed
+        return res.status(400).json({ 
+          error: 'Referral code error', 
+          message: refError.message,
+          referralCodeError: true
+        });
       }
     }
     

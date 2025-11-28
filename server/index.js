@@ -3421,7 +3421,7 @@ app.post('/api/analytics/visit', optionalAuth, (req, res) => {
     const clientIP = getClientIP(req);
     const ipHash = hashIP(clientIP);
     
-    // Check if visit already exists
+    // Check if visit already exists for this session
     let visit = Analytics.findBySession(sessionId);
     
     if (!visit) {
@@ -3437,7 +3437,7 @@ app.post('/api/analytics/visit', optionalAuth, (req, res) => {
         jobType || null
       );
     } else {
-      // Update last visit time
+      // Update last visit time and increment visit count
       Analytics.updateLastVisit(sessionId);
       
       // Update user_id if user logged in
@@ -3447,6 +3447,30 @@ app.post('/api/analytics/visit', optionalAuth, (req, res) => {
           userQueries.updateVisitUserId = db.prepare('UPDATE analytics_visits SET user_id = ? WHERE session_id = ?');
         }
         userQueries.updateVisitUserId.run(req.user.userId, sessionId);
+      }
+      
+      // Update location/department info if provided and different
+      if (city || stateProvince || country || departmentName || jobType) {
+        const { db, analyticsQueries } = require('./db');
+        if (!analyticsQueries.updateVisitInfo) {
+          analyticsQueries.updateVisitInfo = db.prepare(`
+            UPDATE analytics_visits 
+            SET city = COALESCE(?, city),
+                state_province = COALESCE(?, state_province),
+                country = COALESCE(?, country),
+                department_name = COALESCE(?, department_name),
+                job_type = COALESCE(?, job_type)
+            WHERE session_id = ?
+          `);
+        }
+        analyticsQueries.updateVisitInfo.run(
+          city || null,
+          stateProvince || null,
+          country || null,
+          departmentName || null,
+          jobType || null,
+          sessionId
+        );
       }
     }
     
@@ -3547,6 +3571,7 @@ app.get('/api/analytics/dashboard', (req, res) => {
       department_name: v.department_name,
       job_type: v.job_type,
       questions_answered: v.questions_answered,
+      visit_count: v.visit_count || 1,
       first_visit_at: v.first_visit_at,
       last_visit_at: v.last_visit_at
     }));

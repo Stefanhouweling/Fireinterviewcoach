@@ -68,6 +68,7 @@ db.exec(`
     department_name TEXT,
     job_type TEXT,
     questions_answered INTEGER DEFAULT 0,
+    visit_count INTEGER DEFAULT 1,
     first_visit_at TEXT DEFAULT CURRENT_TIMESTAMP,
     last_visit_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
@@ -78,6 +79,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_analytics_country ON analytics_visits(country);
   CREATE INDEX IF NOT EXISTS idx_analytics_department ON analytics_visits(department_name);
   CREATE INDEX IF NOT EXISTS idx_analytics_first_visit ON analytics_visits(first_visit_at);
+  
+  -- Migration: Add visit_count column if it doesn't exist
+  try {
+    db.prepare('SELECT visit_count FROM analytics_visits LIMIT 1').get();
+  } catch (e) {
+    // Column doesn't exist, add it
+    console.log('Adding visit_count column to analytics_visits table...');
+    db.exec('ALTER TABLE analytics_visits ADD COLUMN visit_count INTEGER DEFAULT 1');
+    // Set existing records to have visit_count = 1
+    db.exec('UPDATE analytics_visits SET visit_count = 1 WHERE visit_count IS NULL');
+  }
 
   CREATE TABLE IF NOT EXISTS referrals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -139,11 +151,11 @@ const analyticsQueries = {
   `),
   findBySession: db.prepare('SELECT * FROM analytics_visits WHERE session_id = ?'),
   updateQuestions: db.prepare('UPDATE analytics_visits SET questions_answered = ?, last_visit_at = CURRENT_TIMESTAMP WHERE session_id = ?'),
-  updateLastVisit: db.prepare('UPDATE analytics_visits SET last_visit_at = CURRENT_TIMESTAMP WHERE session_id = ?'),
+  updateLastVisit: db.prepare('UPDATE analytics_visits SET last_visit_at = CURRENT_TIMESTAMP, visit_count = visit_count + 1 WHERE session_id = ?'),
   getAll: db.prepare('SELECT * FROM analytics_visits ORDER BY first_visit_at DESC LIMIT ?'),
   getStats: db.prepare(`
     SELECT 
-      COUNT(*) as total_visits,
+      SUM(visit_count) as total_visits,
       COUNT(DISTINCT session_id) as unique_sessions,
       COUNT(DISTINCT user_id) as registered_users,
       SUM(questions_answered) as total_questions,

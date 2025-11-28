@@ -5099,8 +5099,14 @@ Return ONLY the category and question.`
     
     // Helper function to convert markdown bold (**text**) to HTML bold
     function convertMarkdownBold(str) {
-      // Replace **text** with <strong>text</strong>
-      return str.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      if (!str) return '';
+      // First, handle patterns like "Label:**" or "**Label:**" - convert label to bold
+      str = str.replace(/(\*\*)?([^*:]+?)(\*\*)?:\s*/g, '<strong>$2:</strong> ');
+      // Then replace remaining **text** with <strong>text</strong>
+      str = str.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      // Clean up any remaining standalone asterisks that weren't part of pairs
+      str = str.replace(/\*\*/g, '');
+      return str;
     }
     
     // Clean up text - remove trailing dashes, extra spaces, incomplete formatting
@@ -5188,21 +5194,23 @@ Return ONLY the category and question.`
         }
         let content = trimmed.substring(2).trim();
         content = cleanText(content);
-        // Remove markdown formatting artifacts
-        content = content.replace(/^\*\*/, '').replace(/\*\*$/, '');
         
         // For blurred content sections, blur only the content after the label
-        if (inBlurredContentSection && content.match(/^\*\*[^*]+\*\*:/)) {
-          const parts = content.match(/^\*\*([^*]+)\*\*:\s*(.*)/);
-          if (parts && parts.length === 3) {
-            const label = parts[1];
-            const value = parts[2].trim();
+        if (inBlurredContentSection) {
+          // Check if it matches pattern like "**Focus 1:** text" or "Focus 1:** text"
+          const labelMatch = content.match(/^(\*\*)?([^*:]+?)(\*\*)?:\s*(.*)/);
+          if (labelMatch && labelMatch.length >= 5) {
+            const label = labelMatch[2].trim();
+            const value = labelMatch[4] ? labelMatch[4].trim() : '';
             html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">
               • <strong style="color: #fbbf24;">${label}:</strong> 
               <span style="filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.5; display: inline-block;">${convertMarkdownBold(value)}</span>
             </div>`;
           } else {
-            html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">• ${convertMarkdownBold(content)}</div>`;
+            // If no label pattern, blur the entire content
+            html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">
+              • <span style="filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.5; display: inline-block;">${convertMarkdownBold(content)}</span>
+            </div>`;
           }
         } else {
           // Content is already inside blur div if inPremiumSection is true
@@ -5228,13 +5236,13 @@ Return ONLY the category and question.`
           // Content is already inside blur div if inPremiumSection is true
           html += `<div class="score-highlight" style="margin: 8px 0; padding: 8px; background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; border-radius: 4px;">${convertMarkdownBold(content)}</div>`;
         } 
-        // Check if it's a label-value pair (like "**Summary:** text")
-        else if (content.match(/^\*\*[^*]+\*\*:/)) {
-          // Split label and value for better formatting
-          const parts = content.match(/^\*\*([^*]+)\*\*:\s*(.*)/);
-          if (parts && parts.length === 3) {
-            const label = parts[1];
-            const value = parts[2].trim();
+        // Check if it's a label-value pair (like "**Summary:** text" or "Summary:** text")
+        else if (content.match(/^(\*\*)?[^*:]+\*\*:/) || content.match(/^[^*:]+\*\*:/)) {
+          // Split label and value - handle both "**Label:**" and "Label:**" formats
+          const parts = content.match(/^(\*\*)?([^*:]+?)(\*\*)?:\s*(.*)/);
+          if (parts && parts.length >= 5) {
+            const label = parts[2].trim();
+            const value = parts[4] ? parts[4].trim() : '';
             
             // For blurred content sections, blur only the value (content after label)
             if (inBlurredContentSection) {

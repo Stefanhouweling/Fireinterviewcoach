@@ -2819,8 +2819,9 @@
   // Debug console removed - no longer needed
 
   // ========== API CONFIGURATION ==========
-  // Note: BACKEND_URL and all state variables are declared in the FIRST script tag (line 1996)
-  // to ensure they're available before any code tries to use them
+  // Note: BACKEND_URL and all state variables (onboardingData, resumeText, currentUser, authToken, etc.)
+  // are declared in the FIRST script tag (starting at line 1996) to ensure they're available 
+  // before any code tries to use them
   
   // Always use backend service (API keys are hidden on the server)
   const USE_BACKEND = true;

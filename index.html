@@ -1989,6 +1989,40 @@
 </div>
 
 <script>
+  // ========== CRITICAL: Declare all variables FIRST before any code uses them ==========
+  // These must be declared at the very top to avoid "Cannot access before initialization" errors
+  
+  // Backend URL - declared first
+  const BACKEND_URL = (() => {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3001';
+    }
+    return 'https://fire-interview-coach-api.onrender.com';
+  })();
+  
+  // Basic state variables
+  let onboardingData = {
+    country: "",
+    stateProvince: "",
+    city: "",
+    jobType: "",
+    departmentName: "",
+    name: null,
+    voicePreference: null,
+    cityResearch: null
+  };
+  
+  let resumeText = "";
+  let resumeKeywords = [];
+  let resumeAnalysis = null;
+  let currentUser = null;
+  let authToken = null;
+  
+  // Practice mode
+  let practiceMode = "simulation";
+  let selectedCategory = "";
+  
   // ========== LOAD CONFIGURATION TEXT ==========
   // Update all text elements from config.js
   document.addEventListener('DOMContentLoaded', function() {
@@ -2800,29 +2834,9 @@
   // Always use backend service (API keys are hidden on the server)
   const USE_BACKEND = true;
   
-  // ========== BASIC DATA & STATE (declared early to avoid TDZ errors) ==========
-  
-  // Onboarding data
-  let onboardingData = {
-    country: "",
-    stateProvince: "",
-    city: "",
-    jobType: "",
-    departmentName: "",
-    name: null,
-    voicePreference: null,
-    cityResearch: null // Will be populated by backend
-  };
-  
-  let resumeText = "";
-  let resumeKeywords = [];
-  let resumeAnalysis = null; // AI-parsed resume data
-  let currentUser = null;
-  let authToken = null;
-  
-  // Practice mode: "simulation" (random) or "specific" (category-based)
-  let practiceMode = "simulation";
-  let selectedCategory = "";
+  // ========== BASIC DATA & STATE ==========
+  // Note: Variables are declared in the first script tag to avoid TDZ errors
+  // These are just additional state variables
   
   // ========== CREDIT SYSTEM ==========
   // Trial credits tracking (localStorage for anonymous users)
@@ -6154,9 +6168,16 @@ Return ONLY the category and question.`
   
   // Initialize auth on page load
   document.addEventListener('DOMContentLoaded', () => {
+    // CRITICAL: Initialize trial credits FIRST to preserve them
+    initializeTrialCredits();
+    
+    // Then check referral code and auth
     checkReferralCodeFromURL();
     checkAuth();
     updateTrialCreditsDisplay();
+    
+    // Log current trial credits for debugging
+    console.log('[INIT] Trial credits on page load:', getTrialCreditsRemaining());
   });
   
   // Signup form handler

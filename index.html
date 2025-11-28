@@ -3089,7 +3089,6 @@
     "training", "drill", "community", "volunteer", "rescue"
   ];
 
-  let resumeKeywords = [];
   let currentQuestion = null;
   let questionCount = 0;
   let conversationHistory = []; // Track Q&A for context-aware followups
@@ -3215,14 +3214,7 @@
     }
   }
   
-  // Show paywall if needed (checks credits)
-  function showPaywallIfNeeded() {
-    if (!canUseQuestion()) {
-      showPaywall();
-      return true;
-    }
-    return false;
-  }
+  // Show paywall if needed (checks credits) - duplicate removed, using the one above
   
   // Initialize on page load
   initializeTrialCredits();
@@ -7269,7 +7261,6 @@ Return ONLY the category and question.`
   }
   
   // Make functions globally accessible
-  window.showPaywallIfNeeded = showPaywallIfNeeded;
   window.showCreditPurchaseModal = showCreditPurchaseModal;
   window.purchaseCredits = purchaseCredits;
   

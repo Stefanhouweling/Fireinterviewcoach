@@ -3997,6 +3997,135 @@ app.get('/api/analytics/dashboard', (req, res) => {
   }
 });
 
+// DIAGNOSTIC ENDPOINT: Find all accounts by email (for debugging credit issues)
+app.get('/api/admin/find-accounts', (req, res) => {
+  try {
+    const { email, secret } = req.query;
+    
+    // Require secret for security
+    if (!secret || secret !== ANALYTICS_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email parameter required' });
+    }
+    
+    const { db } = require('./db');
+    
+    // Find all accounts with this email (case-insensitive)
+    const accounts = db.prepare(`
+      SELECT id, email, provider, provider_id, credits_balance, created_at, updated_at
+      FROM users
+      WHERE LOWER(email) = LOWER(?)
+      ORDER BY created_at DESC
+    `).all(email);
+    
+    // Also find accounts with high credit balances
+    const highCreditAccounts = db.prepare(`
+      SELECT id, email, provider, provider_id, credits_balance, created_at
+      FROM users
+      WHERE credits_balance > 100
+      ORDER BY credits_balance DESC
+      LIMIT 20
+    `).all();
+    
+    // Get credit ledger for the email accounts
+    const creditHistory = accounts.length > 0 ? db.prepare(`
+      SELECT user_id, change, reason, created_at
+      FROM credit_ledger
+      WHERE user_id IN (${accounts.map(a => a.id).join(',')})
+      ORDER BY created_at DESC
+      LIMIT 50
+    `).all() : [];
+    
+    res.json({
+      email: email,
+      accounts: accounts,
+      highCreditAccounts: highCreditAccounts,
+      creditHistory: creditHistory,
+      totalAccountsFound: accounts.length
+    });
+  } catch (error) {
+    console.error('Find accounts error:', error);
+    res.status(500).json({ error: 'Failed to find accounts', message: error.message });
+  }
+});
+
+// MERGE ENDPOINT: Merge two accounts (transfer credits from source to target)
+app.post('/api/admin/merge-accounts', (req, res) => {
+  try {
+    const { sourceUserId, targetUserId, secret } = req.body;
+    
+    // Require secret for security
+    if (!secret || secret !== ANALYTICS_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    if (!sourceUserId || !targetUserId) {
+      return res.status(400).json({ error: 'sourceUserId and targetUserId required' });
+    }
+    
+    if (sourceUserId === targetUserId) {
+      return res.status(400).json({ error: 'Cannot merge account with itself' });
+    }
+    
+    const { db } = require('./db');
+    
+    // Get both users
+    const sourceUser = User.findById(sourceUserId);
+    const targetUser = User.findById(targetUserId);
+    
+    if (!sourceUser || !targetUser) {
+      return res.status(404).json({ error: 'One or both users not found' });
+    }
+    
+    console.log(`[MERGE] Merging account ${sourceUserId} (${sourceUser.email}, ${sourceUser.credits_balance} credits) into ${targetUserId} (${targetUser.email}, ${targetUser.credits_balance} credits)`);
+    
+    // Transfer credits
+    if (sourceUser.credits_balance > 0) {
+      const newBalance = targetUser.credits_balance + sourceUser.credits_balance;
+      User.updateCredits(targetUserId, newBalance);
+      CreditLedger.create(targetUserId, sourceUser.credits_balance, `Merged from account ${sourceUserId} (${sourceUser.email})`);
+      console.log(`[MERGE] Transferred ${sourceUser.credits_balance} credits to account ${targetUserId}`);
+    }
+    
+    // Update source account provider_id to point to target (so future logins use target)
+    if (sourceUser.provider === 'google' && sourceUser.provider_id) {
+      const { userQueries } = require('./db');
+      if (!userQueries.updateProviderId) {
+        userQueries.updateProviderId = db.prepare('UPDATE users SET provider_id = ? WHERE id = ?');
+      }
+      // Copy provider_id from source to target so both work
+      userQueries.updateProviderId.run(sourceUser.provider_id, targetUserId);
+      console.log(`[MERGE] Updated provider_id for account ${targetUserId}`);
+    }
+    
+    // Get updated target user
+    const updatedTarget = User.findById(targetUserId);
+    
+    res.json({
+      success: true,
+      message: `Merged account ${sourceUserId} into ${targetUserId}`,
+      sourceAccount: {
+        id: sourceUser.id,
+        email: sourceUser.email,
+        credits_before: sourceUser.credits_balance,
+        credits_after: 0
+      },
+      targetAccount: {
+        id: updatedTarget.id,
+        email: updatedTarget.email,
+        credits_before: targetUser.credits_balance,
+        credits_after: updatedTarget.credits_balance
+      }
+    });
+  } catch (error) {
+    console.error('Merge accounts error:', error);
+    res.status(500).json({ error: 'Failed to merge accounts', message: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🔥 Fire Interview Coach API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);

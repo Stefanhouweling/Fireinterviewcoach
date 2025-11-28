@@ -3,15 +3,26 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const fs = require('fs');
 
-// CRITICAL: On Render, use persistent disk storage
-// Render provides /opt/render/project/src/server/data for persistent storage
-// For local development, use __dirname/data
+// CRITICAL: On Render, database gets wiped on each deploy if stored in project directory
+// Use environment variable DATABASE_PATH for persistent storage, or use Render PostgreSQL
+// For Render: You need to either:
+// 1. Use Render PostgreSQL (recommended - set DATABASE_URL)
+// 2. Use Render Disk Storage addon and set DATABASE_PATH to mounted volume
+// 3. Use external storage service
+
 let dataDir;
-if (process.env.RENDER) {
-  // Render persistent disk path
-  dataDir = '/opt/render/project/src/server/data';
+if (process.env.DATABASE_PATH) {
+  // Use custom path from environment variable (for Render Disk Storage or custom setup)
+  dataDir = process.env.DATABASE_PATH;
+  console.log(`Using DATABASE_PATH from environment: ${dataDir}`);
+} else if (process.env.RENDER) {
+  // Render: Try to use a location that might persist (but this is NOT guaranteed without Disk Storage)
+  // WARNING: This will still get wiped on deploy without Disk Storage addon
+  dataDir = '/tmp/fireinterviewcoach-data';
+  console.log(`WARNING: Using /tmp for database on Render - this is NOT persistent!`);
+  console.log(`WARNING: Database will be lost on each deployment. Use Render PostgreSQL or Disk Storage addon.`);
 } else if (process.env.NODE_ENV === 'production' && process.platform !== 'win32') {
-  // Production (but not Render) - use /tmp or a persistent location
+  // Production (but not Render) - use home directory
   dataDir = path.join(process.env.HOME || '/tmp', '.fireinterviewcoach', 'data');
 } else {
   // Local development

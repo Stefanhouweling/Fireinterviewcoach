@@ -1720,6 +1720,9 @@
           <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0 0 12px 0; line-height: 1.4;">
             Enter a friend's referral code to get <strong style="color: #fbbf24;">3 free credits</strong> when you sign up!
           </p>
+          <p style="color: #94a3b8; font-size: 0.75rem; margin: 0 0 12px 0; font-style: italic;">
+            💡 Test codes: TEST, UNLIMITED, or DEV (for testing)
+          </p>
           <div style="display: flex; gap: 8px;">
             <input type="text" id="signupReferralCode" placeholder="Enter referral code" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center;" />
           </div>
@@ -1773,6 +1776,9 @@
           </div>
           <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0 0 12px 0; line-height: 1.4;">
             Have a referral code? Enter it here to get <strong style="color: #fbbf24;">3 free credits</strong> (only works if you have 0 credits).
+          </p>
+          <p style="color: #94a3b8; font-size: 0.75rem; margin: 0 0 12px 0; font-style: italic;">
+            💡 Test codes: TEST, UNLIMITED, or DEV (for testing)
           </p>
           <div style="display: flex; gap: 8px;">
             <input type="text" id="loginReferralCode" placeholder="Enter referral code" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center;" />
@@ -1847,9 +1853,12 @@
           <span style="color: #fbbf24; font-size: 1.5rem;">🎁</span>
           <h4 style="color: #fbbf24; margin: 0; font-size: 1.2rem; font-weight: 700;">Redeem Referral Code</h4>
         </div>
-        <p style="color: #cbd5e1; font-size: 0.9rem; margin: 0 0 16px 0; line-height: 1.5;">
+        <p style="color: #cbd5e1; font-size: 0.9rem; margin: 0 0 8px 0; line-height: 1.5;">
           Have a referral code from a friend? Enter it here to get <strong style="color: #fbbf24;">3 free credits</strong>! 
           <span style="color: #94a3b8; font-size: 0.85rem;">(Only works if you currently have 0 credits)</span>
+        </p>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin: 0 0 16px 0; font-style: italic; padding: 8px; background: rgba(251, 191, 36, 0.1); border-radius: 6px;">
+          💡 <strong>Test codes:</strong> TEST, UNLIMITED, or DEV (work anytime, grant unlimited credits for testing)
         </p>
         <div style="display: flex; gap: 8px; align-items: center;">
           <input type="text" id="redeemReferralCode" placeholder="Enter referral code (e.g., ABC123)" style="flex: 1; padding: 12px; border-radius: 8px; border: 2px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 1rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; text-align: center;" />
@@ -6693,20 +6702,32 @@ Return ONLY the category and question.`
       if (redeemReferralError) redeemReferralError.style.display = 'none';
       
       try {
-        // Validate code first
-        const validateRes = await fetch(`${BACKEND_URL}/api/referrals/validate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code })
-        });
+        // Check if it's a test code - these always work
+        const codeUpper = code.toUpperCase().trim();
+        const isTestCode = codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV';
         
-        const validateData = await validateRes.json();
-        if (!validateData.valid) {
-          if (redeemReferralError) {
-            redeemReferralError.textContent = validateData.message || 'Invalid referral code';
-            redeemReferralError.style.display = 'block';
+        // For test codes, skip validation and go straight to redemption
+        if (!isTestCode) {
+          // Validate code first (only for non-test codes)
+          try {
+            const validateRes = await fetch(`${BACKEND_URL}/api/referrals/validate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code })
+            });
+            
+            const validateData = await validateRes.json();
+            if (!validateData.valid) {
+              if (redeemReferralError) {
+                redeemReferralError.textContent = validateData.message || 'Invalid referral code';
+                redeemReferralError.style.display = 'block';
+              }
+              return;
+            }
+          } catch (validateError) {
+            console.error('Validation error:', validateError);
+            // Continue anyway for test codes
           }
-          return;
         }
         
         // Redeem the referral code
@@ -6721,7 +6742,8 @@ Return ONLY the category and question.`
         
         if (redeemRes.ok && redeemData.success) {
           if (redeemReferralStatus) {
-            redeemReferralStatus.textContent = `Referral code redeemed! You received ${redeemData.creditsGranted} credits.`;
+            const creditsText = isTestCode ? 'unlimited' : redeemData.creditsGranted;
+            redeemReferralStatus.textContent = `Referral code redeemed! You received ${creditsText} credits.`;
             redeemReferralStatus.style.display = 'block';
           }
           
@@ -6739,9 +6761,22 @@ Return ONLY the category and question.`
           
           redeemReferralCode.value = '';
         } else {
-          if (redeemReferralError) {
-            redeemReferralError.textContent = redeemData.error || 'Failed to redeem referral code';
-            redeemReferralError.style.display = 'block';
+          if (redeemRes.status === 401 || redeemRes.status === 403) {
+            // Authentication error - clear state and show login
+            handleAuthError();
+            if (redeemReferralError) {
+              redeemReferralError.textContent = 'Your session expired. Please log in again to redeem codes.';
+              redeemReferralError.style.display = 'block';
+            }
+            // Close settings modal and show login
+            if (settingsModal) settingsModal.style.display = 'none';
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) loginModal.style.display = 'flex';
+          } else {
+            if (redeemReferralError) {
+              redeemReferralError.textContent = redeemData.error || 'Failed to redeem referral code';
+              redeemReferralError.style.display = 'block';
+            }
           }
         }
       } catch (error) {

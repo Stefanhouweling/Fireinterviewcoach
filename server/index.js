@@ -68,9 +68,11 @@ function getClientIP(req) {
 
 // Authentication middleware
 function authenticateToken(req, res, next) {
+  // Try to get token from cookie first, then from Authorization header
   const token = req.cookies?.authToken || req.headers?.authorization?.split(' ')[1];
   
   if (!token) {
+    console.log('No token found - cookies:', Object.keys(req.cookies || {}), 'auth header:', !!req.headers?.authorization);
     return res.status(401).json({ error: 'Authentication required' });
   }
   
@@ -79,6 +81,7 @@ function authenticateToken(req, res, next) {
     req.user = decoded;
     next();
   } catch (error) {
+    console.log('Token verification failed:', error.message);
     return res.status(403).json({ error: 'Invalid or expired token' });
   }
 }
@@ -920,20 +923,21 @@ app.post('/api/referrals/redeem', authenticateToken, (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // Only allow redemption if user has 0 credits
-    if (user.credits_balance > 0) {
-      return res.status(400).json({ error: 'Referral codes can only be redeemed when you have 0 credits' });
-    }
-    
     const codeUpper = code.toUpperCase().trim();
     
-    // Special test referral codes
+    // Special test referral codes - always work, even if user has credits
     if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
       const testCredits = 9999;
       const newBalance = user.credits_balance + testCredits;
       User.updateCredits(user.id, newBalance);
       CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} redeemed`);
+      console.log(`Test referral code ${codeUpper} redeemed by user ${user.id} - granted ${testCredits} credits`);
       return res.json({ success: true, creditsGranted: testCredits, newBalance });
+    }
+    
+    // Regular referral codes - only allow redemption if user has 0 credits
+    if (user.credits_balance > 0) {
+      return res.status(400).json({ error: 'Referral codes can only be redeemed when you have 0 credits' });
     }
     
     // Regular referral code

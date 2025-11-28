@@ -33,10 +33,26 @@ const openai = new OpenAI({
 // Middleware
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://fire-interview-coach.onrender.com';
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow the frontend URL
+    if (origin === FRONTEND_URL || origin === 'https://fire-interview-coach.onrender.com' || origin === 'http://localhost:3000') {
+      return callback(null, true);
+    }
+    
+    // In development, allow localhost
+    if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost')) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Set-Cookie']
 }));
 app.use(express.json());
 app.use(cookieParser());
@@ -222,12 +238,15 @@ app.post('/api/auth/signup', async (req, res) => {
     );
     
     // Set cookie
-    res.cookie('authToken', token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: '/'
+    };
+    
+    res.cookie('authToken', token, cookieOptions);
     
     res.json({
       success: true,
@@ -312,12 +331,15 @@ app.post('/api/auth/login', async (req, res) => {
     );
     
     // Set cookie
-    res.cookie('authToken', token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: '/'
+    };
+    
+    res.cookie('authToken', token, cookieOptions);
     
     res.json({
       success: true,
@@ -488,12 +510,15 @@ app.post('/api/auth/google', async (req, res) => {
     );
     
     // Set cookie
-    res.cookie('authToken', token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: '/'
+    };
+    
+    res.cookie('authToken', token, cookieOptions);
     
     console.log('Google auth successful for user:', user.email);
     res.json({

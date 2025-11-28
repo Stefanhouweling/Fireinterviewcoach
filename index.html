@@ -6447,9 +6447,23 @@ Return ONLY the category and question.`
     const settingsName = document.getElementById('settingsName');
     const settingsEmail = document.getElementById('settingsEmail');
     const passwordSection = document.getElementById('passwordSection');
+    const redeemReferralCode = document.getElementById('redeemReferralCode');
+    const redeemReferralStatus = document.getElementById('redeemReferralStatus');
+    const redeemReferralError = document.getElementById('redeemReferralError');
     
     if (settingsName) settingsName.value = currentUser.name || '';
     if (settingsEmail) settingsEmail.value = currentUser.email || '';
+    
+    // Clear referral code input and messages
+    if (redeemReferralCode) redeemReferralCode.value = '';
+    if (redeemReferralStatus) {
+      redeemReferralStatus.style.display = 'none';
+      redeemReferralStatus.textContent = '';
+    }
+    if (redeemReferralError) {
+      redeemReferralError.style.display = 'none';
+      redeemReferralError.textContent = '';
+    }
     
     // Show password section only for email/password users
     if (passwordSection) {

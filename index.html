@@ -2819,24 +2819,11 @@
   // Debug console removed - no longer needed
 
   // ========== API CONFIGURATION ==========
-  // Backend API URL - automatically detects environment
-  // For production: Update this to your Render backend URL (e.g., https://fire-interview-coach-api.onrender.com)
-  const BACKEND_URL = (() => {
-    const hostname = window.location.hostname;
-    // Local development
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:3001';
-    }
-    // Production - Backend URL
-    return 'https://fire-interview-coach-api.onrender.com';
-  })();
+  // Note: BACKEND_URL and all state variables are declared in the FIRST script tag (line 1996)
+  // to ensure they're available before any code tries to use them
   
   // Always use backend service (API keys are hidden on the server)
   const USE_BACKEND = true;
-  
-  // ========== BASIC DATA & STATE ==========
-  // Note: Variables are declared in the first script tag to avoid TDZ errors
-  // These are just additional state variables
   
   // ========== CREDIT SYSTEM ==========
   // Trial credits tracking (localStorage for anonymous users)
@@ -3221,6 +3208,7 @@
     "training", "drill", "community", "volunteer", "rescue"
   ];
 
+  // Additional state variables (resumeKeywords, currentQuestion, etc. declared here)
   let currentQuestion = null;
   let questionCount = 0;
   let conversationHistory = []; // Track Q&A for context-aware followups
@@ -3244,7 +3232,7 @@
   let motionScoreForAnswer = null;
 
   // ========== CREDIT SYSTEM ==========
-  // Note: currentUser is already declared above in auth section
+  // Note: currentUser, onboardingData, resumeText, etc. are all declared in the FIRST script tag
   const TRIAL_CREDITS_MAX = 3;
   const TRIAL_CREDITS_KEY = 'trial_credits_remaining';
   
@@ -3260,8 +3248,8 @@
     }
   }
   
-  // Get trial credits remaining - use the function already defined above
-  // (Removed duplicate - using the one at line 2829)
+  // Note: getTrialCreditsRemaining, setTrialCreditsRemaining, consumeTrialCredit 
+  // are defined earlier in this script tag (around line 2844)
   
   // Check if user can use a question
   function canUseQuestion() {

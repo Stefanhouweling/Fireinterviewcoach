@@ -6210,6 +6210,11 @@ Return ONLY the category and question.`
             // Get trial credits before Google sign-in
             const trialCredits = getTrialCreditsRemaining();
             
+            // Get referral code from URL or localStorage if available
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCode = urlParams.get('ref') || localStorage.getItem('pendingReferralCode') || null;
+            if (referralCode) localStorage.removeItem('pendingReferralCode');
+            
             // Now get ID token using the access token
             // We need to use the ID token for backend verification
             // For now, we'll send the access token and let backend verify
@@ -6220,7 +6225,8 @@ Return ONLY the category and question.`
               body: JSON.stringify({ 
                 accessToken: tokenResponse.access_token,
                 userInfo: userInfo,
-                trialCredits: trialCredits
+                trialCredits: trialCredits,
+                referralCode: referralCode
               })
             });
             
@@ -6588,6 +6594,92 @@ Return ONLY the category and question.`
     }
   }
   
+  // Referral code redemption handler
+  const redeemReferralCodeBtn = document.getElementById('redeemReferralCodeBtn');
+  const redeemReferralCode = document.getElementById('redeemReferralCode');
+  const redeemReferralStatus = document.getElementById('redeemReferralStatus');
+  const redeemReferralError = document.getElementById('redeemReferralError');
+  
+  if (redeemReferralCodeBtn) {
+    redeemReferralCodeBtn.addEventListener('click', async () => {
+      if (!redeemReferralCode || !currentUser) return;
+      
+      const code = redeemReferralCode.value.trim().toUpperCase();
+      if (!code) {
+        if (redeemReferralError) {
+          redeemReferralError.textContent = 'Please enter a referral code';
+          redeemReferralError.style.display = 'block';
+        }
+        if (redeemReferralStatus) redeemReferralStatus.style.display = 'none';
+        return;
+      }
+      
+      // Hide previous messages
+      if (redeemReferralStatus) redeemReferralStatus.style.display = 'none';
+      if (redeemReferralError) redeemReferralError.style.display = 'none';
+      
+      try {
+        // Validate code first
+        const validateRes = await fetch(`${BACKEND_URL}/api/referrals/validate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+        
+        const validateData = await validateRes.json();
+        if (!validateData.valid) {
+          if (redeemReferralError) {
+            redeemReferralError.textContent = validateData.message || 'Invalid referral code';
+            redeemReferralError.style.display = 'block';
+          }
+          return;
+        }
+        
+        // Redeem the referral code
+        const redeemRes = await fetch(`${BACKEND_URL}/api/referrals/redeem`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ code })
+        });
+        
+        const redeemData = await redeemRes.json();
+        
+        if (redeemRes.ok && redeemData.success) {
+          if (redeemReferralStatus) {
+            redeemReferralStatus.textContent = `Referral code redeemed! You received ${redeemData.creditsGranted} credits.`;
+            redeemReferralStatus.style.display = 'block';
+          }
+          
+          // Refresh user data
+          const meRes = await fetch(`${BACKEND_URL}/api/auth/me`, {
+            credentials: 'include'
+          });
+          if (meRes.ok) {
+            const userData = await meRes.json();
+            currentUser = userData;
+            updateAuthUI();
+            await updateCreditsDisplay();
+            loadCreditHistory(); // Refresh credit history
+          }
+          
+          redeemReferralCode.value = '';
+        } else {
+          if (redeemReferralError) {
+            redeemReferralError.textContent = redeemData.error || 'Failed to redeem referral code';
+            redeemReferralError.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Redeem referral code error:', error);
+        if (redeemReferralError) {
+          redeemReferralError.textContent = 'Error redeeming code. Please try again.';
+          redeemReferralError.style.display = 'block';
+        }
+      }
+    });
+  }
+  
   // Make showSettingsModal available globally
   window.showSettingsModal = showSettingsModal;
   
@@ -6602,7 +6694,9 @@ Return ONLY the category and question.`
     const modal = document.getElementById('creditPurchaseModal');
     const container = document.getElementById('creditBundlesContainer');
     
-    // Load referral code
+    // Load referral code - make sure modal is visible first
+    if (modal) modal.style.display = 'flex';
+    
     try {
       const refResponse = await fetch(`${BACKEND_URL}/api/referrals/my-code`, {
         credentials: 'include'
@@ -6611,16 +6705,34 @@ Return ONLY the category and question.`
         const refData = await refResponse.json();
         const referralCodeInput = document.getElementById('referralCodeDisplay');
         if (referralCodeInput) {
-          referralCodeInput.value = refData.referralCode || '';
+          referralCodeInput.value = refData.referralCode || 'Loading...';
+          console.log('Referral code loaded:', refData.referralCode);
+        }
+      } else {
+        console.error('Failed to load referral code:', refResponse.status);
+        const referralCodeInput = document.getElementById('referralCodeDisplay');
+        if (referralCodeInput) {
+          referralCodeInput.value = 'Error loading code';
         }
       }
     } catch (error) {
       console.error('Error loading referral code:', error);
+      const referralCodeInput = document.getElementById('referralCodeDisplay');
+      if (referralCodeInput) {
+        referralCodeInput.value = 'Error loading code';
+      }
     }
     
     try {
       const response = await fetch(`${BACKEND_URL}/api/credits/bundles`);
       const data = await response.json();
+      
+      // Don't show modal again if already shown
+      if (modal && modal.style.display === 'flex') {
+        // Modal already visible, just update bundles
+      } else if (modal) {
+        modal.style.display = 'flex';
+      }
       
       if (container) {
         container.innerHTML = data.bundles.map(bundle => {
@@ -6647,8 +6759,6 @@ Return ONLY the category and question.`
         `;
         }).join('');
       }
-      
-      if (modal) modal.style.display = 'flex';
     } catch (error) {
       console.error('Error loading credit bundles:', error);
     }
@@ -6689,25 +6799,39 @@ Return ONLY the category and question.`
               const userData = await meResponse.json();
               currentUser = userData;
               updateAuthUI();
+              await updateCreditsDisplay();
               // Retry the purchase
               console.log('Session refreshed, retrying purchase...');
               return purchaseCredits(packId);
             } else {
-              // Session really expired
-              alert('Your session has expired. Please log in again.');
+              // Session really expired - don't show alert, just redirect to login
+              console.log('Session expired, redirecting to login...');
               window.currentUser = null;
               updateAuthUI();
+              // Close credit purchase modal
+              const creditPurchaseModal = document.getElementById('creditPurchaseModal');
+              if (creditPurchaseModal) creditPurchaseModal.style.display = 'none';
+              // Show login modal
               const loginModal = document.getElementById('loginModal');
               if (loginModal) {
                 loginModal.style.display = 'flex';
+                // Show a message in the login modal
+                const loginError = document.getElementById('loginError');
+                if (loginError) {
+                  loginError.textContent = 'Your session expired. Please log in again to continue.';
+                  loginError.style.display = 'block';
+                }
               }
               return;
             }
           } catch (refreshError) {
             console.error('Failed to refresh session:', refreshError);
-            alert('Your session has expired. Please log in again.');
             window.currentUser = null;
             updateAuthUI();
+            // Close credit purchase modal
+            const creditPurchaseModal = document.getElementById('creditPurchaseModal');
+            if (creditPurchaseModal) creditPurchaseModal.style.display = 'none';
+            // Show login modal
             const loginModal = document.getElementById('loginModal');
             if (loginModal) {
               loginModal.style.display = 'flex';

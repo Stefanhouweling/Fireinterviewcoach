@@ -879,6 +879,51 @@ app.post('/api/referrals/validate', (req, res) => {
   }
 });
 
+// POST /api/referrals/redeem - Redeem a referral code for existing users
+app.post('/api/referrals/redeem', authenticateToken, (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ error: 'Referral code is required' });
+    }
+    
+    const user = User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Only allow redemption if user has 0 credits
+    if (user.credits_balance > 0) {
+      return res.status(400).json({ error: 'Referral codes can only be redeemed when you have 0 credits' });
+    }
+    
+    const codeUpper = code.toUpperCase().trim();
+    
+    // Special test referral codes
+    if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
+      const testCredits = 9999;
+      const newBalance = user.credits_balance + testCredits;
+      User.updateCredits(user.id, newBalance);
+      CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} redeemed`);
+      return res.json({ success: true, creditsGranted: testCredits, newBalance });
+    }
+    
+    // Regular referral code
+    try {
+      const referral = Referral.useCode(code, user.id, 3);
+      const newBalance = user.credits_balance + 3;
+      User.updateCredits(user.id, newBalance);
+      CreditLedger.create(user.id, 3, `Referral code ${code} redeemed`);
+      return res.json({ success: true, creditsGranted: 3, newBalance });
+    } catch (refError) {
+      return res.status(400).json({ error: refError.message });
+    }
+  } catch (error) {
+    console.error('Redeem referral code error:', error);
+    res.status(500).json({ error: 'Failed to redeem referral code', message: error.message });
+  }
+});
+
 // Test endpoint to verify Mapbox token is configured
 app.get('/api/test-mapbox', (req, res) => {
   const token = process.env.MAPBOX_TOKEN;

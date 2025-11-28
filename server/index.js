@@ -3991,44 +3991,94 @@ app.get('/api/admin/find-accounts', (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     
-    if (!email) {
-      return res.status(400).json({ error: 'Email parameter required' });
-    }
-    
     const { db } = require('./db');
     
-    // Find all accounts with this email (case-insensitive)
-    const accounts = db.prepare(`
-      SELECT id, email, provider, provider_id, credits_balance, created_at, updated_at
-      FROM users
-      WHERE LOWER(email) = LOWER(?)
-      ORDER BY created_at DESC
-    `).all(email);
+    let accounts = [];
+    let allAccounts = [];
+    let highCreditAccounts = [];
+    let creditHistory = [];
+    let transactions = [];
     
-    // Also find accounts with high credit balances
-    const highCreditAccounts = db.prepare(`
+    if (email) {
+      // Find all accounts with this email (case-insensitive)
+      accounts = db.prepare(`
+        SELECT id, email, provider, provider_id, credits_balance, created_at, updated_at
+        FROM users
+        WHERE LOWER(email) = LOWER(?)
+        ORDER BY created_at DESC
+      `).all(email);
+      
+      // Also search for partial email matches
+      const partialMatches = db.prepare(`
+        SELECT id, email, provider, provider_id, credits_balance, created_at
+        FROM users
+        WHERE LOWER(email) LIKE LOWER(?)
+        ORDER BY created_at DESC
+        LIMIT 10
+      `).all(`%${email.split('@')[0]}%`);
+      
+      // Get credit ledger for the email accounts
+      if (accounts.length > 0) {
+        creditHistory = db.prepare(`
+          SELECT user_id, change, reason, created_at
+          FROM credit_ledger
+          WHERE user_id IN (${accounts.map(a => a.id).join(',')})
+          ORDER BY created_at DESC
+          LIMIT 50
+        `).all();
+      }
+    }
+    
+    // Get ALL accounts in the database
+    allAccounts = db.prepare(`
       SELECT id, email, provider, provider_id, credits_balance, created_at
       FROM users
-      WHERE credits_balance > 100
+      ORDER BY created_at DESC
+      LIMIT 50
+    `).all();
+    
+    // Find accounts with high credit balances
+    highCreditAccounts = db.prepare(`
+      SELECT id, email, provider, provider_id, credits_balance, created_at
+      FROM users
+      WHERE credits_balance > 0
       ORDER BY credits_balance DESC
       LIMIT 20
     `).all();
     
-    // Get credit ledger for the email accounts
-    const creditHistory = accounts.length > 0 ? db.prepare(`
+    // Get all transactions with high credit amounts
+    transactions = db.prepare(`
+      SELECT id, user_id, pack_id, credits_purchased, amount_paid_cents, status, created_at
+      FROM transactions
+      WHERE credits_purchased > 0
+      ORDER BY created_at DESC
+      LIMIT 20
+    `).all();
+    
+    // Get all credit ledger entries with large changes
+    const largeCreditChanges = db.prepare(`
       SELECT user_id, change, reason, created_at
       FROM credit_ledger
-      WHERE user_id IN (${accounts.map(a => a.id).join(',')})
+      WHERE ABS(change) > 100
       ORDER BY created_at DESC
-      LIMIT 50
-    `).all() : [];
+      LIMIT 20
+    `).all();
     
     res.json({
-      email: email,
+      email: email || 'all',
       accounts: accounts,
+      allAccounts: allAccounts,
       highCreditAccounts: highCreditAccounts,
       creditHistory: creditHistory,
-      totalAccountsFound: accounts.length
+      largeCreditChanges: largeCreditChanges,
+      transactions: transactions,
+      totalAccountsFound: accounts.length,
+      totalAccountsInDatabase: allAccounts.length,
+      databaseStats: {
+        totalUsers: allAccounts.length,
+        usersWithCredits: highCreditAccounts.length,
+        totalTransactions: transactions.length
+      }
     });
   } catch (error) {
     console.error('Find accounts error:', error);

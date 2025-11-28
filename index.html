@@ -782,6 +782,15 @@
       aspect-ratio: 4 / 3;
     }
 
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: translateZ(0); /* Force GPU acceleration */
+      will-change: contents; /* Hint for browser optimization */
+      backface-visibility: hidden; /* Improve rendering performance */
+    }
+
     video, canvas {
       width: 100%;
       height: 100%;
@@ -1662,8 +1671,8 @@
           </button>
         </div>
         <div class="video-wrapper">
-          <video id="camera" autoplay playsinline muted></video>
-          <canvas id="motionCanvas"></canvas>
+          <video id="camera" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+          <canvas id="motionCanvas" style="display: none;"></canvas>
           <div class="video-overlay">
             <span class="label">Body Language</span>
             <span class="value">

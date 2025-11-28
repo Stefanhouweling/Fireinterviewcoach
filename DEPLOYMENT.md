@@ -21,9 +21,12 @@ Edit `.env` and add your API keys:
 
 ```
 OPENAI_API_KEY=sk-your-key-here
-ELEVENLABS_API_KEY=your-key-here
+MAPBOX_TOKEN=pk.your-mapbox-token-here
 FRONTEND_URL=https://yourdomain.com
 PORT=3001
+JWT_SECRET=your-strong-random-secret-key-here
+STRIPE_SECRET_KEY=sk_test_your-stripe-key-here
+STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret-here
 ```
 
 ### 3. Start Backend Server
@@ -58,10 +61,16 @@ Replace `'https://your-backend-url.com'` with your actual backend URL.
 3. Set build command: `cd server && npm install`
 4. Set start command: `cd server && npm start`
 5. Add environment variables in Render dashboard:
-   - `OPENAI_API_KEY`
-   - `ELEVENLABS_API_KEY`
-   - `FRONTEND_URL` (your frontend URL)
-   - `PORT` (Render will set this automatically)
+   - `OPENAI_API_KEY` - Your OpenAI API key
+   - `MAPBOX_TOKEN` - Your Mapbox token (for city/location search)
+   - `FRONTEND_URL` - Your frontend URL (e.g., `https://your-app.onrender.com`)
+   - `JWT_SECRET` - A strong random string for JWT token signing
+   - `STRIPE_SECRET_KEY` - Your Stripe secret key (starts with `sk_test_` or `sk_live_`)
+   - `STRIPE_WEBHOOK_SECRET` - Your Stripe webhook secret (starts with `whsec_`)
+   - `PORT` - Render will set this automatically, but you can use `10000` if needed
+   - `NODE_ENV` - Set to `production`
+   
+   **Note:** See `DATA_STORAGE_AND_SECURITY.md` for detailed Stripe setup instructions.
 
 #### Frontend:
 1. Create new Static Site
@@ -121,8 +130,24 @@ Replace `'https://your-backend-url.com'` with your actual backend URL.
 
 - ✅ API keys are now server-side only
 - ✅ Frontend never sees API keys
+- ✅ Mapbox API calls are proxied through backend to avoid CORS issues
 - ✅ CORS is configured for your frontend domain
 - ✅ Environment variables are not committed to git
+- ✅ Passwords are hashed with bcrypt (never stored in plain text)
+- ✅ Payment processing handled by Stripe (no credit card data stored)
+
+## Data Storage & Privacy
+
+**See `DATA_STORAGE_AND_SECURITY.md` for complete details on:**
+- What data is stored where
+- Data confidentiality and security measures
+- How user data is protected
+- Stripe configuration details
+
+## Recent Changes
+
+- **Mapbox Integration**: City search now uses Mapbox API with backend proxy to avoid CORS errors
+- **Old Location Data**: Removed dependency on countries-states-cities-database (now uses Mapbox + Nominatim fallback)
 
 ## Troubleshooting
 

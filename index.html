@@ -1335,8 +1335,21 @@
         </div>
         
         <!-- Trial Credits Display (shown for anonymous users) -->
-        <div id="trialCreditsDisplay" style="display: none; padding: 8px 16px; background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; font-size: 0.9rem;">
-          <span style="color: #94a3b8;">Free Questions: <span id="trialCreditsCount">3</span></span>
+        <div id="trialCreditsDisplay" style="display: none; position: relative;">
+          <div id="trialCreditsBtn" style="padding: 8px 16px; background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;" 
+               onmouseover="this.style.background='rgba(148, 163, 184, 0.2)'" 
+               onmouseout="this.style.background='rgba(148, 163, 184, 0.1)'">
+            <span style="color: #94a3b8;">Free Questions: <span id="trialCreditsCount">3</span></span>
+          </div>
+          <div id="trialCreditsDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: #1e293b; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 16px; min-width: 280px; z-index: 1000; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);">
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin: 0 0 12px 0; line-height: 1.5;">
+              You have <strong style="color: #fbbf24;"><span id="trialCreditsCountDropdown">3</span> free questions</strong> to try the interview coach. Each question includes AI feedback on your answer.
+            </p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 16px 0; line-height: 1.4;">
+              To unlock detailed feedback, 10/10 answers, and unlimited practice, purchase credits after signup.
+            </p>
+            <button class="primary" onclick="window.showCreditPurchaseModal(); document.getElementById('trialCreditsDropdown').style.display='none';" style="width: 100%; padding: 10px; font-size: 0.9rem; margin-top: 8px;">Buy More Credits</button>
+          </div>
         </div>
         
         <!-- Auth Buttons -->
@@ -2634,6 +2647,11 @@
       if (trialCreditsCountEl) {
         trialCreditsCountEl.textContent = remaining;
       }
+      // Update dropdown count too
+      const trialCreditsCountDropdown = document.getElementById('trialCreditsCountDropdown');
+      if (trialCreditsCountDropdown) {
+        trialCreditsCountDropdown.textContent = remaining;
+      }
       if (creditsDisplay) creditsDisplay.style.display = 'none';
       if (trialCreditsDisplay) trialCreditsDisplay.style.display = 'flex';
     }
@@ -2916,6 +2934,11 @@
       
       if (trialCreditsCountEl) {
         trialCreditsCountEl.textContent = remaining;
+      }
+      // Update dropdown count too
+      const trialCreditsCountDropdown = document.getElementById('trialCreditsCountDropdown');
+      if (trialCreditsCountDropdown) {
+        trialCreditsCountDropdown.textContent = remaining;
       }
       if (creditsDisplay) creditsDisplay.style.display = 'none';
       if (trialCreditsDisplay) trialCreditsDisplay.style.display = 'flex';
@@ -6027,6 +6050,18 @@ Return ONLY the category and question.`
   window.showCreditPurchaseModal = showCreditPurchaseModal;
   window.purchaseCredits = purchaseCredits;
   
+  // Trial credits dropdown toggle
+  const trialCreditsBtn = document.getElementById('trialCreditsBtn');
+  const trialCreditsDropdown = document.getElementById('trialCreditsDropdown');
+  
+  if (trialCreditsBtn && trialCreditsDropdown) {
+    trialCreditsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = trialCreditsDropdown.style.display === 'block';
+      trialCreditsDropdown.style.display = isVisible ? 'none' : 'block';
+    });
+  }
+  
   // Close modals when clicking outside
   document.addEventListener('click', (e) => {
     const modals = ['signupModal', 'loginModal', 'paywallModal', 'creditPurchaseModal'];
@@ -6040,6 +6075,11 @@ Return ONLY the category and question.`
     // Close user menu when clicking outside
     if (userMenuDropdown && !userMenuBtn.contains(e.target) && !userMenuDropdown.contains(e.target)) {
       userMenuDropdown.style.display = 'none';
+    }
+    
+    // Close trial credits dropdown when clicking outside
+    if (trialCreditsDropdown && trialCreditsBtn && !trialCreditsBtn.contains(e.target) && !trialCreditsDropdown.contains(e.target)) {
+      trialCreditsDropdown.style.display = 'none';
     }
   });
 </script>

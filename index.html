@@ -5834,11 +5834,12 @@ Return ONLY the category and question.`
           currentUser = data.user;
           updateAuthUI();
           await updateCreditsDisplay();
-          document.getElementById('loginModal').style.display = 'none';
+          const loginModal = document.getElementById('loginModal');
+          if (loginModal) loginModal.style.display = 'none';
           // If coming from paywall, show credit purchase
           if (window.showCreditPurchaseAfterAuth) {
             window.showCreditPurchaseAfterAuth = false;
-            showCreditPurchaseModal();
+            setTimeout(() => showCreditPurchaseModal(), 100); // Small delay to ensure modal closes first
           }
         } else {
           if (errorEl) {

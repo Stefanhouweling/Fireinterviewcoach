@@ -1348,7 +1348,7 @@
         
         <!-- Trial Credits Display (shown for anonymous users) -->
         <div id="trialCreditsDisplay" style="display: none; padding: 8px 16px; background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; font-size: 0.9rem;">
-          <span style="color: #94a3b8;">Free Sessions: <span id="trialCreditsCount">3</span></span>
+          <span style="color: #94a3b8;">Free Questions: <span id="trialCreditsCount">3</span></span>
         </div>
         
         <!-- Auth Buttons -->
@@ -5923,7 +5923,14 @@ Return ONLY the category and question.`
   }
   
   async function purchaseCredits(packId) {
-    if (!currentUser) return;
+    if (!currentUser) {
+      // Show signup modal if not logged in
+      const signupModal = document.getElementById('signupModal');
+      if (signupModal) {
+        signupModal.style.display = 'flex';
+      }
+      return;
+    }
     
     try {
       const response = await fetch(`${BACKEND_URL}/api/credits/create-checkout-session`, {
@@ -5933,9 +5940,24 @@ Return ONLY the category and question.`
         body: JSON.stringify({ packId })
       });
       
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Session expired, prompt to log in again
+          alert('Your session has expired. Please log in again.');
+          const loginModal = document.getElementById('loginModal');
+          if (loginModal) {
+            loginModal.style.display = 'flex';
+          }
+          return;
+        }
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || 'Failed to create checkout session. Please try again.');
+        return;
+      }
+      
       const data = await response.json();
       
-      if (response.ok && data.url) {
+      if (data.url) {
         // Redirect to Stripe checkout
         window.location.href = data.url;
       } else {
@@ -5968,55 +5990,6 @@ Return ONLY the category and question.`
     }
   });
 </script>
-
-<!-- ========== AUTHENTICATION MODALS ========== -->
-<!-- Signup Modal -->
-<div id="signupModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
-  <div style="background: #1e293b; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto;">
-    <h2 style="margin: 0 0 24px 0; color: #fbbf24; font-size: 1.5rem;">Sign up</h2>
-    <form id="signupForm">
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Name</label>
-        <input type="text" id="signupName" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
-      </div>
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Email</label>
-        <input type="email" id="signupEmail" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
-      </div>
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Password</label>
-        <input type="password" id="signupPassword" required minlength="6" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
-      </div>
-      <div id="signupError" style="display: none; color: #fca5a5; margin-bottom: 16px; font-size: 0.9rem;"></div>
-      <div style="display: flex; gap: 12px;">
-        <button type="submit" class="primary" style="flex: 1; padding: 12px;">Sign up</button>
-        <button type="button" id="closeSignupModal" class="ghost" style="padding: 12px 24px;">Cancel</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Login Modal -->
-<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
-  <div style="background: #1e293b; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto;">
-    <h2 style="margin: 0 0 24px 0; color: #fbbf24; font-size: 1.5rem;">Log in</h2>
-    <form id="loginForm">
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Email</label>
-        <input type="email" id="loginEmail" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
-      </div>
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Password</label>
-        <input type="password" id="loginPassword" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
-      </div>
-      <div id="loginError" style="display: none; color: #fca5a5; margin-bottom: 16px; font-size: 0.9rem;"></div>
-      <div style="display: flex; gap: 12px;">
-        <button type="submit" class="primary" style="flex: 1; padding: 12px;">Log in</button>
-        <button type="button" id="closeLoginModal" class="ghost" style="padding: 12px 24px;">Cancel</button>
-      </div>
-    </form>
-  </div>
-</div>
 
 <!-- Paywall Modal -->
 <div id="paywallModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); z-index: 10000; align-items: center; justify-content: center;">

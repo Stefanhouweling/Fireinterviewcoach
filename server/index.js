@@ -514,15 +514,17 @@ app.post('/api/auth/google', async (req, res) => {
     
     res.cookie('authToken', token, cookieOptions);
     
-    console.log(`[GOOGLE AUTH] User ${user.id} (${user.email}) - Credits: ${user.credits_balance}`);
+    // Refresh user from database to get latest credits after any updates
+    const freshUser = User.findById(user.id);
+    console.log(`[GOOGLE AUTH] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        credits_balance: user.credits_balance,
-        provider: user.provider
+        id: freshUser.id,
+        email: freshUser.email,
+        name: freshUser.name,
+        credits_balance: freshUser.credits_balance,
+        provider: freshUser.provider
       },
       token
     });

@@ -2462,22 +2462,31 @@ Return the fact directly (name, number, or brief answer). Be specific and accura
           factResult = searchResponse.choices[0].message.content.trim();
         }
         
-        // Clean up the response
-        factResult = factResult.split('\n')[0].split('.')[0].trim();
+        // Clean up the response - be less aggressive to preserve full names
+        // Remove quotes but keep the full response
+        factResult = factResult.trim();
         factResult = factResult.replace(/^["']|["']$/g, '');
+        // Remove common prefixes like "The current fire chief is" but keep the name
+        factResult = factResult.replace(/^(the current|current|the|is|are):?\s*/i, '');
+        factResult = factResult.trim();
+        // Take first sentence/line but allow longer responses for full names
+        factResult = factResult.split('\n')[0].split('.')[0].trim();
         
         if (factResult && 
             factResult !== 'NOT FOUND' && 
             !factResult.toLowerCase().includes('not found') &&
             !factResult.toLowerCase().includes('outdated') &&
             !factResult.toLowerCase().includes('uncertain') &&
+            !factResult.toLowerCase().includes('i cannot') &&
+            !factResult.toLowerCase().includes('i don\'t') &&
+            !factResult.toLowerCase().includes('i do not') &&
             factResult.length > 0 &&
-            factResult.length < 100) {
+            factResult.length < 200) {  // Increased length limit to allow full names
           verifiedFacts[search.fact] = factResult;
           console.log(`✓ Found ${search.fact}: ${factResult}`);
           return { success: true, fact: search.fact, result: factResult };
         } else {
-          console.log(`✗ Could not verify ${search.fact}`);
+          console.log(`✗ Could not verify ${search.fact} - Response: ${factResult.substring(0, 50)}`);
           return { success: false, fact: search.fact };
         }
       } catch (err) {

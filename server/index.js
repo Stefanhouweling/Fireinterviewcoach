@@ -238,10 +238,10 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 
 // Credit bundle configurations
 const CREDIT_BUNDLES = {
-  starter: { credits: 20, priceCents: 999, name: 'Starter' },
-  core: { credits: 75, priceCents: 2499, name: 'Core' },
-  serious: { credits: 200, priceCents: 5999, name: 'Serious' },
-  heavy: { credits: 500, priceCents: 11999, name: 'Heavy' }
+  starter: { credits: 20, priceCents: 999, name: 'Essential' },
+  core: { credits: 75, priceCents: 2499, name: 'Professional', isPopular: true },
+  serious: { credits: 200, priceCents: 5999, name: 'Intensive' },
+  heavy: { credits: 500, priceCents: 11999, name: 'Mastery' }
 };
 
 // GET /api/credits/balance
@@ -280,7 +280,8 @@ app.get('/api/credits/bundles', (req, res) => {
       name: bundle.name,
       credits: bundle.credits,
       price_cents: bundle.priceCents,
-      price_dollars: (bundle.priceCents / 100).toFixed(2)
+      price_dollars: (bundle.priceCents / 100).toFixed(2),
+      isPopular: bundle.isPopular || false
     }))
   });
 });
@@ -327,7 +328,7 @@ app.post('/api/credits/create-checkout-session', authenticateToken, async (req, 
           currency: 'usd',
           product_data: {
             name: `${bundle.name} Pack - ${bundle.credits} Credits`,
-            description: `${bundle.credits} coaching sessions with full detailed feedback`
+            description: `${bundle.credits} coaching questions with full detailed feedback`
           },
           unit_amount: bundle.priceCents
         },

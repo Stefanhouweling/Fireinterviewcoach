@@ -1285,7 +1285,7 @@
     <div class="title" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0 24px;">
       <!-- Right side: Credits/Login -->
       <div style="display: flex; align-items: center; gap: 16px;">
-        <span id="headerCredits" style="color: #94a3b8; font-size: 0.9rem; font-weight: 500;">3 free sessions left</span>
+        <span id="headerCredits" style="color: #94a3b8; font-size: 0.9rem; font-weight: 500;">3 free questions left</span>
         <button id="headerLoginBtn" class="ghost" style="display: none;">Log In</button>
         <button id="headerSignupBtn" class="ghost" style="display: none;">Sign Up</button>
         <div id="headerUserMenu" style="display: none;">
@@ -1638,7 +1638,7 @@
 <div id="paywallModal" class="modal-overlay" style="display: none;">
   <div class="modal" style="max-width: 500px;">
     <div class="modal-header">
-      <h3>You've used your 3 free sessions</h3>
+      <h3>You've used your 3 free questions</h3>
       <button class="modal-close" id="closePaywallModal" type="button">×</button>
     </div>
     <div class="modal-content">
@@ -2640,7 +2640,7 @@
       const remaining = getTrialCreditsRemaining();
       const creditsEl = document.getElementById('headerCredits');
       if (creditsEl) {
-        creditsEl.textContent = `${remaining} free sessions left`;
+        creditsEl.textContent = `${remaining} free questions left`;
       }
     }
   }
@@ -2918,7 +2918,7 @@
       const remaining = getTrialCreditsRemaining();
       const creditsEl = document.getElementById('headerCredits');
       if (creditsEl) {
-        creditsEl.textContent = `${remaining} free sessions left`;
+        creditsEl.textContent = `${remaining} free questions left`;
       }
     }
   }
@@ -5897,18 +5897,23 @@ Return ONLY the category and question.`
       const data = await response.json();
       
       if (container) {
-        container.innerHTML = data.bundles.map(bundle => `
-          <div style="padding: 20px; background: #0f172a; border: 2px solid rgba(148, 163, 184, 0.2); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s;" 
-               onmouseover="this.style.borderColor='rgba(251, 191, 36, 0.5)'" 
-               onmouseout="this.style.borderColor='rgba(148, 163, 184, 0.2)'"
+        container.innerHTML = data.bundles.map(bundle => {
+          const isPopular = bundle.isPopular || false;
+          return `
+          <div style="padding: 20px; background: ${isPopular ? 'rgba(251, 191, 36, 0.1)' : '#0f172a'}; border: 2px solid ${isPopular ? 'rgba(251, 191, 36, 0.5)' : 'rgba(148, 163, 184, 0.2)'}; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; ${isPopular ? 'box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);' : ''}" 
+               onmouseover="this.style.borderColor='rgba(251, 191, 36, 0.5)'; this.style.transform='translateY(-2px)'" 
+               onmouseout="this.style.borderColor='${isPopular ? 'rgba(251, 191, 36, 0.5)' : 'rgba(148, 163, 184, 0.2)'}'; this.style.transform='translateY(0)'"
                onclick="purchaseCredits('${bundle.id}')">
-            <h3 style="margin: 0 0 8px 0; color: #fbbf24; font-size: 1.2rem;">${bundle.name}</h3>
+            ${isPopular ? '<div style="position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #0f172a; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Most Popular</div>' : ''}
+            <h3 style="margin: ${isPopular ? '12px' : '0'} 0 8px 0; color: #fbbf24; font-size: 1.2rem;">${bundle.name}</h3>
             <div style="font-size: 2rem; font-weight: 700; color: #fff; margin: 12px 0;">${bundle.credits}</div>
             <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">credits</div>
             <div style="color: #fbbf24; font-size: 1.5rem; font-weight: 600; margin: 16px 0;">$${bundle.price_dollars}</div>
-            <div style="color: #cbd5e1; font-size: 0.85rem;">~${bundle.credits} detailed sessions</div>
+            <div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: ${isPopular ? '8px' : '0'};">~${bundle.credits} detailed questions</div>
+            ${isPopular ? '<div style="color: #fbbf24; font-size: 0.8rem; font-weight: 600; margin-top: 8px; padding: 8px; background: rgba(251, 191, 36, 0.15); border-radius: 6px;">Most effective for serious practice</div>' : ''}
           </div>
-        `).join('');
+        `;
+        }).join('');
       }
       
       if (modal) modal.style.display = 'flex';
@@ -6016,7 +6021,7 @@ Return ONLY the category and question.`
 <!-- Paywall Modal -->
 <div id="paywallModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); z-index: 10000; align-items: center; justify-content: center;">
   <div style="background: #1e293b; border: 2px solid rgba(251, 191, 36, 0.5); border-radius: 16px; padding: 40px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; text-align: center;">
-    <h2 style="margin: 0 0 16px 0; color: #fbbf24; font-size: 1.8rem;">You've used your 3 free sessions</h2>
+    <h2 style="margin: 0 0 16px 0; color: #fbbf24; font-size: 1.8rem;">You've used your 3 free questions</h2>
     <p style="color: #cbd5e1; margin-bottom: 32px; line-height: 1.6;">
       To keep practicing and unlock full 10/10 answers and detailed feedback, you'll need credits.
     </p>

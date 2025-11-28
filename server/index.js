@@ -247,15 +247,16 @@ app.post('/api/auth/signup', async (req, res) => {
     
     res.cookie('authToken', token, cookieOptions);
     
-    // Also return token in response body so frontend can store it
-    console.log(`[SIGNUP] User ${user.id} (${user.email}) - Credits: ${user.credits_balance}`);
+    // Refresh user from database to get latest credits after any updates
+    const freshUser = User.findById(user.id);
+    console.log(`[SIGNUP] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        credits_balance: user.credits_balance
+        id: freshUser.id,
+        email: freshUser.email,
+        name: freshUser.name,
+        credits_balance: freshUser.credits_balance
       },
       token // Include token in response for localStorage fallback
     });
@@ -338,15 +339,16 @@ app.post('/api/auth/login', async (req, res) => {
     
     res.cookie('authToken', token, cookieOptions);
     
-    // Also return token in response body so frontend can store it
-    console.log(`[SIGNUP] User ${user.id} (${user.email}) - Credits: ${user.credits_balance}`);
+    // Refresh user from database to get latest credits after any updates
+    const freshUser = User.findById(user.id);
+    console.log(`[LOGIN] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        credits_balance: user.credits_balance
+        id: freshUser.id,
+        email: freshUser.email,
+        name: freshUser.name,
+        credits_balance: freshUser.credits_balance
       },
       token // Include token in response for localStorage fallback
     });

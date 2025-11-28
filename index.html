@@ -6276,6 +6276,21 @@ Return ONLY the category and question.`
     });
   }
   
+  // Auto-fill referral code in modals if present in localStorage
+  function autoFillReferralCodeInModals() {
+    const pendingCode = localStorage.getItem('pendingReferralCode');
+    if (pendingCode) {
+      const signupInput = document.getElementById('signupReferralCode');
+      const loginInput = document.getElementById('loginReferralCode');
+      if (signupInput && !signupInput.value) {
+        signupInput.value = pendingCode;
+      }
+      if (loginInput && !loginInput.value) {
+        loginInput.value = pendingCode;
+      }
+    }
+  }
+  
   // Modal open/close handlers
   const loginBtn = document.getElementById('loginBtn');
   const signupBtn = document.getElementById('signupBtn');
@@ -6296,7 +6311,10 @@ Return ONLY the category and question.`
       const signupModal = document.getElementById('signupModal');
       const loginModal = document.getElementById('loginModal');
       if (signupModal) signupModal.style.display = 'none';
-      if (loginModal) loginModal.style.display = 'flex';
+      if (loginModal) {
+        loginModal.style.display = 'flex';
+        autoFillReferralCodeInModals();
+      }
     });
   }
   
@@ -6305,7 +6323,10 @@ Return ONLY the category and question.`
       const loginModal = document.getElementById('loginModal');
       const signupModal = document.getElementById('signupModal');
       if (loginModal) loginModal.style.display = 'none';
-      if (signupModal) signupModal.style.display = 'flex';
+      if (signupModal) {
+        signupModal.style.display = 'flex';
+        autoFillReferralCodeInModals();
+      }
     });
   }
   

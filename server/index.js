@@ -143,6 +143,17 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+// GET /api/analytics/check-secret - Check if analytics secret is configured (for debugging)
+app.get('/api/analytics/check-secret', (req, res) => {
+  const isConfigured = !!ANALYTICS_SECRET && ANALYTICS_SECRET !== 'change-this-secret-key-for-analytics';
+  res.json({
+    configured: isConfigured,
+    secretLength: ANALYTICS_SECRET ? ANALYTICS_SECRET.length : 0,
+    firstChars: ANALYTICS_SECRET ? ANALYTICS_SECRET.substring(0, 8) + '...' : 'not set',
+    hint: isConfigured ? 'Secret is configured. Use it in the dashboard URL.' : 'ANALYTICS_SECRET not set or using default value. Set it in Render environment variables.'
+  });
+});
+
 // ========== AUTHENTICATION ENDPOINTS ==========
 
 // POST /api/auth/signup

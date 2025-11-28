@@ -7078,27 +7078,93 @@ Return ONLY the category and question.`
     }
   }
   
-  // Referral code copy functionality
-  const copyReferralCodeBtn = document.getElementById('copyReferralCode');
+  // Referral code share functionality
+  const shareReferralCodeBtn = document.getElementById('shareReferralCode');
   const referralCodeDisplay = document.getElementById('referralCodeDisplay');
   const referralCodeStatus = document.getElementById('referralCodeStatus');
   
-  if (copyReferralCodeBtn && referralCodeDisplay) {
-    copyReferralCodeBtn.addEventListener('click', () => {
-      referralCodeDisplay.select();
-      referralCodeDisplay.setSelectionRange(0, 99999); // For mobile devices
+  async function shareReferralCode() {
+    const code = referralCodeDisplay ? referralCodeDisplay.value : '';
+    if (!code || code === 'Loading...' || code === 'Error loading code') {
+      if (referralCodeStatus) {
+        referralCodeStatus.textContent = 'Please wait for code to load';
+        referralCodeStatus.style.color = '#fca5a5';
+        referralCodeStatus.style.display = 'block';
+        setTimeout(() => {
+          referralCodeStatus.style.display = 'none';
+          referralCodeStatus.style.color = '#86efac';
+        }, 2000);
+      }
+      return;
+    }
+    
+    const shareText = `🔥 Check out Fire Interview Coach! Use my referral code ${code} to get 3 free credits when you sign up!\n\n${window.location.origin}`;
+    const shareData = {
+      title: 'Fire Interview Coach - Referral Code',
+      text: shareText,
+      url: window.location.origin
+    };
+    
+    // Try Web Share API first (native sharing on mobile/desktop)
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
-        document.execCommand('copy');
+        await navigator.share(shareData);
         if (referralCodeStatus) {
+          referralCodeStatus.textContent = '✓ Shared!';
+          referralCodeStatus.style.color = '#86efac';
           referralCodeStatus.style.display = 'block';
           setTimeout(() => {
             referralCodeStatus.style.display = 'none';
           }, 2000);
         }
+        return;
       } catch (err) {
-        console.error('Failed to copy:', err);
+        // User cancelled or error - fall through to copy
+        if (err.name !== 'AbortError') {
+          console.log('Share failed, falling back to copy:', err);
+        } else {
+          // User cancelled, don't show error
+          return;
+        }
       }
-    });
+    }
+    
+    // Fallback: Copy to clipboard
+    try {
+      // Use modern Clipboard API if available
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shareText);
+      } else {
+        // Fallback for older browsers
+        referralCodeDisplay.select();
+        referralCodeDisplay.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+      }
+      
+      if (referralCodeStatus) {
+        referralCodeStatus.textContent = '✓ Copied to clipboard!';
+        referralCodeStatus.style.color = '#86efac';
+        referralCodeStatus.style.display = 'block';
+        setTimeout(() => {
+          referralCodeStatus.style.display = 'none';
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      if (referralCodeStatus) {
+        referralCodeStatus.textContent = 'Failed to share/copy';
+        referralCodeStatus.style.color = '#fca5a5';
+        referralCodeStatus.style.display = 'block';
+        setTimeout(() => {
+          referralCodeStatus.style.display = 'none';
+          referralCodeStatus.style.color = '#86efac';
+        }, 2000);
+      }
+    }
+  }
+  
+  if (shareReferralCodeBtn && referralCodeDisplay) {
+    shareReferralCodeBtn.addEventListener('click', shareReferralCode);
   }
   
   // Make functions globally accessible

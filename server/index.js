@@ -282,75 +282,113 @@ app.post('/api/auth/logout', (req, res) => {
 // POST /api/auth/google - Google OAuth sign-in
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { idToken, accessToken, userInfo } = req.body;
+    console.log('Google auth request received');
+    const { idToken, accessToken, userInfo, trialCredits } = req.body;
+    
+    // Check if Google OAuth is configured
+    if (!GOOGLE_CLIENT_ID || !googleClient) {
+      console.error('Google OAuth not configured - GOOGLE_CLIENT_ID:', !!GOOGLE_CLIENT_ID, 'googleClient:', !!googleClient);
+      return res.status(500).json({ error: 'Google OAuth not configured on server' });
+    }
     
     let email, name, providerId;
     
     // Support both ID token (preferred) and access token (fallback)
     if (idToken) {
-      // Verify Google ID token
-      if (!googleClient) {
-        return res.status(500).json({ error: 'Google OAuth not configured' });
+      console.log('Verifying ID token...');
+      try {
+        const ticket = await googleClient.verifyIdToken({
+          idToken,
+          audience: GOOGLE_CLIENT_ID
+        });
+        
+        const payload = ticket.getPayload();
+        providerId = payload.sub;
+        email = payload.email;
+        name = payload.name;
+        console.log('ID token verified - email:', email, 'name:', name);
+      } catch (verifyError) {
+        console.error('ID token verification failed:', verifyError);
+        return res.status(401).json({ error: 'Invalid ID token', message: verifyError.message });
       }
-      
-      const ticket = await googleClient.verifyIdToken({
-        idToken,
-        audience: GOOGLE_CLIENT_ID
-      });
-      
-      const payload = ticket.getPayload();
-      providerId = payload.sub;
-      email = payload.email;
-      name = payload.name;
     } else if (accessToken && userInfo) {
+      console.log('Verifying access token...');
       // Fallback: verify access token and use userInfo
-      // Verify the access token is valid by making a request to Google
       try {
         const verifyRes = await fetchModule(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
         if (!verifyRes.ok) {
+          const errorText = await verifyRes.text();
+          console.error('Token verification failed:', verifyRes.status, errorText);
           return res.status(401).json({ error: 'Invalid access token' });
         }
         
         const tokenInfo = await verifyRes.json();
         providerId = tokenInfo.user_id || userInfo.id;
         email = userInfo.email;
-        name = userInfo.name || userInfo.given_name + ' ' + (userInfo.family_name || '');
+        name = userInfo.name || (userInfo.given_name + ' ' + (userInfo.family_name || ''));
+        console.log('Access token verified - email:', email, 'name:', name);
       } catch (error) {
         console.error('Token verification error:', error);
-        return res.status(401).json({ error: 'Failed to verify access token' });
+        return res.status(401).json({ error: 'Failed to verify access token', message: error.message });
       }
     } else {
+      console.error('Missing tokens - idToken:', !!idToken, 'accessToken:', !!accessToken, 'userInfo:', !!userInfo);
       return res.status(400).json({ error: 'ID token or access token is required' });
     }
     
     if (!email) {
+      console.error('No email extracted from Google Sign-In');
       return res.status(400).json({ error: 'Email is required from Google Sign-In' });
     }
     
+    if (!providerId) {
+      console.error('No provider ID extracted from Google Sign-In');
+      return res.status(400).json({ error: 'Provider ID is required from Google Sign-In' });
+    }
+    
     // Find or create user
+    console.log('Looking up user by provider:', providerId);
     let user = User.findByProvider('google', providerId);
     
     if (!user) {
+      console.log('User not found, checking for existing email...');
       // Check if email already exists with different provider
       const existingUser = User.findByEmail(email);
       if (existingUser) {
+        console.log('Email already exists with different provider');
         return res.status(409).json({ error: 'An account with this email already exists. Please use email/password login.' });
       }
       
       // Create new user
-      user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
+      console.log('Creating new user...');
+      try {
+        user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
+        console.log('User created successfully - ID:', user.id);
+      } catch (createError) {
+        console.error('User creation failed:', createError);
+        return res.status(500).json({ error: 'Failed to create user', message: createError.message });
+      }
+    } else {
+      console.log('User found - ID:', user.id);
     }
     
     // Transfer trial credits if provided (from localStorage)
-    const { trialCredits } = req.body;
     if (trialCredits && trialCredits > 0 && user.credits_balance === 0) {
-      const newBalance = user.credits_balance + trialCredits;
-      User.updateCredits(user.id, newBalance);
-      CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on Google sign-in');
-      user.credits_balance = newBalance;
+      console.log('Transferring trial credits:', trialCredits);
+      try {
+        const newBalance = user.credits_balance + trialCredits;
+        User.updateCredits(user.id, newBalance);
+        CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on Google sign-in');
+        user.credits_balance = newBalance;
+        console.log('Trial credits transferred - new balance:', newBalance);
+      } catch (creditError) {
+        console.error('Failed to transfer trial credits:', creditError);
+        // Don't fail the auth, just log the error
+      }
     }
     
     // Generate JWT token
+    console.log('Generating JWT token...');
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
@@ -365,18 +403,21 @@ app.post('/api/auth/google', async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
     
+    console.log('Google auth successful for user:', user.email);
     res.json({
       success: true,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        credits_balance: user.credits_balance
+        credits_balance: user.credits_balance,
+        provider: user.provider
       },
       token
     });
   } catch (error) {
     console.error('Google auth error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ error: 'Failed to authenticate with Google', message: error.message });
   }
 });

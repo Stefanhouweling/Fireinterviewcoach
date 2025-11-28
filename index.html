@@ -1368,7 +1368,17 @@
             <span id="userEmail">user@example.com</span>
             <span>▼</span>
           </button>
-          <div id="userMenuDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: #1e293b; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 8px; min-width: 200px; z-index: 1000;">
+          <div id="userMenuDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: #1e293b; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 8px; min-width: 240px; z-index: 1000;">
+            <!-- Redeem Referral Code Section -->
+            <div style="padding: 12px; margin-bottom: 8px; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">
+              <h4 style="color: #fbbf24; margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 600;">Redeem Referral Code</h4>
+              <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
+                <input type="text" id="dropdownRedeemReferralCode" placeholder="Enter code" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.5); background: #0f172a; color: #fff; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center;" />
+                <button id="dropdownRedeemReferralCodeBtn" class="secondary" style="padding: 8px 12px; font-size: 0.8rem; white-space: nowrap; border: 1px solid rgba(251, 191, 36, 0.5);">Redeem</button>
+              </div>
+              <p id="dropdownRedeemReferralStatus" style="color: #86efac; font-size: 0.75rem; margin: 4px 0 0 0; display: none; font-weight: 600;"></p>
+              <p id="dropdownRedeemReferralError" style="color: #fca5a5; font-size: 0.75rem; margin: 4px 0 0 0; display: none;"></p>
+            </div>
             <button id="settingsBtn" class="ghost" style="width: 100%; text-align: left; padding: 8px 12px; font-size: 0.9rem; margin-bottom: 4px;">Settings</button>
             <button id="logoutBtn" class="ghost" style="width: 100%; text-align: left; padding: 8px 12px; font-size: 0.9rem;">Log out</button>
           </div>
@@ -6209,11 +6219,12 @@ Return ONLY the category and question.`
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       try {
-        await fetch(`${BACKEND_URL}/api/auth/logout`, {
-          method: 'POST',
-          credentials: 'include'
+        await authenticatedFetch(`${BACKEND_URL}/api/auth/logout`, {
+          method: 'POST'
         });
         currentUser = null;
+        authToken = null;
+        setAuthToken(null);
         updateAuthUI();
         updateTrialCreditsDisplay();
       } catch (error) {

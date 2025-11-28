@@ -6081,7 +6081,7 @@ Return ONLY the category and question.`
             if (signupReferralCode) signupReferralCode.value = referralCode;
           }
         }
-        const referralCode = document.getElementById('signupReferralCode')?.value?.trim().toUpperCase() || null;
+        if (referralCode) referralCode = referralCode.toUpperCase();
         
         const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
           method: 'POST',
@@ -6427,8 +6427,14 @@ Return ONLY the category and question.`
             
             // Get referral code from URL or localStorage if available
             const urlParams = new URLSearchParams(window.location.search);
-            const referralCode = urlParams.get('ref') || localStorage.getItem('pendingReferralCode') || null;
-            if (referralCode) localStorage.removeItem('pendingReferralCode');
+            let referralCode = urlParams.get('ref') || localStorage.getItem('pendingReferralCode') || null;
+            if (referralCode) {
+              referralCode = referralCode.trim().toUpperCase();
+              // Store in localStorage if from URL
+              if (urlParams.get('ref')) {
+                localStorage.setItem('pendingReferralCode', referralCode);
+              }
+            }
             
             // Now get ID token using the access token
             // We need to use the ID token for backend verification

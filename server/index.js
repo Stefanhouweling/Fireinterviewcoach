@@ -436,11 +436,11 @@ app.post('/api/auth/google', async (req, res) => {
     let user = User.findByProvider('google', providerId);
     
     if (!user) {
-      console.log('User not found, checking for existing email...');
+      console.log('User not found by provider, checking for existing email...');
       // Check if email already exists with different provider
       const existingUser = User.findByEmail(email);
       if (existingUser) {
-        console.log('Email already exists with different provider');
+        console.log(`[GOOGLE AUTH] Email ${email} already exists with provider ${existingUser.provider} - User ID: ${existingUser.id}, Credits: ${existingUser.credits_balance}`);
         return res.status(409).json({ error: 'An account with this email already exists. Please use email/password login.' });
       }
       
@@ -448,13 +448,13 @@ app.post('/api/auth/google', async (req, res) => {
       console.log('Creating new user...');
       try {
         user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
-        console.log('User created successfully - ID:', user.id);
+        console.log(`[GOOGLE AUTH] New user created - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);
       } catch (createError) {
         console.error('User creation failed:', createError);
         return res.status(500).json({ error: 'Failed to create user', message: createError.message });
       }
     } else {
-      console.log('User found - ID:', user.id);
+      console.log(`[GOOGLE AUTH] Existing user found - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);
     }
     
     // Handle referral code if provided (for new signups via Google)

@@ -210,14 +210,9 @@ app.post('/api/auth/signup', async (req, res) => {
           user.credits_balance = newBalance;
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
-          // Regular referral code
-          const referral = Referral.useCode(referralCode, user.id, 3);
-          // Grant 3 credits to the new user
-          const newBalance = user.credits_balance + 3;
-          User.updateCredits(user.id, newBalance);
-          CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
-          user.credits_balance = newBalance;
-          console.log(`Referral code ${referralCode} used by user ${user.id}`);
+          // Regular referral code - just track it, don't grant credits to referred user
+          const referral = Referral.useCode(referralCode, user.id, 0);
+          console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
@@ -305,14 +300,9 @@ app.post('/api/auth/login', async (req, res) => {
           user.credits_balance = newBalance;
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
-          // Regular referral code
-          const referral = Referral.useCode(referralCode, user.id, 3);
-          // Grant 3 credits to the new user
-          const newBalance = user.credits_balance + 3;
-          User.updateCredits(user.id, newBalance);
-          CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
-          user.credits_balance = newBalance;
-          console.log(`Referral code ${referralCode} used by user ${user.id}`);
+          // Regular referral code - just track it, don't grant credits to referred user
+          const referral = Referral.useCode(referralCode, user.id, 0);
+          console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
@@ -478,14 +468,9 @@ app.post('/api/auth/google', async (req, res) => {
           user.credits_balance = newBalance;
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
-          // Regular referral code
-          const referral = Referral.useCode(referralCode, user.id, 3);
-          // Grant 3 credits to the new user
-          const newBalance = user.credits_balance + 3;
-          User.updateCredits(user.id, newBalance);
-          CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
-          user.credits_balance = newBalance;
-          console.log(`Referral code ${referralCode} used by user ${user.id}`);
+          // Regular referral code - just track it, don't grant credits to referred user
+          const referral = Referral.useCode(referralCode, user.id, 0);
+          console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
@@ -944,13 +929,10 @@ app.post('/api/referrals/redeem', authenticateToken, (req, res) => {
       return res.status(400).json({ error: 'Referral codes can only be redeemed when you have 0 credits' });
     }
     
-    // Regular referral code
+    // Regular referral code - just track it, don't grant credits to referred user
     try {
-      const referral = Referral.useCode(code, user.id, 3);
-      const newBalance = user.credits_balance + 3;
-      User.updateCredits(user.id, newBalance);
-      CreditLedger.create(user.id, 3, `Referral code ${code} redeemed`);
-      return res.json({ success: true, creditsGranted: 3, newBalance });
+      const referral = Referral.useCode(code, user.id, 0);
+      return res.json({ success: true, creditsGranted: 0, message: 'Referral code applied. Referrer will receive credits when you complete your first question.' });
     } catch (refError) {
       return res.status(400).json({ error: refError.message });
     }

@@ -305,7 +305,7 @@ const Referral = {
     return referralQueries.findByCode.get(code);
   },
 
-  useCode(code, referredUserId, creditsToGrant = 3) {
+  useCode(code, referredUserId, creditsToGrant = 0) {
     const referral = this.findByCode(code);
     if (!referral) {
       throw new Error('Invalid referral code');
@@ -317,7 +317,7 @@ const Referral = {
       throw new Error('Cannot use your own referral code');
     }
     
-    referralQueries.updateUsed.run(referredUserId, creditsToGrant, code);
+    referralQueries.updateUsed.run(referredUserId, code);
     return referralQueries.findByCode.get(code);
   },
 

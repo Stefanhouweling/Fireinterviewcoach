@@ -1685,7 +1685,7 @@
       <div id="referralSection" style="margin-top: 30px; padding: 20px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px;">
         <h4 style="color: #fbbf24; margin: 0 0 12px 0; font-size: 1.1rem;">Refer a Friend</h4>
         <p style="color: #cbd5e1; font-size: 0.9rem; margin: 0 0 16px 0; line-height: 1.5;">
-          Share your referral code with friends. When they sign up and use your code, they'll get <strong style="color: #fbbf24;">3 full access credits</strong>!
+          Share your referral code with friends. When they sign up and complete their first question, you'll get <strong style="color: #fbbf24;">3 full access credits</strong>!
         </p>
         <div style="display: flex; gap: 8px; align-items: center;">
           <input type="text" id="referralCodeDisplay" readonly style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-align: center;" />
@@ -1783,7 +1783,7 @@
             <h4 style="color: #fbbf24; margin: 0; font-size: 1rem; font-weight: 600;">Redeem Referral Code</h4>
           </div>
           <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0 0 12px 0; line-height: 1.4;">
-            Have a referral code? Enter it here to get <strong style="color: #fbbf24;">3 free credits</strong> (only works if you have 0 credits).
+            Have a referral code? Enter it here.
           </p>
           <p style="color: #94a3b8; font-size: 0.75rem; margin: 0 0 12px 0; font-style: italic;">
             💡 Test codes: TEST, UNLIMITED, or DEV (for testing)
@@ -6063,8 +6063,11 @@ Return ONLY the category and question.`
           if (referralCode && signupReferralStatus) {
             const codeUpper = referralCode.toUpperCase();
             const isTestCode = codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV';
-            const creditsText = isTestCode ? 'unlimited' : '3';
-            signupReferralStatus.textContent = `✓ Referral code "${referralCode}" applied! You received ${creditsText} credits.`;
+            if (isTestCode) {
+              signupReferralStatus.textContent = `✓ Test referral code "${referralCode}" applied! You received unlimited credits.`;
+            } else {
+              signupReferralStatus.textContent = `✓ Referral code "${referralCode}" applied!`;
+            }
             signupReferralStatus.style.display = 'block';
           }
           updateAuthUI();
@@ -6161,7 +6164,13 @@ Return ONLY the category and question.`
           }
           // Show success message if referral code was used
           if (referralCode && loginReferralStatus) {
-            loginReferralStatus.textContent = `✓ Referral code "${referralCode}" applied! You received credits.`;
+            const codeUpper = referralCode.toUpperCase();
+            const isTestCode = codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV';
+            if (isTestCode) {
+              loginReferralStatus.textContent = `✓ Test referral code "${referralCode}" applied! You received unlimited credits.`;
+            } else {
+              loginReferralStatus.textContent = `✓ Referral code "${referralCode}" applied!`;
+            }
             loginReferralStatus.style.display = 'block';
           }
           updateAuthUI();
@@ -6820,8 +6829,11 @@ Return ONLY the category and question.`
         
         if (redeemRes.ok && redeemData.success) {
           if (statusElement) {
-            const creditsText = isTestCode ? 'unlimited' : (redeemData.creditsGranted || '3');
-            statusElement.textContent = `✓ Redeemed! +${creditsText} credits`;
+            if (isTestCode) {
+              statusElement.textContent = `✓ Test code redeemed! Unlimited credits granted.`;
+            } else {
+              statusElement.textContent = `✓ Referral code applied! Referrer will get credits when you complete your first question.`;
+            }
             statusElement.style.display = 'block';
           }
           
@@ -7091,7 +7103,7 @@ Return ONLY the category and question.`
       return;
     }
     
-    const shareText = `I've been using Fire Interview Coach to practice for firefighter interviews. It's an AI-powered tool that gives you personalized feedback on your answers.\n\nIf you're interested, you can use my referral code ${code} to get 3 free credits when you sign up.\n\n${window.location.origin}`;
+    const shareText = `I've been using Fire Interview Coach to practice for firefighter interviews. It's an AI-powered tool that gives you personalized feedback on your answers.\n\nIf you're interested, you can use my referral code ${code} when you sign up.\n\n${window.location.origin}`;
     
     // Try Web Share API first (native sharing on mobile/desktop)
     // Combine text and URL into text field to ensure full message is shared

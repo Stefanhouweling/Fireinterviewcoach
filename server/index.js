@@ -2435,7 +2435,7 @@ app.post('/api/research-city', async (req, res) => {
               }
             ],
             temperature: 0.1,
-            max_tokens: 50
+            max_tokens: 200  // Increased from 50 for more detailed, accurate responses
           });
           
           factResult = searchResponse.choices[0].message.content.trim();

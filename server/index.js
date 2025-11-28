@@ -7,7 +7,7 @@ const fetchModule = require('node-fetch');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
-const { User, Transaction, CreditLedger, Analytics, Referral } = require('./db');
+const { User, Transaction, CreditLedger, Analytics, Referral, referralQueries } = require('./db');
 const crypto = require('crypto');
 // Import question bank
 const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questionBank');

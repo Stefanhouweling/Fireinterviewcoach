@@ -539,6 +539,9 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
+    // Log credits for debugging
+    console.log(`[AUTH/ME] User ${user.id} (${user.email}) - Credits: ${user.credits_balance}`);
+    
     res.json({
       id: user.id,
       email: user.email,

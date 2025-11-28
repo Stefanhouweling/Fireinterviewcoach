@@ -322,13 +322,22 @@ app.post('/api/auth/login', async (req, res) => {
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
-        // Don't fail login if referral code is invalid
+        // Return error to frontend so user knows why referral code failed
+        return res.status(400).json({ 
+          error: 'Referral code error', 
+          message: refError.message,
+          referralCodeError: true
+        });
       }
     }
     
-    // Transfer trial credits if provided
-    if (trialCredits && trialCredits > 0) {
+    // Transfer trial credits ONLY if user has 0 credits (first time transfer, not on every login)
+    // This prevents trial credits from being added repeatedly on every login
+    if (trialCredits && trialCredits > 0 && user.credits_balance === 0) {
       await User.addCredits(user.id, trialCredits, 'Trial credits transferred on login');
+      console.log(`[TRIAL CREDITS] Transferred ${trialCredits} trial credits to user ${user.id} on first login`);
+    } else if (trialCredits && trialCredits > 0 && user.credits_balance > 0) {
+      console.log(`[TRIAL CREDITS] Skipped transfer - user ${user.id} already has ${user.credits_balance} credits`);
     }
     
     // Generate JWT token

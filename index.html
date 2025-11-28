@@ -5281,7 +5281,7 @@ Return ONLY the category and question.`
       html += `</div></div>`; // Close blur div and premium section div
       html += `<div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; text-align: center;">
         <p style="color: #fbbf24; margin: 0 0 8px 0; font-weight: 600;">Full 10/10 answer & detailed coaching are available after upgrading.</p>
-        <button class="primary" onclick="showPaywallIfNeeded()" style="padding: 8px 16px; margin-top: 8px;">Buy Credits to Unlock</button>
+        <button class="primary" onclick="window.showCreditPurchaseModal()" style="padding: 8px 16px; margin-top: 8px;">Buy Credits to Unlock</button>
       </div>`;
     }
     
@@ -5289,7 +5289,7 @@ Return ONLY the category and question.`
     if (inBlurredContentSection && isTrialWithoutAccess) {
       html += `<div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; text-align: center;">
         <p style="color: #fbbf24; margin: 0 0 8px 0; font-weight: 600;">Detailed feedback is available after upgrading.</p>
-        <button class="primary" onclick="showPaywallIfNeeded()" style="padding: 8px 16px; margin-top: 8px;">Buy Credits to Unlock</button>
+        <button class="primary" onclick="window.showCreditPurchaseModal()" style="padding: 8px 16px; margin-top: 8px;">Buy Credits to Unlock</button>
       </div>`;
     }
     

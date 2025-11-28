@@ -80,8 +80,7 @@ app.get('/', (req, res) => {
         login: 'POST /api/auth/login',
         logout: 'POST /api/auth/logout',
         me: 'GET /api/auth/me',
-        google: 'POST /api/auth/google',
-        apple: 'POST /api/auth/apple'
+        google: 'POST /api/auth/google'
       },
       credits: {
         createCheckout: 'POST /api/credits/create-checkout-session',

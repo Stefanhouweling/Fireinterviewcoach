@@ -3,14 +3,33 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure data directory exists
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+// CRITICAL: On Render, use persistent disk storage
+// Render provides /opt/render/project/src/server/data for persistent storage
+// For local development, use __dirname/data
+let dataDir;
+if (process.env.RENDER) {
+  // Render persistent disk path
+  dataDir = '/opt/render/project/src/server/data';
+} else if (process.env.NODE_ENV === 'production' && process.platform !== 'win32') {
+  // Production (but not Render) - use /tmp or a persistent location
+  dataDir = path.join(process.env.HOME || '/tmp', '.fireinterviewcoach', 'data');
+} else {
+  // Local development
+  dataDir = path.join(__dirname, 'data');
 }
 
+// Ensure data directory exists
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+  console.log(`Created data directory: ${dataDir}`);
+}
+
+const dbPath = path.join(dataDir, 'fireinterviewcoach.db');
+console.log(`Database path: ${dbPath}`);
+console.log(`Database exists: ${fs.existsSync(dbPath)}`);
+
 // Initialize database
-const db = new Database(path.join(dataDir, 'fireinterviewcoach.db'));
+const db = new Database(dbPath);
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');

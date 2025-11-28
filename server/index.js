@@ -224,7 +224,12 @@ app.post('/api/auth/signup', async (req, res) => {
         }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
-        // Don't fail signup if referral code is invalid, just log it
+        // Return error to frontend so user knows why referral code failed
+        return res.status(400).json({ 
+          error: 'Referral code error', 
+          message: refError.message,
+          referralCodeError: true
+        });
       }
     }
     
@@ -293,7 +298,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
     
     // Handle referral code if provided (only for new users with 0 credits)
-    const { referralCode } = req.body;
+    const { referralCode, trialCredits } = req.body;
     if (referralCode && user.credits_balance === 0) {
       try {
         const codeUpper = referralCode.toUpperCase().trim();

@@ -3568,6 +3568,20 @@ app.get('/api/analytics/dashboard', (req, res) => {
   </div>
   
   <button class="refresh-btn" onclick="window.location.reload()">🔄 Refresh</button>
+  
+  <script>
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+      window.location.reload();
+    }, 30000);
+    
+    // Show last updated time
+    const lastUpdated = new Date().toLocaleTimeString();
+    const updateIndicator = document.createElement('div');
+    updateIndicator.style.cssText = 'position: fixed; bottom: 20px; left: 20px; color: #94a3b8; font-size: 0.85rem; background: rgba(15, 23, 42, 0.9); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.2);';
+    updateIndicator.textContent = `Last updated: ${lastUpdated} | Auto-refreshing every 30s`;
+    document.body.appendChild(updateIndicator);
+  </script>
 </body>
 </html>
     `;

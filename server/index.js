@@ -3516,7 +3516,7 @@ app.post('/api/analytics/question', optionalAuth, async (req, res) => {
 });
 
 // GET /api/analytics/dashboard - Admin analytics dashboard (requires secret key)
-app.get('/api/analytics/dashboard', (req, res) => {
+app.get('/api/analytics/dashboard', async (req, res) => {
   try {
     let { secret } = req.query;
     

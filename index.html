@@ -2636,9 +2636,12 @@
   
   // Update trial credits display
   function updateTrialCreditsDisplay() {
-    const trialCreditsCountEl = document.getElementById('trialCreditsCount');
-    if (trialCreditsCountEl) {
-      trialCreditsCountEl.textContent = getTrialCreditsRemaining();
+    if (!currentUser) {
+      const remaining = getTrialCreditsRemaining();
+      const creditsEl = document.getElementById('headerCredits');
+      if (creditsEl) {
+        creditsEl.textContent = `${remaining} free sessions left`;
+      }
     }
   }
   

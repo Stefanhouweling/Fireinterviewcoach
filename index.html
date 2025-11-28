@@ -4950,22 +4950,55 @@ Return ONLY the category and question.`
       return;
     }
     try {
+      // Optimize video constraints for performance - limit resolution and frame rate
+      const videoConstraints = {
+        width: { ideal: 640, max: 1280 },
+        height: { ideal: 480, max: 720 },
+        frameRate: { ideal: 15, max: 30 },  // Lower frame rate for better performance
+        facingMode: 'user'
+      };
+      
       cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: videoConstraints,
         audio: false
       });
+      
+      // Set video attributes for better performance
+      videoEl.setAttribute('playsinline', '');
+      videoEl.setAttribute('autoplay', '');
+      videoEl.setAttribute('muted', '');
       videoEl.srcObject = cameraStream;
       cameraBtn.textContent = "⏹ Stop Camera";
 
-      motionCanvas.width = videoEl.clientWidth || 640;
-      motionCanvas.height = videoEl.clientHeight || 480;
-      motionCtx = motionCanvas.getContext("2d");
+      // Wait for video metadata to load before setting canvas size
+      await new Promise((resolve) => {
+        videoEl.onloadedmetadata = () => {
+          // Use smaller canvas resolution for motion tracking (don't need full video resolution)
+          const maxCanvasWidth = 320;  // Much smaller for performance
+          const maxCanvasHeight = 240;
+          const videoAspect = videoEl.videoWidth / videoEl.videoHeight;
+          
+          let canvasWidth = maxCanvasWidth;
+          let canvasHeight = maxCanvasHeight;
+          
+          if (videoAspect > 1) {
+            canvasHeight = maxCanvasWidth / videoAspect;
+          } else {
+            canvasWidth = maxCanvasHeight * videoAspect;
+          }
+          
+          motionCanvas.width = Math.floor(canvasWidth);
+          motionCanvas.height = Math.floor(canvasHeight);
+          motionCtx = motionCanvas.getContext("2d", { willReadFrequently: true });
+          resolve();
+        };
+      });
 
       motionSamples = [];
       lastFrameData = null;
       if (motionIntervalId) clearInterval(motionIntervalId);
-      // Increased interval and added smoothing to reduce jitter
-      motionIntervalId = setInterval(captureMotionSample, 1000);
+      // Reduced frequency to every 2 seconds for better performance
+      motionIntervalId = setInterval(captureMotionSample, 2000);
     } catch (err) {
       console.error(err);
       alert("Could not access camera. Check permissions.");
@@ -4989,42 +5022,60 @@ Return ONLY the category and question.`
   }
 
   function captureMotionSample() {
-    if (!cameraStream || !motionCtx) return;
+    if (!cameraStream || !motionCtx || !videoEl || videoEl.readyState < 2) return;
     const w = motionCanvas.width;
     const h = motionCanvas.height;
-    if (!w || !h) return;
+    if (!w || !h || w === 0 || h === 0) return;
 
-    motionCtx.drawImage(videoEl, 0, 0, w, h);
-    const frame = motionCtx.getImageData(0, 0, w, h);
+    // Use requestAnimationFrame for smoother drawing
+    requestAnimationFrame(() => {
+      try {
+        // Draw video frame to canvas at smaller resolution
+        motionCtx.drawImage(videoEl, 0, 0, w, h);
+        
+        // Use larger step size and sample fewer pixels for better performance
+        const frame = motionCtx.getImageData(0, 0, w, h);
 
-    if (!lastFrameData) {
-      lastFrameData = frame;
-      return;
-    }
+        if (!lastFrameData) {
+          lastFrameData = frame;
+          return;
+        }
 
-    let diffSum = 0;
-    const step = 4 * 12; // Increased step size to reduce sensitivity
-    for (let i = 0; i < frame.data.length; i += step) {
-      const r = frame.data[i];
-      const g = frame.data[i + 1];
-      const b = frame.data[i + 2];
-      const r0 = lastFrameData.data[i];
-      const g0 = lastFrameData.data[i + 1];
-      const b0 = lastFrameData.data[i + 2];
-      const delta = Math.abs(r - r0) + Math.abs(g - g0) + Math.abs(b - b0);
-      diffSum += delta;
-    }
-    const avgDiff = diffSum / (frame.data.length / step);
-    motionSamples.push(avgDiff);
-    // Keep more samples for better smoothing
-    if (motionSamples.length > 60) motionSamples.shift();
+        // Sample every 16th pixel (4 * 16 = 64 bytes per sample) for better performance
+        let diffSum = 0;
+        let sampleCount = 0;
+        const step = 4 * 16; // Larger step size for better performance
+        
+        for (let i = 0; i < frame.data.length; i += step) {
+          const r = frame.data[i];
+          const g = frame.data[i + 1];
+          const b = frame.data[i + 2];
+          const r0 = lastFrameData.data[i];
+          const g0 = lastFrameData.data[i + 1];
+          const b0 = lastFrameData.data[i + 2];
+          const delta = Math.abs(r - r0) + Math.abs(g - g0) + Math.abs(b - b0);
+          diffSum += delta;
+          sampleCount++;
+        }
+        
+        const avgDiff = sampleCount > 0 ? diffSum / sampleCount : 0;
+        motionSamples.push(avgDiff);
+        
+        // Keep fewer samples for better performance (30 instead of 60)
+        if (motionSamples.length > 30) motionSamples.shift();
 
-    // Smooth the display with exponential moving average
-    const recentSamples = motionSamples.slice(-10);
-    const smoothedScore = recentSamples.reduce((a, b) => a + b, 0) / recentSamples.length;
-    const liveScore = Math.round(smoothedScore);
-    motionScoreEl.textContent = liveScore;
-    lastFrameData = frame;
+        // Smooth the display with exponential moving average
+        const recentSamples = motionSamples.slice(-10);
+        const smoothedScore = recentSamples.reduce((a, b) => a + b, 0) / recentSamples.length;
+        const liveScore = Math.round(smoothedScore);
+        if (motionScoreEl) motionScoreEl.textContent = liveScore;
+        
+        // Store frame data for next comparison
+        lastFrameData = frame;
+      } catch (err) {
+        console.error('Motion capture error:', err);
+      }
+    });
   }
 
   function computeMotionScoreForAnswer() {
@@ -6357,7 +6408,7 @@ Return ONLY the category and question.`
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, password, trialCredits, referralCode })
+          body: JSON.stringify({ email, password, trialCredits, referralCode, rememberMe })
         });
         
         const data = await response.json();

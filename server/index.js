@@ -1402,8 +1402,8 @@ The feedback MUST include:
             "- **Step 1:** [What they should do first and why]\n" +
             "- **Step 2:** [Next key step, including chain of command / safety / communication]\n" +
             "- **Step 3:** [How they would wrap up, debrief, or follow up]\n\n") +
-            "## Panel-Ready 10/10 Answer\n" +
-            "Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:\n" +
+            "## Panel-Ready Answer\n" +
+            "Write a single, polished answer that would be panel ready on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:\n" +
             "- 1 short opening sentence that orients the panel.\n" +
             "- 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.\n" +
             "- Keep language natural, plain, and realistic for a firefighter candidate.\n\n" +

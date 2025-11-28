@@ -437,29 +437,55 @@ app.post('/api/auth/google', async (req, res) => {
     
     if (!user) {
       console.log('User not found by provider, checking for existing email...');
-      // Check if email already exists with different provider
+      // Check if email already exists - this is CRITICAL for account linking
       const existingUser = User.findByEmail(email);
       if (existingUser) {
-        console.log(`[GOOGLE AUTH] Email ${email} already exists with provider ${existingUser.provider} - User ID: ${existingUser.id}, Credits: ${existingUser.credits_balance}`);
-        // If existing user has credits, preserve them - don't allow Google sign-in to overwrite
-        if (existingUser.credits_balance > 0) {
-          console.log(`[GOOGLE AUTH] WARNING: Existing account has ${existingUser.credits_balance} credits - blocking Google sign-in to prevent credit loss`);
+        console.log(`[GOOGLE AUTH] Email ${email} already exists - User ID: ${existingUser.id}, Provider: ${existingUser.provider}, Credits: ${existingUser.credits_balance}`);
+        
+        // CRITICAL: Link Google account to existing account if it's the same email
+        // This handles the case where user signed in with Google on computer, then phone
+        if (existingUser.provider === 'google') {
+          // Same email, same provider, but different provider_id - update the provider_id to link accounts
+          console.log(`[GOOGLE AUTH] Linking Google account - updating provider_id for existing user ${existingUser.id}`);
+          const { db, userQueries } = require('./db');
+          if (!userQueries.updateProviderId) {
+            userQueries.updateProviderId = db.prepare('UPDATE users SET provider_id = ? WHERE id = ?');
+          }
+          userQueries.updateProviderId.run(providerId, existingUser.id);
+          
+          // Refresh user to get updated data
+          user = User.findById(existingUser.id);
+          console.log(`[GOOGLE AUTH] Account linked - User ID: ${user.id}, Credits: ${user.credits_balance}`);
+        } else if (existingUser.provider === 'email') {
+          // Email/password account exists - link Google to it
+          console.log(`[GOOGLE AUTH] Linking Google account to existing email/password account ${existingUser.id}`);
+          const { db, userQueries } = require('./db');
+          if (!userQueries.linkGoogleAccount) {
+            userQueries.linkGoogleAccount = db.prepare('UPDATE users SET provider = ?, provider_id = ? WHERE id = ?');
+          }
+          userQueries.linkGoogleAccount.run('google', providerId, existingUser.id);
+          
+          // Refresh user to get updated data
+          user = User.findById(existingUser.id);
+          console.log(`[GOOGLE AUTH] Account linked - User ID: ${user.id}, Credits: ${user.credits_balance}`);
+        } else {
+          // Different provider - block to prevent account confusion
+          console.log(`[GOOGLE AUTH] Email exists with different provider ${existingUser.provider} - blocking`);
           return res.status(409).json({ 
-            error: 'An account with this email already exists. Please use email/password login to preserve your credits.',
+            error: 'An account with this email already exists with a different sign-in method.',
             credits_preserved: existingUser.credits_balance
           });
         }
-        return res.status(409).json({ error: 'An account with this email already exists. Please use email/password login.' });
-      }
-      
-      // Create new user
-      console.log('Creating new user...');
-      try {
-        user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
-        console.log(`[GOOGLE AUTH] New user created - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);
-      } catch (createError) {
-        console.error('User creation failed:', createError);
-        return res.status(500).json({ error: 'Failed to create user', message: createError.message });
+      } else {
+        // No existing user - create new one
+        console.log('Creating new user...');
+        try {
+          user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
+          console.log(`[GOOGLE AUTH] New user created - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);
+        } catch (createError) {
+          console.error('User creation failed:', createError);
+          return res.status(500).json({ error: 'Failed to create user', message: createError.message });
+        }
       }
     } else {
       console.log(`[GOOGLE AUTH] Existing user found - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);

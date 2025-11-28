@@ -2435,19 +2435,28 @@ app.post('/api/research-city', async (req, res) => {
         // Fallback to chat completions if Responses API not available
         if (!factResult) {
           const searchResponse = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-4o",  // Use gpt-4o for better web search and fact-finding capabilities
             messages: [
               {
                 role: "system",
-                content: `You are a fact-checker. Provide the MOST CURRENT information. Return ONLY the fact itself (name or number), no explanations. If uncertain, return "NOT FOUND".`
+                content: `You are an expert fact-checker with access to current web information. Your job is to find the MOST CURRENT, VERIFIED information. 
+
+IMPORTANT:
+- Use web search to find current, accurate information
+- Return the fact directly (name, number, or brief answer)
+- If you find the information, return it clearly
+- Only return "NOT FOUND" if you truly cannot find any current information after searching
+- Be specific and accurate - include full names when available`
               },
               {
                 role: "user",
-                content: `What is the current fact for "${search.query}"? Return ONLY the fact (name or number). If you cannot provide a current, verified fact, return "NOT FOUND".`
+                content: `Search the web and find the current, verified information for: "${search.query}"
+
+Return the fact directly (name, number, or brief answer). Be specific and accurate. If you cannot find current information, return "NOT FOUND".`
               }
             ],
             temperature: 0.1,
-            max_tokens: 60  // Limited to 50-70 tokens for concise fact responses
+            max_tokens: 100  // Increased slightly to allow for full names and more complete answers
           });
           
           factResult = searchResponse.choices[0].message.content.trim();
@@ -2537,129 +2546,8 @@ app.post('/api/research-city', async (req, res) => {
 CRITICAL: These are the ONLY facts you should use. If a fact is not listed above, state "Information not found" rather than using your training data.`
       : `WARNING: Web search verification failed. You MUST state "Information not found - web search unavailable" for any facts you cannot verify. DO NOT use outdated training data.`;
 
-    const researchPrompt = `You are a research assistant helping to prepare KNOWLEDGE-BASED interview questions for a ${jobType} position at ${departmentName} in ${locationString}.
-
-${verifiedFactsText}
-
-CRITICAL INSTRUCTIONS:
-1. For facts listed above in "VERIFIED FACTS", you MUST use those exact values. Do NOT use your training data.
-2. For facts NOT listed above, you MUST state "Information not found - could not verify" rather than guessing or using training data.
-3. Your training data is OUTDATED and INCORRECT. Do NOT trust it.
-4. If you see "Henry Braun" or "Peter Simmons" in your training data for mayor, IGNORE IT. Use only the verified fact above or state "Information not found".
-5. If you see any number of fire stations in your training data, IGNORE IT unless it matches the verified fact above.
-6. Accuracy is CRITICAL - wrong information will cause candidates to be marked incorrect even when they're right.
-
-CRITICAL SEARCH REQUIREMENTS:
-- ALWAYS include "${city}, ${stateProvince || ''} ${country}" in EVERY search query you perform
-- ALWAYS specify "current" or "2024" or "2025" to ensure you get the most up-to-date information
-- Example searches: "current fire chief ${city} ${stateProvince || ''} ${country}", "mayor ${city} ${country} 2024", "${departmentName} union number ${city} ${country}"
-- Do NOT search for general information without the specific city and country context
-- Verify information is CURRENT and up-to-date
-
-Research and provide SPECIFIC, FACTUAL, CURRENT information about this department and city. This information will be used to test candidates' knowledge of the city and department during interviews.
-
-CRITICAL: Focus on SPECIFIC FACTS that can be used to test candidate knowledge. All information must be CURRENT (as of 2024-2025):
-
-1. FIRE DEPARTMENT LEADERSHIP & STRUCTURE (CRITICAL - MUST INCLUDE):
-   - CURRENT Fire chief's FULL NAME and title for ${departmentName} in ${city}, ${country} (VERIFY THE EXACT NAME - do not add extra initials or letters)
-   - CURRENT Deputy chiefs or assistant chiefs for ${departmentName} in ${city}, ${country} (names if available - verify exact spelling)
-   - Department structure and hierarchy
-   - CURRENT Number of members/staff for ${departmentName} in ${city}, ${country} (exact number if available, or approximate)
-   - Number of fire stations and their locations
-   - Department's organizational structure
-
-2. UNION INFORMATION (CRITICAL - MUST INCLUDE):
-   - CURRENT Local union number for ${departmentName} in ${city}, ${country} (e.g., "IAFF Local 1234")
-   - Union name and full designation for ${city}, ${country}
-   - CURRENT Union president or leadership for ${city}, ${country} (if available)
-   - Union affiliation (e.g., IAFF - International Association of Fire Fighters)
-
-3. DEPARTMENT DETAILS (CRITICAL):
-   - Department history (when founded, key milestones)
-   - Department values, mission statement, or motto
-   - Recent initiatives, programs, or changes
-   - Community involvement programs
-   - Equipment or apparatus information
-   - Response areas or coverage zones
-
-4. CITY LEADERSHIP (CRITICAL - MUST INCLUDE):
-   - CURRENT Mayor's FULL NAME for ${city}, ${country} (VERIFY THE EXACT NAME - do not add extra initials or letters)
-   - CURRENT Mayor's key priorities for ${city}, ${country}, especially related to emergency services
-   - CURRENT City council members for ${city}, ${country} (especially those on public safety committees)
-   - CURRENT City manager or chief administrative officer for ${city}, ${country}
-
-5. CITY INFORMATION:
-   - City demographics and population
-   - Major industries or economic drivers
-   - Unique challenges facing the city (that affect fire department)
-   - City planning initiatives
-   - Emergency services structure (how fire fits with police, EMS)
-   - Recent city developments or growth
-
-6. DEPARTMENT-SPECIFIC CONTEXT:
-   - How the department fits into the city's emergency services
-   - Department's role in the community
-   - Any unique aspects, challenges, or strengths of this specific department
-   - Department's relationship with city government
-
-CRITICAL ACCURACY REQUIREMENTS: 
-- You MUST perform web searches to verify ALL information. Do NOT rely on training data - it may be outdated or incorrect.
-- For EVERY fact, search the web with queries like:
-  * "current fire chief ${city} ${stateProvince || ''} ${country} 2024"
-  * "${departmentName} number of fire stations ${city} ${country} 2024"
-  * "mayor ${city} ${country} 2024"
-  * "${departmentName} union number ${city} ${country}"
-- Provide SPECIFIC NAMES, NUMBERS, and FACTS only after verifying them through web search
-- For names: Use EXACT names as they appear in official sources. Do NOT add extra initials, letters, or characters (e.g., if you see "Erick Peterson", use exactly that - do not add "B. R. H." or other letters)
-- For numbers: VERIFY with web search. If your training data says "5 fire stations", you MUST search to confirm this is correct for ${city}, ${country} in 2024-2025.
-- Verify all names and numbers before including them - check spelling and do not add extra characters
-- If information is not available after web search, clearly state "Information not found" for that specific item
-- Focus on information that would be publicly available and that a well-prepared candidate should know
-- Format clearly with headings so specific facts can be easily extracted for knowledge-testing questions
-- This research will be used to generate questions that TEST the candidate's knowledge, not behavioral questions
-- Accuracy is ESSENTIAL - incorrect information will cause candidates to be marked wrong even when they give correct answers
-- If you cannot verify a fact through web search, state "Information not found" rather than guessing
-
-Provide a structured summary (400-600 words) with clear sections for each category above.`;
-
-    // Use OpenAI with web browsing capability to get real-time, accurate information
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `You are a research assistant that provides ACCURATE, VERIFIABLE, CURRENT information about fire departments, police departments, and emergency services.
-
-CRITICAL: Your training data is OUTDATED and UNRELIABLE. You MUST use ONLY the verified facts provided in the user's message. 
-
-ABSOLUTE RULES:
-1. If a verified fact is provided (e.g., "mayor name: [name]"), you MUST use that exact fact. Do NOT use your training data.
-2. If a verified fact is NOT provided, you MUST state "Information not found - could not verify" rather than using your training data.
-3. Your training data contains OUTDATED information (e.g., "Henry Braun" as mayor - this is WRONG). IGNORE IT.
-4. Do NOT add extra initials, letters, or characters to names.
-5. Do NOT guess numbers (like "5 fire stations") - only use verified numbers or state "Information not found".
-6. Accuracy is CRITICAL - wrong information will cause candidates to be marked incorrect even when they're right.
-
-Your ONLY job is to use the verified facts provided. If a fact is not verified, state "Information not found".`
-        },
-        {
-          role: "user",
-          content: researchPrompt + `\n\nIMPORTANT: Before providing any information, perform web searches to verify each fact. Do NOT rely on your training data - it may be outdated. Search for:
-- "current fire chief ${city} ${stateProvince || ''} ${country} 2024"
-- "mayor ${city} ${country} 2024"
-- "${departmentName} union number ${city} ${country}"
-- "${departmentName} number of fire stations ${city} ${country} 2024"
-- "${departmentName} number of members ${city} ${country} 2024"
-- Any other specific facts you need to verify
-
-Only include information that you can verify through web search. If you cannot find current information, state "Information not found" for that specific item.`
-        }
-      ],
-      temperature: 0.1, // Very low temperature for maximum accuracy
-      max_tokens: 3000  // Increased from 1500 for more comprehensive, detailed research responses
-    });
-
-    const research = response.choices[0].message.content;
+    // Use the verified facts directly as the research result (no additional comprehensive search)
+    const research = verifiedFactsText;
 
     res.json({
       success: true,

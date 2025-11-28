@@ -177,13 +177,26 @@ app.post('/api/auth/signup', async (req, res) => {
     // Handle referral code if provided
     if (referralCode) {
       try {
-        const referral = Referral.useCode(referralCode, user.id, 3);
-        // Grant 3 credits to the new user
-        const newBalance = user.credits_balance + 3;
-        User.updateCredits(user.id, newBalance);
-        CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
-        user.credits_balance = newBalance;
-        console.log(`Referral code ${referralCode} used by user ${user.id}`);
+        const codeUpper = referralCode.toUpperCase().trim();
+        
+        // Special test referral code for unlimited credits
+        if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
+          const testCredits = 9999; // Effectively unlimited for testing
+          const newBalance = user.credits_balance + testCredits;
+          User.updateCredits(user.id, newBalance);
+          CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
+          user.credits_balance = newBalance;
+          console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
+        } else {
+          // Regular referral code
+          const referral = Referral.useCode(referralCode, user.id, 3);
+          // Grant 3 credits to the new user
+          const newBalance = user.credits_balance + 3;
+          User.updateCredits(user.id, newBalance);
+          CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
+          user.credits_balance = newBalance;
+          console.log(`Referral code ${referralCode} used by user ${user.id}`);
+        }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
         // Don't fail signup if referral code is invalid, just log it
@@ -254,13 +267,26 @@ app.post('/api/auth/login', async (req, res) => {
     const { referralCode } = req.body;
     if (referralCode && user.credits_balance === 0) {
       try {
-        const referral = Referral.useCode(referralCode, user.id, 3);
-        // Grant 3 credits to the new user
-        const newBalance = user.credits_balance + 3;
-        User.updateCredits(user.id, newBalance);
-        CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
-        user.credits_balance = newBalance;
-        console.log(`Referral code ${referralCode} used by user ${user.id}`);
+        const codeUpper = referralCode.toUpperCase().trim();
+        
+        // Special test referral code for unlimited credits
+        if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
+          const testCredits = 9999; // Effectively unlimited for testing
+          const newBalance = user.credits_balance + testCredits;
+          User.updateCredits(user.id, newBalance);
+          CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
+          user.credits_balance = newBalance;
+          console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
+        } else {
+          // Regular referral code
+          const referral = Referral.useCode(referralCode, user.id, 3);
+          // Grant 3 credits to the new user
+          const newBalance = user.credits_balance + 3;
+          User.updateCredits(user.id, newBalance);
+          CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
+          user.credits_balance = newBalance;
+          console.log(`Referral code ${referralCode} used by user ${user.id}`);
+        }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
         // Don't fail login if referral code is invalid
@@ -409,13 +435,26 @@ app.post('/api/auth/google', async (req, res) => {
     const { referralCode } = req.body;
     if (referralCode && user.credits_balance === 0) {
       try {
-        const referral = Referral.useCode(referralCode, user.id, 3);
-        // Grant 3 credits to the new user
-        const newBalance = user.credits_balance + 3;
-        User.updateCredits(user.id, newBalance);
-        CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
-        user.credits_balance = newBalance;
-        console.log(`Referral code ${referralCode} used by user ${user.id}`);
+        const codeUpper = referralCode.toUpperCase().trim();
+        
+        // Special test referral code for unlimited credits
+        if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
+          const testCredits = 9999; // Effectively unlimited for testing
+          const newBalance = user.credits_balance + testCredits;
+          User.updateCredits(user.id, newBalance);
+          CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
+          user.credits_balance = newBalance;
+          console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
+        } else {
+          // Regular referral code
+          const referral = Referral.useCode(referralCode, user.id, 3);
+          // Grant 3 credits to the new user
+          const newBalance = user.credits_balance + 3;
+          User.updateCredits(user.id, newBalance);
+          CreditLedger.create(user.id, 3, `Referral bonus from code ${referralCode}`);
+          user.credits_balance = newBalance;
+          console.log(`Referral code ${referralCode} used by user ${user.id}`);
+        }
       } catch (refError) {
         console.error('Referral code error:', refError.message);
         // Don't fail sign-in if referral code is invalid
@@ -815,6 +854,13 @@ app.post('/api/referrals/validate', (req, res) => {
     const { code } = req.body;
     if (!code) {
       return res.status(400).json({ error: 'Referral code is required' });
+    }
+    
+    const codeUpper = code.toUpperCase().trim();
+    
+    // Special test referral codes are always valid
+    if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
+      return res.json({ valid: true, message: 'Valid test referral code - grants unlimited credits' });
     }
     
     const referral = Referral.findByCode(code);

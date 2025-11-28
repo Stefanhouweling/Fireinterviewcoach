@@ -6616,6 +6616,7 @@ Return ONLY the category and question.`
   async function purchaseCredits(packId) {
     if (!currentUser) {
       // Show signup modal if not logged in
+      window.showCreditPurchaseAfterAuth = true;
       const signupModal = document.getElementById('signupModal');
       if (signupModal) {
         signupModal.style.display = 'flex';
@@ -6624,6 +6625,7 @@ Return ONLY the category and question.`
     }
     
     try {
+      console.log('Creating checkout session for pack:', packId, 'User:', currentUser.id);
       const response = await fetch(`${BACKEND_URL}/api/credits/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -6632,21 +6634,59 @@ Return ONLY the category and question.`
       });
       
       if (!response.ok) {
-        if (response.status === 401) {
-          // Session expired, prompt to log in again
-          alert('Your session has expired. Please log in again.');
-          const loginModal = document.getElementById('loginModal');
-          if (loginModal) {
-            loginModal.style.display = 'flex';
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Checkout session error:', response.status, errorData);
+        
+        if (response.status === 401 || response.status === 403) {
+          // Token expired or invalid - try to refresh user session first
+          console.log('Auth token issue, attempting to refresh user session...');
+          try {
+            const meResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
+              credentials: 'include'
+            });
+            if (meResponse.ok) {
+              const userData = await meResponse.json();
+              currentUser = userData;
+              updateAuthUI();
+              // Retry the purchase
+              console.log('Session refreshed, retrying purchase...');
+              return purchaseCredits(packId);
+            } else {
+              // Session really expired
+              alert('Your session has expired. Please log in again.');
+              window.currentUser = null;
+              updateAuthUI();
+              const loginModal = document.getElementById('loginModal');
+              if (loginModal) {
+                loginModal.style.display = 'flex';
+              }
+              return;
+            }
+          } catch (refreshError) {
+            console.error('Failed to refresh session:', refreshError);
+            alert('Your session has expired. Please log in again.');
+            window.currentUser = null;
+            updateAuthUI();
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) {
+              loginModal.style.display = 'flex';
+            }
+            return;
           }
+        }
+        
+        // Handle Stripe not configured error
+        if (errorData.error && errorData.error.includes('Stripe not configured')) {
+          alert('Payment processing is not yet configured. Please contact support.');
           return;
         }
-        const errorData = await response.json().catch(() => ({}));
+        
         alert(errorData.error || 'Failed to create checkout session. Please try again.');
         return;
       }
       
       const data = await response.json();
+      console.log('Checkout session created:', data.sessionId);
       
       if (data.url) {
         // Redirect to Stripe checkout

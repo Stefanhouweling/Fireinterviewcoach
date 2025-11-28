@@ -583,9 +583,11 @@ app.get('/api/credits/bundles', (req, res) => {
 // POST /api/credits/create-checkout-session - Create Stripe checkout session
 app.post('/api/credits/create-checkout-session', authenticateToken, async (req, res) => {
   try {
+    console.log('Create checkout session request - User:', req.user.userId);
     const { packId } = req.body;
     
     if (!packId || !CREDIT_BUNDLES[packId]) {
+      console.error('Invalid pack ID:', packId);
       return res.status(400).json({ error: 'Invalid pack ID' });
     }
     
@@ -593,15 +595,18 @@ app.post('/api/credits/create-checkout-session', authenticateToken, async (req, 
     const user = User.findById(req.user.userId);
     
     if (!user) {
+      console.error('User not found:', req.user.userId);
       return res.status(404).json({ error: 'User not found' });
     }
     
     // Initialize Stripe if not already done
     if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('Stripe not configured - STRIPE_SECRET_KEY missing');
       return res.status(500).json({ error: 'Stripe not configured' });
     }
     
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    console.log('Stripe initialized, creating checkout session...');
     
     // Create transaction record
     const transaction = Transaction.create(

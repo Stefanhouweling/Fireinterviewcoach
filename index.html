@@ -6039,8 +6039,24 @@ Return ONLY the category and question.`
   
   async function handleGoogleSignIn() {
     try {
+      // Always fetch config fresh when button is clicked
+      if (!googleClientId) {
+        try {
+          const configRes = await fetch(`${BACKEND_URL}/api/config`);
+          if (configRes.ok) {
+            const config = await configRes.json();
+            googleClientId = config.googleClientId;
+            console.log('Fetched Google Client ID on button click:', googleClientId ? 'Found' : 'Not found');
+          } else {
+            console.error('Config endpoint error:', configRes.status);
+          }
+        } catch (e) {
+          console.error('Failed to fetch config:', e);
+        }
+      }
+      
       // Make sure Google is initialized
-      if (!googleInitialized) {
+      if (!googleInitialized && googleClientId) {
         await initializeGoogleSignIn();
       }
       
@@ -6050,21 +6066,8 @@ Return ONLY the category and question.`
       }
       
       if (!googleClientId) {
-        // Try fetching one more time
-        try {
-          const configRes = await fetch(`${BACKEND_URL}/api/config`);
-          if (configRes.ok) {
-            const config = await configRes.json();
-            googleClientId = config.googleClientId;
-          }
-        } catch (e) {
-          console.error('Failed to fetch config:', e);
-        }
-        
-        if (!googleClientId) {
-          alert('Google Sign-In is not configured. Please ensure GOOGLE_CLIENT_ID is set in your backend environment variables on Render, and restart the backend service.');
-          return;
-        }
+        alert('Google Sign-In is not configured. Please ensure GOOGLE_CLIENT_ID is set in your backend environment variables on Render, and restart the backend service.');
+        return;
       }
       
       // Use button-based sign-in (more reliable than One Tap)

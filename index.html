@@ -5168,6 +5168,7 @@ Return ONLY the category and question.`
         content = cleanText(content);
         // Remove markdown formatting artifacts
         content = content.replace(/^\*\*/, '').replace(/\*\*$/, '');
+        // Content is already inside blur div if inPremiumSection is true
         html += `<div class="bullet-point" style="margin-bottom: 6px; line-height: 1.6;">• ${convertMarkdownBold(content)}</div>`;
       }
       // Regular paragraphs
@@ -5186,6 +5187,7 @@ Return ONLY the category and question.`
         
         // Check if it's a score line
         if (content.match(/^\d+\/10/)) {
+          // Content is already inside blur div if inPremiumSection is true
           html += `<div class="score-highlight" style="margin: 8px 0; padding: 8px; background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; border-radius: 4px;">${convertMarkdownBold(content)}</div>`;
         } 
         // Check if it's a label-value pair (like "**Summary:** text")
@@ -5195,6 +5197,7 @@ Return ONLY the category and question.`
           if (parts && parts.length === 3) {
             const label = parts[1];
             const value = parts[2].trim();
+            // Content is already inside blur div if inPremiumSection is true
             html += `<div style="margin-bottom: 8px; line-height: 1.6;">
               <strong style="color: #fbbf24;">${label}:</strong> 
               <span style="color: #e5e7eb;">${convertMarkdownBold(value)}</span>
@@ -5204,6 +5207,7 @@ Return ONLY the category and question.`
           }
         }
         else {
+          // Content is already inside blur div if inPremiumSection is true
           html += `<div style="margin-bottom: 8px; line-height: 1.6; color: #e5e7eb;">${convertMarkdownBold(content)}</div>`;
         }
       }

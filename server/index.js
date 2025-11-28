@@ -228,24 +228,50 @@ app.post('/api/auth/logout', (req, res) => {
 // POST /api/auth/google - Google OAuth sign-in
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { idToken } = req.body;
+    const { idToken, accessToken, userInfo } = req.body;
     
-    if (!idToken) {
-      return res.status(400).json({ error: 'ID token is required' });
+    let email, name, providerId;
+    
+    // Support both ID token (preferred) and access token (fallback)
+    if (idToken) {
+      // Verify Google ID token
+      if (!googleClient) {
+        return res.status(500).json({ error: 'Google OAuth not configured' });
+      }
+      
+      const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: GOOGLE_CLIENT_ID
+      });
+      
+      const payload = ticket.getPayload();
+      providerId = payload.sub;
+      email = payload.email;
+      name = payload.name;
+    } else if (accessToken && userInfo) {
+      // Fallback: verify access token and use userInfo
+      // Verify the access token is valid by making a request to Google
+      try {
+        const verifyRes = await fetchModule(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+        if (!verifyRes.ok) {
+          return res.status(401).json({ error: 'Invalid access token' });
+        }
+        
+        const tokenInfo = await verifyRes.json();
+        providerId = tokenInfo.user_id || userInfo.id;
+        email = userInfo.email;
+        name = userInfo.name || userInfo.given_name + ' ' + (userInfo.family_name || '');
+      } catch (error) {
+        console.error('Token verification error:', error);
+        return res.status(401).json({ error: 'Failed to verify access token' });
+      }
+    } else {
+      return res.status(400).json({ error: 'ID token or access token is required' });
     }
     
-    if (!googleClient) {
-      return res.status(500).json({ error: 'Google OAuth not configured' });
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required from Google Sign-In' });
     }
-    
-    // Verify Google ID token
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
-      audience: GOOGLE_CLIENT_ID
-    });
-    
-    const payload = ticket.getPayload();
-    const { sub: providerId, email, name, picture } = payload;
     
     // Find or create user
     let user = User.findByProvider('google', providerId);

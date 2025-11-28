@@ -5968,7 +5968,13 @@ Return ONLY the category and question.`
   const googleSignupBtn = document.getElementById('googleSignupBtn');
   const googleLoginBtn = document.getElementById('googleLoginBtn');
   
-  async function handleGoogleSignIn() {
+  let googleClientId = null;
+  let googleInitialized = false;
+  
+  // Initialize Google Sign-In on page load
+  async function initializeGoogleSignIn() {
+    if (googleInitialized) return;
+    
     try {
       // Wait for Google Identity Services to load
       if (!window.google || !window.google.accounts) {
@@ -5987,40 +5993,118 @@ Return ONLY the category and question.`
       }
       
       if (!window.google || !window.google.accounts) {
-        alert('Google Sign-In is not available. Please configure GOOGLE_CLIENT_ID in your environment variables.');
+        console.error('Google Identity Services not loaded');
         return;
       }
       
-      // Get client ID from backend config endpoint or use environment
-      let clientId = '';
+      // Get client ID from backend
       try {
         const configRes = await fetch(`${BACKEND_URL}/api/config`);
         if (configRes.ok) {
           const config = await configRes.json();
-          clientId = config.googleClientId || '';
+          googleClientId = config.googleClientId || null;
         }
       } catch (e) {
-        console.log('Could not fetch config, Google Sign-In may not work');
+        console.error('Could not fetch Google Client ID:', e);
+        return;
       }
       
-      if (!clientId) {
+      if (!googleClientId) {
+        console.warn('Google Client ID not configured');
+        return;
+      }
+      
+      // Initialize Google Sign-In
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCredential
+      });
+      
+      googleInitialized = true;
+      console.log('Google Sign-In initialized');
+    } catch (error) {
+      console.error('Failed to initialize Google Sign-In:', error);
+    }
+  }
+  
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeGoogleSignIn);
+  } else {
+    initializeGoogleSignIn();
+  }
+  
+  async function handleGoogleSignIn() {
+    try {
+      // Make sure Google is initialized
+      if (!googleInitialized) {
+        await initializeGoogleSignIn();
+      }
+      
+      if (!window.google || !window.google.accounts || !googleClientId) {
         alert('Google Sign-In is not configured. Please set GOOGLE_CLIENT_ID in your backend environment variables.');
         return;
       }
       
-      // Initialize Google Sign-In with One Tap
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleGoogleCredential,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
-      
-      // Show One Tap prompt
-      window.google.accounts.id.prompt();
+      // Use button-based sign-in (more reliable than One Tap)
+      window.google.accounts.oauth2.initTokenClient({
+        client_id: googleClientId,
+        scope: 'openid email profile',
+        callback: async (tokenResponse) => {
+          try {
+            // Exchange access token for ID token
+            // First, get user info to verify
+            const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+              headers: { 'Authorization': `Bearer ${tokenResponse.access_token}` }
+            });
+            
+            if (!userInfoRes.ok) {
+              throw new Error('Failed to get user info');
+            }
+            
+            const userInfo = await userInfoRes.json();
+            
+            // Now get ID token using the access token
+            // We need to use the ID token for backend verification
+            // For now, we'll send the access token and let backend verify
+            const res = await fetch(`${BACKEND_URL}/api/auth/google`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ 
+                accessToken: tokenResponse.access_token,
+                userInfo: userInfo
+              })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+              currentUser = data.user;
+              updateAuthUI();
+              await updateCreditsDisplay();
+              
+              const signupModal = document.getElementById('signupModal');
+              const loginModal = document.getElementById('loginModal');
+              if (signupModal) signupModal.style.display = 'none';
+              if (loginModal) loginModal.style.display = 'none';
+              
+              if (window.showCreditPurchaseAfterAuth) {
+                window.showCreditPurchaseAfterAuth = false;
+                setTimeout(() => showCreditPurchaseModal(), 100);
+              }
+            } else {
+              alert(data.error || 'Failed to sign in with Google');
+            }
+          } catch (error) {
+            console.error('Google auth error:', error);
+            alert('Network error. Please try again.');
+          }
+        }
+      }).requestAccessToken();
     } catch (error) {
       console.error('Google Sign-In error:', error);
-      alert('Google Sign-In is not yet configured. Please use email/password.');
+      alert('Google Sign-In failed. Please try again or use email/password.');
     }
   }
   
@@ -6059,11 +6143,17 @@ Return ONLY the category and question.`
   }
   
   if (googleSignupBtn) {
-    googleSignupBtn.addEventListener('click', handleGoogleSignIn);
+    googleSignupBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleGoogleSignIn();
+    });
   }
   
   if (googleLoginBtn) {
-    googleLoginBtn.addEventListener('click', handleGoogleSignIn);
+    googleLoginBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleGoogleSignIn();
+    });
   }
   
   // Header button handlers

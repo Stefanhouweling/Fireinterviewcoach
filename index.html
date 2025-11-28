@@ -2714,9 +2714,7 @@
     return false;
   }
   
-  // User authentication state
-  let currentUser = null;
-  let authToken = null;
+  // User authentication state (already declared above)
   
   // Helper function to handle 401 errors globally
   function handleAuthError() {
@@ -2907,10 +2905,6 @@
     return false;
   }
   
-  // Practice mode: "simulation" (random) or "specific" (category-based)
-  let practiceMode = "simulation";
-  let selectedCategory = "";
-  
   // Initialize practice mode toggle listeners (run immediately, not on DOMContentLoaded)
   function initializePracticeModeToggle() {
     const simulationModeEl = document.getElementById("simulationMode");
@@ -2978,20 +2972,6 @@
 
   // API configuration removed - always using backend service
 
-  // ========== BASIC DATA & STATE ==========
-  
-  // Onboarding data
-  let onboardingData = {
-    country: "",
-    stateProvince: "",
-    city: "",
-    jobType: "",
-    departmentName: "",
-    name: null,
-    voicePreference: null,
-    cityResearch: null // Will be populated by backend
-  };
-  
   // Voice preference for TTS
   let selectedVoicePreference = null;
   
@@ -3085,9 +3065,7 @@
     "training", "drill", "community", "volunteer", "rescue"
   ];
 
-  let resumeText = "";
   let resumeKeywords = [];
-  let resumeAnalysis = null; // AI-parsed resume data
   let currentQuestion = null;
   let questionCount = 0;
   let conversationHistory = []; // Track Q&A for context-aware followups

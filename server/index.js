@@ -188,7 +188,7 @@ app.post('/api/auth/signup', async (req, res) => {
     }
     
     // Check if user already exists
-    const existingUser = User.findByEmail(email);
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(409).json({ error: 'User with this email already exists' });
     }
@@ -204,14 +204,11 @@ app.post('/api/auth/signup', async (req, res) => {
         // Special test referral code for unlimited credits
         if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
           const testCredits = 9999; // Effectively unlimited for testing
-          const newBalance = user.credits_balance + testCredits;
-          User.updateCredits(user.id, newBalance);
-          CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
-          user.credits_balance = newBalance;
+          await User.addCredits(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
           // Regular referral code - just track it, don't grant credits to referred user
-          const referral = Referral.useCode(referralCode, user.id, 0);
+          await Referral.useCode(referralCode, user.id, 0);
           console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
         }
       } catch (refError) {
@@ -222,10 +219,7 @@ app.post('/api/auth/signup', async (req, res) => {
     
     // Transfer trial credits if provided
     if (trialCredits && trialCredits > 0) {
-      const newBalance = user.credits_balance + trialCredits;
-      User.updateCredits(user.id, newBalance);
-      CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on signup');
-      user.credits_balance = newBalance;
+      await User.addCredits(user.id, trialCredits, 'Trial credits transferred on signup');
     }
     
     // Generate JWT token
@@ -248,7 +242,7 @@ app.post('/api/auth/signup', async (req, res) => {
     res.cookie('authToken', token, cookieOptions);
     
     // Refresh user from database to get latest credits after any updates
-    const freshUser = User.findById(user.id);
+    const freshUser = await User.findById(user.id);
     console.log(`[SIGNUP] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,
@@ -276,7 +270,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
     
     // Find user
-    const user = User.findByEmail(email);
+    const user = await User.findByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -296,14 +290,11 @@ app.post('/api/auth/login', async (req, res) => {
         // Special test referral code for unlimited credits
         if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
           const testCredits = 9999; // Effectively unlimited for testing
-          const newBalance = user.credits_balance + testCredits;
-          User.updateCredits(user.id, newBalance);
-          CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
-          user.credits_balance = newBalance;
+          await User.addCredits(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
           // Regular referral code - just track it, don't grant credits to referred user
-          const referral = Referral.useCode(referralCode, user.id, 0);
+          await Referral.useCode(referralCode, user.id, 0);
           console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
         }
       } catch (refError) {
@@ -314,10 +305,7 @@ app.post('/api/auth/login', async (req, res) => {
     
     // Transfer trial credits if provided
     if (trialCredits && trialCredits > 0) {
-      const newBalance = user.credits_balance + trialCredits;
-      User.updateCredits(user.id, newBalance);
-      CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on login');
-      user.credits_balance = newBalance;
+      await User.addCredits(user.id, trialCredits, 'Trial credits transferred on login');
     }
     
     // Generate JWT token
@@ -340,7 +328,7 @@ app.post('/api/auth/login', async (req, res) => {
     res.cookie('authToken', token, cookieOptions);
     
     // Refresh user from database to get latest credits after any updates
-    const freshUser = User.findById(user.id);
+    const freshUser = await User.findById(user.id);
     console.log(`[LOGIN] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,
@@ -433,7 +421,7 @@ app.post('/api/auth/google', async (req, res) => {
     
     // Find or create user
     console.log('Looking up user by provider:', providerId);
-    let user = User.findByProvider('google', providerId);
+    let user = await User.findByProvider('google', providerId);
     
     if (!user) {
       console.log('User not found by provider, checking for existing email...');
@@ -441,7 +429,7 @@ app.post('/api/auth/google', async (req, res) => {
       
       // CRITICAL FIX: Use case-insensitive email lookup (now handled in User.findByEmail)
       // This is the ROOT CAUSE - email lookups were case-sensitive, causing duplicate accounts
-      const existingUser = User.findByEmail(email);
+      const existingUser = await User.findByEmail(email);
       
       if (existingUser) {
         console.log(`[GOOGLE AUTH] ✅ FOUND EXISTING ACCOUNT - User ID: ${existingUser.id}, Email: ${existingUser.email}, Provider: ${existingUser.provider}, Credits: ${existingUser.credits_balance}`);
@@ -452,26 +440,20 @@ app.post('/api/auth/google', async (req, res) => {
           // Same email, same provider, but different provider_id - update the provider_id to link accounts
           // This allows the same Google account to work across devices
           console.log(`[GOOGLE AUTH] Linking Google account - updating provider_id for existing user ${existingUser.id} (old: ${existingUser.provider_id}, new: ${providerId})`);
-          const { db, userQueries } = require('./db');
-          if (!userQueries.updateProviderId) {
-            userQueries.updateProviderId = db.prepare('UPDATE users SET provider_id = ? WHERE id = ?');
-          }
-          userQueries.updateProviderId.run(providerId, existingUser.id);
+          const { query } = require('./db');
+          await query('UPDATE users SET provider_id = $1 WHERE id = $2', [providerId, existingUser.id]);
           
           // Refresh user to get updated data
-          user = User.findById(existingUser.id);
+          user = await User.findById(existingUser.id);
           console.log(`[GOOGLE AUTH] ✅ Account linked successfully - User ID: ${user.id}, Credits: ${user.credits_balance}`);
         } else if (existingUser.provider === 'email') {
           // Email/password account exists - link Google to it
           console.log(`[GOOGLE AUTH] Linking Google account to existing email/password account ${existingUser.id}`);
-          const { db, userQueries } = require('./db');
-          if (!userQueries.linkGoogleAccount) {
-            userQueries.linkGoogleAccount = db.prepare('UPDATE users SET provider = ?, provider_id = ? WHERE id = ?');
-          }
-          userQueries.linkGoogleAccount.run('google', providerId, existingUser.id);
+          const { query } = require('./db');
+          await query('UPDATE users SET provider = $1, provider_id = $2 WHERE id = $3', ['google', providerId, existingUser.id]);
           
           // Refresh user to get updated data
-          user = User.findById(existingUser.id);
+          user = await User.findById(existingUser.id);
           console.log(`[GOOGLE AUTH] ✅ Account linked successfully - User ID: ${user.id}, Credits: ${user.credits_balance}`);
         } else {
           // Different provider - block to prevent account confusion
@@ -495,7 +477,7 @@ app.post('/api/auth/google', async (req, res) => {
     } else {
       console.log(`[GOOGLE AUTH] Existing user found - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);
       // CRITICAL: Refresh user from database to ensure we have latest credits
-      user = User.findById(user.id);
+      user = await User.findById(user.id);
       console.log(`[GOOGLE AUTH] Refreshed user credits: ${user.credits_balance}`);
     }
     
@@ -508,14 +490,11 @@ app.post('/api/auth/google', async (req, res) => {
         // Special test referral code for unlimited credits
         if (codeUpper === 'TEST' || codeUpper === 'UNLIMITED' || codeUpper === 'DEV') {
           const testCredits = 9999; // Effectively unlimited for testing
-          const newBalance = user.credits_balance + testCredits;
-          User.updateCredits(user.id, newBalance);
-          CreditLedger.create(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
-          user.credits_balance = newBalance;
+          await User.addCredits(user.id, testCredits, `Test referral code ${codeUpper} - unlimited credits for testing`);
           console.log(`Test referral code ${codeUpper} used by user ${user.id} - granted ${testCredits} credits`);
         } else {
           // Regular referral code - just track it, don't grant credits to referred user
-          const referral = Referral.useCode(referralCode, user.id, 0);
+          await Referral.useCode(referralCode, user.id, 0);
           console.log(`Referral code ${referralCode} used by user ${user.id} - referrer will get credits when they complete first question`);
         }
       } catch (refError) {
@@ -527,15 +506,13 @@ app.post('/api/auth/google', async (req, res) => {
     // Transfer trial credits if provided (from localStorage)
     // CRITICAL: Only transfer if user has ZERO credits (not just checking the variable, but the actual DB value)
     // Refresh user again before checking to ensure we have the latest balance
-    user = User.findById(user.id);
+    user = await User.findById(user.id);
     if (trialCredits && trialCredits > 0 && user.credits_balance === 0) {
       console.log('Transferring trial credits:', trialCredits, 'Current balance:', user.credits_balance);
       try {
-        const newBalance = user.credits_balance + trialCredits;
-        User.updateCredits(user.id, newBalance);
-        CreditLedger.create(user.id, trialCredits, 'Trial credits transferred on Google sign-in');
-        user.credits_balance = newBalance;
-        console.log('Trial credits transferred - new balance:', newBalance);
+        await User.addCredits(user.id, trialCredits, 'Trial credits transferred on Google sign-in');
+        user = await User.findById(user.id);
+        console.log('Trial credits transferred - new balance:', user.credits_balance);
       } catch (creditError) {
         console.error('Failed to transfer trial credits:', creditError);
         // Don't fail the auth, just log the error
@@ -564,7 +541,7 @@ app.post('/api/auth/google', async (req, res) => {
     res.cookie('authToken', token, cookieOptions);
     
     // Refresh user from database to get latest credits after any updates
-    const freshUser = User.findById(user.id);
+    const freshUser = await User.findById(user.id);
     console.log(`[GOOGLE AUTH] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,

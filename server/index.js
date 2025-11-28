@@ -441,6 +441,14 @@ app.post('/api/auth/google', async (req, res) => {
       const existingUser = User.findByEmail(email);
       if (existingUser) {
         console.log(`[GOOGLE AUTH] Email ${email} already exists with provider ${existingUser.provider} - User ID: ${existingUser.id}, Credits: ${existingUser.credits_balance}`);
+        // If existing user has credits, preserve them - don't allow Google sign-in to overwrite
+        if (existingUser.credits_balance > 0) {
+          console.log(`[GOOGLE AUTH] WARNING: Existing account has ${existingUser.credits_balance} credits - blocking Google sign-in to prevent credit loss`);
+          return res.status(409).json({ 
+            error: 'An account with this email already exists. Please use email/password login to preserve your credits.',
+            credits_preserved: existingUser.credits_balance
+          });
+        }
         return res.status(409).json({ error: 'An account with this email already exists. Please use email/password login.' });
       }
       
@@ -455,6 +463,9 @@ app.post('/api/auth/google', async (req, res) => {
       }
     } else {
       console.log(`[GOOGLE AUTH] Existing user found - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);
+      // CRITICAL: Refresh user from database to ensure we have latest credits
+      user = User.findById(user.id);
+      console.log(`[GOOGLE AUTH] Refreshed user credits: ${user.credits_balance}`);
     }
     
     // Handle referral code if provided (for new signups via Google)
@@ -483,8 +494,11 @@ app.post('/api/auth/google', async (req, res) => {
     }
     
     // Transfer trial credits if provided (from localStorage)
+    // CRITICAL: Only transfer if user has ZERO credits (not just checking the variable, but the actual DB value)
+    // Refresh user again before checking to ensure we have the latest balance
+    user = User.findById(user.id);
     if (trialCredits && trialCredits > 0 && user.credits_balance === 0) {
-      console.log('Transferring trial credits:', trialCredits);
+      console.log('Transferring trial credits:', trialCredits, 'Current balance:', user.credits_balance);
       try {
         const newBalance = user.credits_balance + trialCredits;
         User.updateCredits(user.id, newBalance);
@@ -495,6 +509,8 @@ app.post('/api/auth/google', async (req, res) => {
         console.error('Failed to transfer trial credits:', creditError);
         // Don't fail the auth, just log the error
       }
+    } else if (trialCredits && trialCredits > 0 && user.credits_balance > 0) {
+      console.log(`[GOOGLE AUTH] SKIPPING trial credit transfer - user already has ${user.credits_balance} credits (trial credits: ${trialCredits})`);
     }
     
     // Generate JWT token

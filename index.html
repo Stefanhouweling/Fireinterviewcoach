@@ -1708,13 +1708,22 @@
           <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Password</label>
           <input type="password" id="signupPassword" placeholder="At least 8 characters" required minlength="8" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
         </div>
-        <div>
-          <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Referral Code (Optional)</label>
-          <input type="text" id="signupReferralCode" placeholder="Enter a friend's referral code" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem; text-transform: uppercase;" />
-          <p style="color: #94a3b8; font-size: 0.8rem; margin: 4px 0 0 0;">Get 3 free credits when you use a referral code!</p>
-        </div>
         <div id="signupError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
         <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Sign Up</button>
+        
+        <!-- Referral Code Section -->
+        <div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <span style="color: #fbbf24; font-size: 1.2rem;">🎁</span>
+            <h4 style="color: #fbbf24; margin: 0; font-size: 1rem; font-weight: 600;">Have a Referral Code?</h4>
+          </div>
+          <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0 0 12px 0; line-height: 1.4;">
+            Enter a friend's referral code to get <strong style="color: #fbbf24;">3 free credits</strong> when you sign up!
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="signupReferralCode" placeholder="Enter referral code" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center;" />
+          </div>
+        </div>
         
         <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;">
           <div style="flex: 1; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
@@ -1755,6 +1764,20 @@
         </div>
         <div id="loginError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
         <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Log In</button>
+        
+        <!-- Referral Code Section for Login -->
+        <div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <span style="color: #fbbf24; font-size: 1.2rem;">🎁</span>
+            <h4 style="color: #fbbf24; margin: 0; font-size: 1rem; font-weight: 600;">Redeem Referral Code</h4>
+          </div>
+          <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0 0 12px 0; line-height: 1.4;">
+            Have a referral code? Enter it here to get <strong style="color: #fbbf24;">3 free credits</strong> (only works if you have 0 credits).
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="loginReferralCode" placeholder="Enter referral code" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center;" />
+          </div>
+        </div>
         
         <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;">
           <div style="flex: 1; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
@@ -6009,12 +6032,13 @@ Return ONLY the category and question.`
       try {
         // Get trial credits before login
         const trialCredits = getTrialCreditsRemaining();
+        const referralCode = document.getElementById('loginReferralCode')?.value?.trim().toUpperCase() || null;
         
         const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, password, trialCredits })
+          body: JSON.stringify({ email, password, trialCredits, referralCode })
         });
         
         const data = await response.json();

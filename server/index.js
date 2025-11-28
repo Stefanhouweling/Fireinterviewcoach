@@ -222,20 +222,12 @@ app.post('/api/auth/signup', async (req, res) => {
     );
     
     // Set cookie
-    const cookieOptions = {
+    res.cookie('authToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      path: '/'
-    };
-    
-    // In production, set domain if needed (Render uses .onrender.com)
-    if (process.env.NODE_ENV === 'production') {
-      // Don't set domain - let browser handle it based on the request origin
-    }
-    
-    res.cookie('authToken', token, cookieOptions);
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
     
     res.json({
       success: true,
@@ -320,20 +312,12 @@ app.post('/api/auth/login', async (req, res) => {
     );
     
     // Set cookie
-    const cookieOptions = {
+    res.cookie('authToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      path: '/'
-    };
-    
-    // In production, set domain if needed (Render uses .onrender.com)
-    if (process.env.NODE_ENV === 'production') {
-      // Don't set domain - let browser handle it based on the request origin
-    }
-    
-    res.cookie('authToken', token, cookieOptions);
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
     
     res.json({
       success: true,
@@ -504,20 +488,12 @@ app.post('/api/auth/google', async (req, res) => {
     );
     
     // Set cookie
-    const cookieOptions = {
+    res.cookie('authToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      path: '/'
-    };
-    
-    // In production, set domain if needed (Render uses .onrender.com)
-    if (process.env.NODE_ENV === 'production') {
-      // Don't set domain - let browser handle it based on the request origin
-    }
-    
-    res.cookie('authToken', token, cookieOptions);
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
     
     console.log('Google auth successful for user:', user.email);
     res.json({

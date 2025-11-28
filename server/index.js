@@ -2023,11 +2023,18 @@ The feedback MUST include:
       }
     }
     
+    // Get updated credits balance for paid users
+    let creditsRemaining = null;
+    if (hasPaidCredits && req.user) {
+      const user = User.findById(req.user.userId);
+      creditsRemaining = user ? user.credits_balance : null;
+    }
+    
     res.json({ 
       feedback: aiFeedback,
       hasDetailedFeedback: canAccessDetailedFeedback,
       isTrialUser: isTrialUser,
-      creditsRemaining: hasPaidCredits && req.user ? User.findById(req.user.userId).credits_balance : null
+      creditsRemaining: creditsRemaining
     });
   } catch (error) {
     console.error('Error analyzing answer:', error);

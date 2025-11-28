@@ -399,17 +399,28 @@ const Analytics = {
   },
   
   async getStats() {
-    const result = await query(`
+    // Get analytics stats
+    const analyticsResult = await query(`
       SELECT 
         SUM(visit_count) as total_visits,
         COUNT(DISTINCT session_id) as unique_sessions,
-        COUNT(DISTINCT user_id) as registered_users,
+        COUNT(DISTINCT user_id) as registered_users_with_visits,
         SUM(questions_answered) as total_questions,
         COUNT(DISTINCT country) as countries,
         COUNT(DISTINCT department_name) as departments
       FROM analytics_visits
     `);
-    return result.rows[0];
+    
+    // Get total registered users from users table (more accurate)
+    const usersResult = await query(`
+      SELECT COUNT(*) as total_registered_users
+      FROM users
+    `);
+    
+    return {
+      ...analyticsResult.rows[0],
+      registered_users: parseInt(usersResult.rows[0].total_registered_users) || 0
+    };
   },
   
   async getByDepartment() {

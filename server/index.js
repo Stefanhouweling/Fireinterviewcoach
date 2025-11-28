@@ -3168,26 +3168,48 @@ app.post('/api/analytics/question', optionalAuth, (req, res) => {
 // GET /api/analytics/dashboard - Admin analytics dashboard (requires secret key)
 app.get('/api/analytics/dashboard', (req, res) => {
   try {
-    const { secret } = req.query;
+    let { secret } = req.query;
     
-    // Debug logging (remove in production if needed)
+    // Handle URL encoding - decode if needed
+    if (secret) {
+      try {
+        secret = decodeURIComponent(secret);
+      } catch (e) {
+        // If decoding fails, use as-is
+      }
+    }
+    
+    // Debug logging
     console.log('Analytics dashboard access attempt');
-    console.log('Provided secret:', secret ? secret.substring(0, 8) + '...' : 'none');
-    console.log('Expected secret:', ANALYTICS_SECRET ? ANALYTICS_SECRET.substring(0, 8) + '...' : 'not set');
+    console.log('Provided secret length:', secret ? secret.length : 0);
+    console.log('Provided secret (first 8):', secret ? secret.substring(0, 8) + '...' : 'none');
+    console.log('Expected secret length:', ANALYTICS_SECRET ? ANALYTICS_SECRET.length : 0);
+    console.log('Expected secret (first 8):', ANALYTICS_SECRET ? ANALYTICS_SECRET.substring(0, 8) + '...' : 'not set');
     console.log('Secrets match:', secret === ANALYTICS_SECRET);
+    console.log('Secret comparison (strict):', secret === ANALYTICS_SECRET);
+    console.log('Secret comparison (trimmed):', secret?.trim() === ANALYTICS_SECRET?.trim());
     
     // Verify secret key (trim whitespace to handle copy/paste issues)
     const providedSecret = secret ? secret.trim() : '';
     const expectedSecret = ANALYTICS_SECRET ? ANALYTICS_SECRET.trim() : '';
     
-    if (!expectedSecret) {
-      return res.status(500).json({ error: 'Analytics secret not configured on server' });
+    if (!expectedSecret || expectedSecret === 'change-this-secret-key-for-analytics') {
+      return res.status(500).json({ 
+        error: 'Analytics secret not configured on server',
+        hint: 'Set ANALYTICS_SECRET environment variable in Render and restart the service'
+      });
     }
     
     if (providedSecret !== expectedSecret) {
       return res.status(401).json({ 
         error: 'Unauthorized - invalid secret key',
-        hint: 'Check that ANALYTICS_SECRET environment variable is set correctly in Render'
+        hint: 'Check that ANALYTICS_SECRET environment variable matches the secret in your URL. Make sure to restart the backend service after setting the variable.',
+        debug: {
+          providedLength: providedSecret.length,
+          expectedLength: expectedSecret.length,
+          providedFirst8: providedSecret.substring(0, 8),
+          expectedFirst8: expectedSecret.substring(0, 8)
+        }
       });
     }
     

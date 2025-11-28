@@ -437,27 +437,11 @@ app.post('/api/auth/google', async (req, res) => {
     
     if (!user) {
       console.log('User not found by provider, checking for existing email...');
-      console.log(`[GOOGLE AUTH] Searching for email: "${email}" (lowercase: "${email.toLowerCase()}")`);
+      console.log(`[GOOGLE AUTH] Searching for email: "${email}"`);
       
-      // Check if email already exists - this is CRITICAL for account linking
-      // Try both exact match and lowercase match
-      let existingUser = User.findByEmail(email);
-      if (!existingUser) {
-        existingUser = User.findByEmail(email.toLowerCase());
-      }
-      
-      // Also check all users with Google provider to see if there's a match
-      if (!existingUser) {
-        console.log(`[GOOGLE AUTH] Email not found, checking all Google users...`);
-        const { db } = require('./db');
-        const allGoogleUsers = db.prepare('SELECT * FROM users WHERE provider = ? AND email LIKE ?').all('google', `%${email.split('@')[0]}%`);
-        console.log(`[GOOGLE AUTH] Found ${allGoogleUsers.length} Google users with similar email`);
-        if (allGoogleUsers.length > 0) {
-          console.log(`[GOOGLE AUTH] Potential matches:`, allGoogleUsers.map(u => ({ id: u.id, email: u.email, credits: u.credits_balance })));
-          // Use the first match if email matches (case-insensitive)
-          existingUser = allGoogleUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-        }
-      }
+      // CRITICAL FIX: Use case-insensitive email lookup (now handled in User.findByEmail)
+      // This is the ROOT CAUSE - email lookups were case-sensitive, causing duplicate accounts
+      const existingUser = User.findByEmail(email);
       
       if (existingUser) {
         console.log(`[GOOGLE AUTH] ✅ FOUND EXISTING ACCOUNT - User ID: ${existingUser.id}, Email: ${existingUser.email}, Provider: ${existingUser.provider}, Credits: ${existingUser.credits_balance}`);
@@ -466,6 +450,7 @@ app.post('/api/auth/google', async (req, res) => {
         // This handles the case where user signed in with Google on computer, then phone
         if (existingUser.provider === 'google') {
           // Same email, same provider, but different provider_id - update the provider_id to link accounts
+          // This allows the same Google account to work across devices
           console.log(`[GOOGLE AUTH] Linking Google account - updating provider_id for existing user ${existingUser.id} (old: ${existingUser.provider_id}, new: ${providerId})`);
           const { db, userQueries } = require('./db');
           if (!userQueries.updateProviderId) {
@@ -497,9 +482,8 @@ app.post('/api/auth/google', async (req, res) => {
           });
         }
       } else {
-        // No existing user found - check if we should create new one
-        console.log(`[GOOGLE AUTH] ❌ NO EXISTING ACCOUNT FOUND for email "${email}"`);
-        console.log(`[GOOGLE AUTH] Creating new user...`);
+        // No existing user found - create new one
+        console.log(`[GOOGLE AUTH] No existing account found for email "${email}" - creating new account`);
         try {
           user = await User.create(email, null, name || email.split('@')[0], 'google', providerId);
           console.log(`[GOOGLE AUTH] New user created - ID: ${user.id}, Email: ${user.email}, Credits: ${user.credits_balance}`);

@@ -116,7 +116,8 @@ const userQueries = {
     INSERT INTO users (email, password_hash, name, provider, provider_id, credits_balance)
     VALUES (?, ?, ?, ?, ?, ?)
   `),
-  findByEmail: db.prepare('SELECT * FROM users WHERE email = ?'),
+  // CRITICAL FIX: Make email lookup case-insensitive to prevent duplicate accounts
+  findByEmail: db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)'),
   findByProvider: db.prepare('SELECT * FROM users WHERE provider = ? AND provider_id = ?'),
   findById: db.prepare('SELECT * FROM users WHERE id = ?'),
   updateCredits: db.prepare('UPDATE users SET credits_balance = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'),

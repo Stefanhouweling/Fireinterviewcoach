@@ -924,11 +924,6 @@ app.post('/api/referrals/redeem', authenticateToken, (req, res) => {
       return res.json({ success: true, creditsGranted: testCredits, newBalance });
     }
     
-    // Regular referral codes - only allow redemption if user has 0 credits
-    if (user.credits_balance > 0) {
-      return res.status(400).json({ error: 'Referral codes can only be redeemed when you have 0 credits' });
-    }
-    
     // Regular referral code - just track it, don't grant credits to referred user
     try {
       const referral = Referral.useCode(code, user.id, 0);

@@ -429,6 +429,68 @@
         min-height: 80px;
         max-height: 150px;
       }
+      
+      /* Modal improvements for mobile */
+      .modal-overlay, .ai-modal-overlay {
+        padding: 20px;
+        align-items: flex-start;
+        padding-top: max(20px, env(safe-area-inset-top));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .modal, .ai-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: calc(100vh - 40px);
+        margin: 0;
+        border-radius: 16px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .modal-header, .ai-modal-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        position: sticky;
+        top: 0;
+        background: #1e293b;
+        z-index: 10;
+        border-radius: 16px 16px 0 0;
+      }
+      
+      .modal-content, .ai-modal-content {
+        padding: 20px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+      
+      /* Dropdown improvements */
+      #userMenuDropdown, #trialCreditsDropdown {
+        position: fixed;
+        right: 16px;
+        left: 16px;
+        width: auto;
+        max-width: calc(100vw - 32px);
+        margin-top: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        border-radius: 12px;
+      }
+      
+      /* Better input fields on mobile */
+      input, textarea, select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px 16px;
+        border-radius: 10px;
+        min-height: 44px;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      
+      /* Card spacing improvements */
+      .card + .card {
+        margin-top: 12px;
+      }
     }
     
     /* Small Mobile - Enhanced spacing */
@@ -531,6 +593,34 @@
       
       video, canvas {
         max-height: 240px;
+      }
+      
+      /* Full-width modals on small screens */
+      .modal-overlay, .ai-modal-overlay {
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+      }
+      
+      .modal, .ai-modal {
+        border-radius: 12px;
+        max-height: calc(100vh - 24px);
+      }
+      
+      .modal-header, .ai-modal-header {
+        padding: 16px;
+        border-radius: 12px 12px 0 0;
+      }
+      
+      .modal-content, .ai-modal-content {
+        padding: 16px;
+        font-size: 0.9rem;
+      }
+      
+      /* Dropdowns full width on small screens */
+      #userMenuDropdown, #trialCreditsDropdown {
+        right: 12px;
+        left: 12px;
+        max-width: calc(100vw - 24px);
       }
     }
     

@@ -1841,6 +1841,24 @@
         </form>
       </div>
       
+      <!-- Referral Code Redemption Section -->
+      <div style="margin-bottom: 32px; padding: 20px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%); border: 2px solid rgba(251, 191, 36, 0.4); border-radius: 12px; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.1);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="color: #fbbf24; font-size: 1.5rem;">🎁</span>
+          <h4 style="color: #fbbf24; margin: 0; font-size: 1.2rem; font-weight: 700;">Redeem Referral Code</h4>
+        </div>
+        <p style="color: #cbd5e1; font-size: 0.9rem; margin: 0 0 16px 0; line-height: 1.5;">
+          Have a referral code from a friend? Enter it here to get <strong style="color: #fbbf24;">3 free credits</strong>! 
+          <span style="color: #94a3b8; font-size: 0.85rem;">(Only works if you currently have 0 credits)</span>
+        </p>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="redeemReferralCode" placeholder="Enter referral code (e.g., ABC123)" style="flex: 1; padding: 12px; border-radius: 8px; border: 2px solid rgba(251, 191, 36, 0.5); background: #1e293b; color: #fff; font-size: 1rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; text-align: center;" />
+          <button id="redeemReferralCodeBtn" class="primary" style="padding: 12px 24px; font-size: 0.95rem; font-weight: 600; white-space: nowrap;">Redeem</button>
+        </div>
+        <p id="redeemReferralStatus" style="color: #86efac; font-size: 0.9rem; margin: 12px 0 0 0; display: none; font-weight: 600;"></p>
+        <p id="redeemReferralError" style="color: #fca5a5; font-size: 0.9rem; margin: 12px 0 0 0; display: none;"></p>
+      </div>
+      
       <!-- Purchase History Section -->
       <div style="margin-bottom: 32px;">
         <h4 style="color: #fbbf24; margin-bottom: 16px; font-size: 1.1rem;">Purchase History</h4>

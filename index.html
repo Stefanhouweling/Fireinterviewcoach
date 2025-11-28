@@ -840,6 +840,129 @@
       font-size: 1.1rem;
     }
 
+    /* General Modal Styles (for paywall, credit purchase, auth) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 99998;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+      backdrop-filter: blur(5px);
+      box-sizing: border-box;
+    }
+
+    .modal-overlay.active {
+      display: flex !important;
+    }
+
+    .modal {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: #fbbf24;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .modal-content {
+      color: #e5e7eb;
+    }
+
+    /* Credit Bundle Cards */
+    .credit-bundle-card {
+      padding: 20px;
+      border: 2px solid rgba(148, 163, 184, 0.3);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.5);
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .credit-bundle-card:hover {
+      border-color: #fbbf24;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+    }
+
+    .credit-bundle-card.selected {
+      border-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.1);
+    }
+
+    .credit-bundle-card h4 {
+      margin: 0 0 8px 0;
+      color: #fbbf24;
+      font-size: 1.1rem;
+    }
+
+    .credit-bundle-card .credits {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 8px 0;
+    }
+
+    .credit-bundle-card .price {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin: 8px 0;
+    }
+
+    .credit-bundle-card .sessions {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 8px;
+    }
+
     /* Autocomplete Suggestions */
     .suggestion-item {
       padding: 10px 12px;
@@ -1159,11 +1282,23 @@
 
 <div class="app" id="mainApp" style="display: none;">
   <header>
-    <div class="title" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
-      <!-- Logo Only - Scaled to Fit Banner -->
-      <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+    <div class="title" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0 24px;">
+      <!-- Right side: Credits/Login -->
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span id="headerCredits" style="color: #94a3b8; font-size: 0.9rem; font-weight: 500;">3 free sessions left</span>
+        <button id="headerLoginBtn" class="ghost" style="display: none;">Log In</button>
+        <button id="headerSignupBtn" class="ghost" style="display: none;">Sign Up</button>
+        <div id="headerUserMenu" style="display: none;">
+          <button id="headerUserBtn" class="ghost" style="position: relative;">
+            <span id="headerUserName"></span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Logo - Left Side -->
+      <div style="display: flex; align-items: center; justify-content: flex-start; flex: 1;">
         <img id="logoImage" src="banner-logo.png" alt="Interview Coach AI Logo" 
-             style="width: 100%; height: auto; max-height: 160px; object-fit: contain; display: block;"
+             style="height: auto; max-height: 120px; object-fit: contain; display: block;"
              onerror="console.error('Logo image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
         <!-- Fallback SVG if logo image not found -->
         <svg width="500" height="120" viewBox="0 0 90 90" style="display: none; max-height: 120px;">
@@ -1202,6 +1337,36 @@
           <!-- Asterisk (right arm) -->
           <text x="63" y="60" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8" opacity="0.9">*</text>
         </svg>
+      </div>
+      
+      <!-- Credits & Auth - Right Side -->
+      <div id="headerAuthSection" style="display: flex; align-items: center; gap: 16px; flex-shrink: 0;">
+        <!-- Credits Display (shown when logged in) -->
+        <div id="creditsDisplay" style="display: none; padding: 8px 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; font-size: 0.9rem;">
+          <span style="color: #fbbf24; font-weight: 600;">Credits: <span id="creditsCount">0</span></span>
+        </div>
+        
+        <!-- Trial Credits Display (shown for anonymous users) -->
+        <div id="trialCreditsDisplay" style="display: none; padding: 8px 16px; background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; font-size: 0.9rem;">
+          <span style="color: #94a3b8;">Free Sessions: <span id="trialCreditsCount">3</span></span>
+        </div>
+        
+        <!-- Auth Buttons -->
+        <div id="authButtons" style="display: flex; gap: 8px;">
+          <button id="loginBtn" class="ghost" style="padding: 8px 16px; font-size: 0.9rem;">Log in</button>
+          <button id="signupBtn" class="primary" style="padding: 8px 16px; font-size: 0.9rem;">Sign up</button>
+        </div>
+        
+        <!-- User Menu (shown when logged in) -->
+        <div id="userMenu" style="display: none; position: relative;">
+          <button id="userMenuBtn" class="ghost" style="padding: 8px 16px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+            <span id="userEmail">user@example.com</span>
+            <span>▼</span>
+          </button>
+          <div id="userMenuDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: #1e293b; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 8px; min-width: 200px; z-index: 1000;">
+            <button id="logoutBtn" class="ghost" style="width: 100%; text-align: left; padding: 8px 12px; font-size: 0.9rem;">Log out</button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -1465,6 +1630,100 @@
     </div>
     <div class="ai-modal-content" id="aiModalContent">
       <!-- AI feedback will be inserted here -->
+    </div>
+  </div>
+</div>
+
+<!-- Paywall Modal -->
+<div id="paywallModal" class="modal-overlay" style="display: none;">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3>You've used your 3 free sessions</h3>
+      <button class="modal-close" id="closePaywallModal" type="button">×</button>
+    </div>
+    <div class="modal-content">
+      <p style="color: #cbd5e1; margin-bottom: 20px; line-height: 1.6;">
+        To keep practicing and unlock full 10/10 answers and detailed feedback, you'll need credits.
+      </p>
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button class="primary" id="buyCreditsFromPaywall" style="flex: 1; padding: 12px;">Buy Credits</button>
+        <button class="secondary" id="cancelPaywall" style="flex: 1; padding: 12px;">Maybe Later</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Credit Purchase Modal -->
+<div id="creditPurchaseModal" class="modal-overlay" style="display: none;">
+  <div class="modal" style="max-width: 700px;">
+    <div class="modal-header">
+      <h3>Choose Your Credit Pack</h3>
+      <button class="modal-close" id="closeCreditPurchaseModal" type="button">×</button>
+    </div>
+    <div class="modal-content">
+      <div id="creditBundlesContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-top: 20px;">
+        <!-- Credit bundles will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div id="signupModal" class="modal-overlay" style="display: none;">
+  <div class="modal" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3>Create Account</h3>
+      <button class="modal-close" id="closeSignupModal" type="button">×</button>
+    </div>
+    <div class="modal-content">
+      <form id="signupForm" style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Name</label>
+          <input type="text" id="signupName" placeholder="Your name" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+        </div>
+        <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Email</label>
+          <input type="email" id="signupEmail" placeholder="your@email.com" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+        </div>
+        <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Password</label>
+          <input type="password" id="signupPassword" placeholder="At least 8 characters" required minlength="8" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+        </div>
+        <div id="signupError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
+        <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Sign Up</button>
+        <div style="text-align: center; margin-top: 8px;">
+          <span style="color: #94a3b8; font-size: 0.85rem;">Already have an account? </span>
+          <button type="button" id="switchToLogin" class="ghost" style="padding: 0; text-decoration: underline;">Log in</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal-overlay" style="display: none;">
+  <div class="modal" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3>Log In</h3>
+      <button class="modal-close" id="closeLoginModal" type="button">×</button>
+    </div>
+    <div class="modal-content">
+      <form id="loginForm" style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Email</label>
+          <input type="email" id="loginEmail" placeholder="your@email.com" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+        </div>
+        <div>
+          <label style="display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 6px;">Password</label>
+          <input type="password" id="loginPassword" placeholder="Your password" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3); background: #1e293b; color: #fff; font-size: 0.9rem;" />
+        </div>
+        <div id="loginError" style="color: #fca5a5; font-size: 0.85rem; display: none;"></div>
+        <button type="submit" class="primary" style="padding: 12px; margin-top: 8px;">Log In</button>
+        <div style="text-align: center; margin-top: 8px;">
+          <span style="color: #94a3b8; font-size: 0.85rem;">Don't have an account? </span>
+          <button type="button" id="switchToSignup" class="ghost" style="padding: 0; text-decoration: underline;">Sign up</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -2260,6 +2519,152 @@
   // Always use backend service (API keys are hidden on the server)
   const USE_BACKEND = true;
   
+  // ========== CREDIT SYSTEM ==========
+  // Trial credits tracking (localStorage for anonymous users)
+  function getTrialCreditsRemaining() {
+    const stored = localStorage.getItem('trial_credits_remaining');
+    if (stored === null) {
+      // Initialize with 3 trial credits
+      localStorage.setItem('trial_credits_remaining', '3');
+      return 3;
+    }
+    return parseInt(stored) || 0;
+  }
+  
+  function setTrialCreditsRemaining(count) {
+    localStorage.setItem('trial_credits_remaining', count.toString());
+    updateTrialCreditsDisplay();
+  }
+  
+  function consumeTrialCredit() {
+    const current = getTrialCreditsRemaining();
+    if (current > 0) {
+      setTrialCreditsRemaining(current - 1);
+      return true;
+    }
+    return false;
+  }
+  
+  // User authentication state
+  let currentUser = null;
+  let authToken = null;
+  
+  // Check authentication on page load
+  async function checkAuth() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        currentUser = await response.json();
+        authToken = document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+        updateAuthUI();
+        await updateCreditsDisplay();
+      } else {
+        currentUser = null;
+        authToken = null;
+        updateAuthUI();
+        updateTrialCreditsDisplay();
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      currentUser = null;
+      updateAuthUI();
+      updateTrialCreditsDisplay();
+    }
+  }
+  
+  // Update authentication UI
+  function updateAuthUI() {
+    const headerLoginBtn = document.getElementById('headerLoginBtn');
+    const headerSignupBtn = document.getElementById('headerSignupBtn');
+    const headerUserMenu = document.getElementById('headerUserMenu');
+    const headerUserName = document.getElementById('headerUserName');
+    
+    if (currentUser) {
+      // Logged in - show user menu, hide login/signup
+      if (headerLoginBtn) headerLoginBtn.style.display = 'none';
+      if (headerSignupBtn) headerSignupBtn.style.display = 'none';
+      if (headerUserMenu) {
+        headerUserMenu.style.display = 'block';
+        if (headerUserName) {
+          headerUserName.textContent = currentUser.name || currentUser.email || 'User';
+        }
+      }
+    } else {
+      // Not logged in - show login/signup, hide user menu
+      if (headerLoginBtn) headerLoginBtn.style.display = 'inline-flex';
+      if (headerSignupBtn) headerSignupBtn.style.display = 'inline-flex';
+      if (headerUserMenu) headerUserMenu.style.display = 'none';
+    }
+    
+    // Update credits display
+    updateCreditsDisplay();
+  }
+  
+  // Update credits display
+  async function updateCreditsDisplay() {
+    const creditsEl = document.getElementById('headerCredits');
+    if (!creditsEl) return;
+    
+    if (!currentUser) {
+      updateTrialCreditsDisplay();
+      return;
+    }
+    
+    // For logged-in users, fetch latest balance
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/credits/balance`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        currentUser.credits_balance = data.credits_balance || 0;
+      }
+    } catch (error) {
+      console.error('Error updating credits display:', error);
+    }
+    
+    // Update header display
+    if (creditsEl && currentUser) {
+      creditsEl.textContent = `Credits: ${currentUser.credits_balance}`;
+      creditsEl.style.color = currentUser.credits_balance > 0 ? '#86efac' : '#fca5a5';
+    }
+  }
+  
+  // Update trial credits display
+  function updateTrialCreditsDisplay() {
+    const trialCreditsCountEl = document.getElementById('trialCreditsCount');
+    if (trialCreditsCountEl) {
+      trialCreditsCountEl.textContent = getTrialCreditsRemaining();
+    }
+  }
+  
+  // Check if user can use a question (has credits or trial)
+  function canUseQuestion() {
+    if (currentUser) {
+      // Authenticated user - need paid credits
+      return (currentUser.credits_balance || 0) > 0;
+    } else {
+      // Anonymous user - check trial credits
+      return getTrialCreditsRemaining() > 0;
+    }
+  }
+  
+  // Show paywall if no credits
+  function showPaywallIfNeeded() {
+    if (!canUseQuestion()) {
+      const paywallModal = document.getElementById('paywallModal');
+      if (paywallModal) {
+        paywallModal.style.display = 'flex';
+      }
+      return true;
+    }
+    return false;
+  }
+  
   // Practice mode: "simulation" (random) or "specific" (category-based)
   let practiceMode = "simulation";
   let selectedCategory = "";
@@ -2462,7 +2867,119 @@
   let liveTranscriptText = "";
   let lastAnswerTranscript = "";
   let motionScoreForAnswer = null;
-  let isSpeaking = false; // Track when TTS is speaking to prevent mic from picking it up
+
+  // ========== CREDIT SYSTEM ==========
+  let currentUser = null; // { id, email, name, credits_balance }
+  const TRIAL_CREDITS_MAX = 3;
+  const TRIAL_CREDITS_KEY = 'trial_credits_remaining';
+  
+  // Initialize trial credits
+  function initializeTrialCredits() {
+    if (!localStorage.getItem(TRIAL_CREDITS_KEY)) {
+      localStorage.setItem(TRIAL_CREDITS_KEY, TRIAL_CREDITS_MAX.toString());
+    }
+  }
+  
+  // Get trial credits remaining
+  function getTrialCreditsRemaining() {
+    const stored = localStorage.getItem(TRIAL_CREDITS_KEY);
+    return stored ? parseInt(stored, 10) : TRIAL_CREDITS_MAX;
+  }
+  
+  // Consume a trial credit
+  function consumeTrialCredit() {
+    const current = getTrialCreditsRemaining();
+    if (current > 0) {
+      localStorage.setItem(TRIAL_CREDITS_KEY, (current - 1).toString());
+      updateTrialCreditsDisplay();
+    }
+  }
+  
+  // Check if user can use a question
+  function canUseQuestion() {
+    // If logged in with paid credits, yes
+    if (currentUser && currentUser.credits_balance > 0) {
+      return true;
+    }
+    // If not logged in, check trial credits
+    if (!currentUser) {
+      return getTrialCreditsRemaining() > 0;
+    }
+    // Logged in but no credits
+    return false;
+  }
+  
+  // Update trial credits display
+  function updateTrialCreditsDisplay() {
+    if (!currentUser) {
+      const remaining = getTrialCreditsRemaining();
+      const creditsEl = document.getElementById('headerCredits');
+      if (creditsEl) {
+        creditsEl.textContent = `${remaining} free sessions left`;
+      }
+    }
+  }
+  
+  
+  // Get current user from backend
+  async function fetchCurrentUser() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const user = await response.json();
+        currentUser = user;
+        await updateCreditsDisplay();
+        return user;
+      } else {
+        currentUser = null;
+        await updateCreditsDisplay();
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      currentUser = null;
+      return null;
+    }
+  }
+  
+  // Show paywall modal
+  function showPaywall() {
+    const modal = document.getElementById('paywallModal');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+  }
+  
+  // Hide paywall modal
+  function hidePaywall() {
+    const modal = document.getElementById('paywallModal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+  }
+  
+  // Show paywall if needed (checks credits)
+  function showPaywallIfNeeded() {
+    if (!canUseQuestion()) {
+      showPaywall();
+      return true;
+    }
+    return false;
+  }
+  
+  // Initialize on page load
+  initializeTrialCredits();
+  
+  // Check user status on load
+  (async () => {
+    await fetchCurrentUser();
+    updateCreditsDisplay();
+  })();
   
   // ========== VOICE SELECTION ==========
   let selectedVoice = null;
@@ -2879,6 +3396,12 @@
   updateNextQuestionButtonText();
   
   nextQuestionBtn.addEventListener("click", async () => {
+    // Check if user can use a question (credits/trial)
+    if (!canUseQuestion()) {
+      showPaywallIfNeeded();
+      return;
+    }
+    
     nextQuestionBtn.disabled = true;
     nextQuestionBtn.textContent = APP_CONFIG ? APP_CONFIG.status.generatingQuestion : "🤖 Generating question...";
       try {
@@ -4367,6 +4890,13 @@ Return ONLY the category and question.`
       alert("No transcript found. Answer the question or type your answer first.");
       return;
     }
+    
+    // Check credits before analysis
+    if (!canUseQuestion()) {
+      showPaywallIfNeeded();
+      return;
+    }
+    
     lastAnswerTranscript = text;
 
     // Add to conversation history
@@ -4446,16 +4976,43 @@ Return ONLY the category and question.`
           cityResearch: onboardingData?.cityResearch || null,
           category: currentQuestion?.category || null,
           sessionId: getSessionId(),
-          questionCount: questionCount
-        })
+          questionCount: questionCount,
+          trialCreditsRemaining: currentUser ? null : getTrialCreditsRemaining()
+        }),
+        credentials: 'include'
       });
 
       if (!response.ok) {
+        if (response.status === 402) {
+          // No credits
+          const errorData = await response.json();
+          clearInterval(progressInterval);
+          if (modalContentEl) {
+            modalContentEl.innerHTML = `
+              <p style="color:#fecaca; margin-bottom:8px;">${errorData.message || 'No credits remaining'}</p>
+              <button class="primary" onclick="showPaywallIfNeeded()" style="margin-top: 12px; padding: 8px 16px;">Buy Credits</button>
+            `;
+          }
+          return;
+        }
         throw new Error(`Backend error: ${response.status}`);
       }
 
       const data = await response.json();
       const aiFeedback = data.feedback;
+      const hasDetailedFeedback = data.hasDetailedFeedback || false;
+      const isTrialUser = data.isTrialUser || false;
+      
+      // Consume trial credit if this was a trial use
+      if (isTrialUser && !currentUser) {
+        consumeTrialCredit();
+      }
+      
+      // Update credits display if paid user
+      if (currentUser && data.creditsRemaining !== null) {
+        currentUser.credits_balance = data.creditsRemaining;
+        await updateCreditsDisplay();
+      }
 
       // Finish progress bar
       clearInterval(progressInterval);
@@ -4465,8 +5022,8 @@ Return ONLY the category and question.`
       if (aiFeedback) {
         // Small preview in right-hand card
         formatAIFeedback(fireTipsEl, aiFeedback, true);
-        // Full formatted feedback into the modal
-        formatAIFeedbackForModal(aiFeedback);
+        // Full formatted feedback into the modal (pass hasDetailedFeedback)
+        formatAIFeedbackForModal(aiFeedback, hasDetailedFeedback);
 
         const viewBtn = document.getElementById("viewAIFeedbackBtn");
         if (viewBtn) {
@@ -4534,9 +5091,12 @@ Return ONLY the category and question.`
   }
   
   // Format AI feedback for the modal (wide, readable format)
-  function formatAIFeedbackForModal(text) {
+  function formatAIFeedbackForModal(text, hasDetailedFeedback = true) {
     const modalContent = document.getElementById("aiModalContent");
     if (!modalContent) return;
+    
+    // Check if this is a trial user without detailed feedback access
+    const isTrialWithoutAccess = !hasDetailedFeedback;
     
     // Helper function to convert markdown bold (**text**) to HTML bold
     function convertMarkdownBold(str) {
@@ -4556,6 +5116,7 @@ Return ONLY the category and question.`
     const lines = text.split("\n");
     let html = "";
     let inList = false;
+    let inPremiumSection = false;
     
     lines.forEach((line, index) => {
       const trimmed = line.trim();
@@ -4573,7 +5134,29 @@ Return ONLY the category and question.`
         }
         let sectionTitle = trimmed.substring(3).trim();
         sectionTitle = cleanText(sectionTitle); // Remove trailing dashes
-        html += `<h4 style="margin-top: ${html ? '24px' : '0'}; margin-bottom: 12px; color: #fbbf24; font-size: 1.1rem; font-weight: 600;">${convertMarkdownBold(sectionTitle)}</h4>`;
+        
+        // Check if this is the premium section that should be blurred for trial users
+        const isPremiumSection = sectionTitle.toLowerCase().includes('panel-ready') || 
+                                 sectionTitle.toLowerCase().includes('10/10') ||
+                                 sectionTitle.toLowerCase().includes('detailed');
+        
+        if (isPremiumSection && isTrialWithoutAccess) {
+          // Start premium locked section
+          inPremiumSection = true;
+          html += `<div id="premiumSection" style="position: relative; margin-top: ${html ? '24px' : '0'}; margin-bottom: 12px; padding: 16px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px;">`;
+          html += `<h4 style="margin: 0 0 12px 0; color: #fbbf24; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span>🔒</span>
+            <span>${convertMarkdownBold(sectionTitle)}</span>
+          </h4>`;
+          html += `<div style="filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.5;">`;
+        } else {
+          // Close premium section if we were in one
+          if (inPremiumSection) {
+            html += `</div></div>`;
+            inPremiumSection = false;
+          }
+          html += `<h4 style="margin-top: ${html ? '24px' : '0'}; margin-bottom: 12px; color: #fbbf24; font-size: 1.1rem; font-weight: 600;">${convertMarkdownBold(sectionTitle)}</h4>`;
+        }
       }
       // Bullet points
       else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
@@ -4640,6 +5223,15 @@ Return ONLY the category and question.`
     // Close any open list
     if (inList) {
       html += "</div>";
+    }
+    
+    // Close premium section if it was opened
+    if (inPremiumSection) {
+      html += `</div></div>`; // Close blur div and premium section div
+      html += `<div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; text-align: center;">
+        <p style="color: #fbbf24; margin: 0 0 8px 0; font-weight: 600;">Full 10/10 answer & detailed coaching are available after upgrading.</p>
+        <button class="primary" onclick="showPaywallIfNeeded()" style="padding: 8px 16px; margin-top: 8px;">Buy Credits to Unlock</button>
+      </div>`;
     }
     
     modalContent.innerHTML = html || '<p style="color: #94a3b8;">No feedback available.</p>';
@@ -5103,6 +5695,344 @@ Return ONLY the category and question.`
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ========== AUTHENTICATION & CREDIT SYSTEM EVENT LISTENERS ========== -->
+<script>
+  // Initialize auth on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+    updateTrialCreditsDisplay();
+  });
+  
+  // Signup form handler
+  const signupForm = document.getElementById('signupForm');
+  if (signupForm) {
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      const errorEl = document.getElementById('signupError');
+      
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ name, email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          currentUser = data.user;
+          updateAuthUI();
+          await updateCreditsDisplay();
+          document.getElementById('signupModal').style.display = 'none';
+          // If coming from paywall, show credit purchase
+          if (window.showCreditPurchaseAfterAuth) {
+            window.showCreditPurchaseAfterAuth = false;
+            showCreditPurchaseModal();
+          }
+        } else {
+          if (errorEl) {
+            errorEl.textContent = data.error || 'Signup failed';
+            errorEl.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Signup error:', error);
+        if (errorEl) {
+          errorEl.textContent = 'Network error. Please try again.';
+          errorEl.style.display = 'block';
+        }
+      }
+    });
+  }
+  
+  // Login form handler
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+      
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          currentUser = data.user;
+          updateAuthUI();
+          await updateCreditsDisplay();
+          document.getElementById('loginModal').style.display = 'none';
+          // If coming from paywall, show credit purchase
+          if (window.showCreditPurchaseAfterAuth) {
+            window.showCreditPurchaseAfterAuth = false;
+            showCreditPurchaseModal();
+          }
+        } else {
+          if (errorEl) {
+            errorEl.textContent = data.error || 'Login failed';
+            errorEl.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        if (errorEl) {
+          errorEl.textContent = 'Network error. Please try again.';
+          errorEl.style.display = 'block';
+        }
+      }
+    });
+  }
+  
+  // Logout handler
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch(`${BACKEND_URL}/api/auth/logout`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        currentUser = null;
+        updateAuthUI();
+        updateTrialCreditsDisplay();
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    });
+  }
+  
+  // Modal open/close handlers
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+  const closeLoginModal = document.getElementById('closeLoginModal');
+  const closeSignupModal = document.getElementById('closeSignupModal');
+  const closePaywallModal = document.getElementById('closePaywallModal');
+  const buyCreditsFromPaywall = document.getElementById('buyCreditsFromPaywall');
+  const closeCreditPurchaseModal = document.getElementById('closeCreditPurchaseModal');
+  const userMenuBtn = document.getElementById('userMenuBtn');
+  const userMenuDropdown = document.getElementById('userMenuDropdown');
+  
+  // Header button handlers
+  const headerLoginBtn = document.getElementById('headerLoginBtn');
+  const headerSignupBtn = document.getElementById('headerSignupBtn');
+  
+  if (headerLoginBtn) headerLoginBtn.addEventListener('click', () => {
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.style.display = 'flex';
+  });
+  
+  if (headerSignupBtn) headerSignupBtn.addEventListener('click', () => {
+    const modal = document.getElementById('signupModal');
+    if (modal) modal.style.display = 'flex';
+  });
+  
+  if (loginBtn) loginBtn.addEventListener('click', () => {
+    document.getElementById('loginModal').style.display = 'flex';
+  });
+  
+  if (signupBtn) signupBtn.addEventListener('click', () => {
+    document.getElementById('signupModal').style.display = 'flex';
+  });
+  
+  if (closeLoginModal) closeLoginModal.addEventListener('click', () => {
+    document.getElementById('loginModal').style.display = 'none';
+  });
+  
+  if (closeSignupModal) closeSignupModal.addEventListener('click', () => {
+    document.getElementById('signupModal').style.display = 'none';
+  });
+  
+  if (closePaywallModal) closePaywallModal.addEventListener('click', () => {
+    document.getElementById('paywallModal').style.display = 'none';
+  });
+  
+  if (buyCreditsFromPaywall) buyCreditsFromPaywall.addEventListener('click', () => {
+    document.getElementById('paywallModal').style.display = 'none';
+    if (!currentUser) {
+      // Need to sign up first
+      window.showCreditPurchaseAfterAuth = true;
+      document.getElementById('signupModal').style.display = 'flex';
+    } else {
+      showCreditPurchaseModal();
+    }
+  });
+  
+  if (userMenuBtn) userMenuBtn.addEventListener('click', () => {
+    if (userMenuDropdown) {
+      userMenuDropdown.style.display = userMenuDropdown.style.display === 'none' ? 'block' : 'none';
+    }
+  });
+  
+  // Credit purchase modal
+  async function showCreditPurchaseModal() {
+    if (!currentUser) {
+      window.showCreditPurchaseAfterAuth = true;
+      document.getElementById('signupModal').style.display = 'flex';
+      return;
+    }
+    
+    const modal = document.getElementById('creditPurchaseModal');
+    const container = document.getElementById('creditBundlesContainer');
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/credits/bundles`);
+      const data = await response.json();
+      
+      if (container) {
+        container.innerHTML = data.bundles.map(bundle => `
+          <div style="padding: 20px; background: #0f172a; border: 2px solid rgba(148, 163, 184, 0.2); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s;" 
+               onmouseover="this.style.borderColor='rgba(251, 191, 36, 0.5)'" 
+               onmouseout="this.style.borderColor='rgba(148, 163, 184, 0.2)'"
+               onclick="purchaseCredits('${bundle.id}')">
+            <h3 style="margin: 0 0 8px 0; color: #fbbf24; font-size: 1.2rem;">${bundle.name}</h3>
+            <div style="font-size: 2rem; font-weight: 700; color: #fff; margin: 12px 0;">${bundle.credits}</div>
+            <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">credits</div>
+            <div style="color: #fbbf24; font-size: 1.5rem; font-weight: 600; margin: 16px 0;">$${bundle.price_dollars}</div>
+            <div style="color: #cbd5e1; font-size: 0.85rem;">~${bundle.credits} detailed sessions</div>
+          </div>
+        `).join('');
+      }
+      
+      if (modal) modal.style.display = 'flex';
+    } catch (error) {
+      console.error('Error loading credit bundles:', error);
+    }
+  }
+  
+  async function purchaseCredits(packId) {
+    if (!currentUser) return;
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/credits/create-checkout-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ packId })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        alert('Failed to create checkout session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Purchase error:', error);
+      alert('Network error. Please try again.');
+    }
+  }
+  
+  // Make functions globally accessible
+  window.showPaywallIfNeeded = showPaywallIfNeeded;
+  window.showCreditPurchaseModal = showCreditPurchaseModal;
+  window.purchaseCredits = purchaseCredits;
+  
+  // Close modals when clicking outside
+  document.addEventListener('click', (e) => {
+    const modals = ['signupModal', 'loginModal', 'paywallModal', 'creditPurchaseModal'];
+    modals.forEach(modalId => {
+      const modal = document.getElementById(modalId);
+      if (modal && e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+    
+    // Close user menu when clicking outside
+    if (userMenuDropdown && !userMenuBtn.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+      userMenuDropdown.style.display = 'none';
+    }
+  });
+</script>
+
+<!-- ========== AUTHENTICATION MODALS ========== -->
+<!-- Signup Modal -->
+<div id="signupModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: #1e293b; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <h2 style="margin: 0 0 24px 0; color: #fbbf24; font-size: 1.5rem;">Sign up</h2>
+    <form id="signupForm">
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Name</label>
+        <input type="text" id="signupName" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Email</label>
+        <input type="email" id="signupEmail" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
+      </div>
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Password</label>
+        <input type="password" id="signupPassword" required minlength="6" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
+      </div>
+      <div id="signupError" style="display: none; color: #fca5a5; margin-bottom: 16px; font-size: 0.9rem;"></div>
+      <div style="display: flex; gap: 12px;">
+        <button type="submit" class="primary" style="flex: 1; padding: 12px;">Sign up</button>
+        <button type="button" id="closeSignupModal" class="ghost" style="padding: 12px 24px;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: #1e293b; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <h2 style="margin: 0 0 24px 0; color: #fbbf24; font-size: 1.5rem;">Log in</h2>
+    <form id="loginForm">
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Email</label>
+        <input type="email" id="loginEmail" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
+      </div>
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; margin-bottom: 8px; color: #e5e7eb; font-size: 0.9rem;">Password</label>
+        <input type="password" id="loginPassword" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.3); background: #0f172a; color: #fff; font-size: 0.9rem;">
+      </div>
+      <div id="loginError" style="display: none; color: #fca5a5; margin-bottom: 16px; font-size: 0.9rem;"></div>
+      <div style="display: flex; gap: 12px;">
+        <button type="submit" class="primary" style="flex: 1; padding: 12px;">Log in</button>
+        <button type="button" id="closeLoginModal" class="ghost" style="padding: 12px 24px;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Paywall Modal -->
+<div id="paywallModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: #1e293b; border: 2px solid rgba(251, 191, 36, 0.5); border-radius: 16px; padding: 40px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; text-align: center;">
+    <h2 style="margin: 0 0 16px 0; color: #fbbf24; font-size: 1.8rem;">You've used your 3 free sessions</h2>
+    <p style="color: #cbd5e1; margin-bottom: 32px; line-height: 1.6;">
+      To keep practicing and unlock full 10/10 answers and detailed feedback, you'll need credits.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button id="buyCreditsFromPaywall" class="primary" style="padding: 12px 24px; font-size: 1rem;">Buy Credits</button>
+      <button id="closePaywallModal" class="ghost" style="padding: 12px 24px; font-size: 1rem;">Maybe later</button>
+    </div>
+  </div>
+</div>
+
+<!-- Credit Purchase Modal -->
+<div id="creditPurchaseModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: #1e293b; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 32px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <h2 style="margin: 0 0 24px 0; color: #fbbf24; font-size: 1.8rem; text-align: center;">Choose your plan</h2>
+    <div id="creditBundlesContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <!-- Bundles will be loaded here -->
+    </div>
+    <div style="text-align: center;">
+      <button id="closeCreditPurchaseModal" class="ghost" style="padding: 12px 24px;">Cancel</button>
+    </div>
   </div>
 </div>
 

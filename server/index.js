@@ -4,11 +4,15 @@ const cors = require('cors');
 const OpenAI = require('openai');
 // Use node-fetch for external API calls (Nominatim)
 const fetchModule = require('node-fetch');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const { User, Transaction, CreditLedger } = require('./db');
 // Import question bank
 const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questionBank');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -21,6 +25,43 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
+
+// Authentication middleware
+function authenticateToken(req, res, next) {
+  const token = req.cookies?.authToken || req.headers?.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: 'Invalid or expired token' });
+  }
+}
+
+// Optional auth - doesn't fail if no token
+function optionalAuth(req, res, next) {
+  const token = req.cookies?.authToken || req.headers?.authorization?.split(' ')[1];
+  
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+    } catch (error) {
+      // Invalid token, but continue without user
+      req.user = null;
+    }
+  } else {
+    req.user = null;
+  }
+  
+  next();
+}
 
 // Root route
 app.get('/', (req, res) => {
@@ -30,6 +71,17 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      auth: {
+        signup: 'POST /api/auth/signup',
+        login: 'POST /api/auth/login',
+        logout: 'POST /api/auth/logout',
+        me: 'GET /api/auth/me'
+      },
+      credits: {
+        createCheckout: 'POST /api/credits/create-checkout-session',
+        webhook: 'POST /api/credits/webhook',
+        balance: 'GET /api/credits/balance'
+      },
       testMapbox: 'GET /api/test-mapbox',
       mapboxToken: 'GET /api/mapbox-token',
       mapboxSearch: 'GET /api/mapbox-search',
@@ -50,6 +102,306 @@ app.get('/', (req, res) => {
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Fire Interview Coach API is running' });
+});
+
+// ========== AUTHENTICATION ENDPOINTS ==========
+
+// POST /api/auth/signup
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    // Check if user already exists
+    const existingUser = User.findByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({ error: 'User with this email already exists' });
+    }
+    
+    // Create user
+    const user = await User.create(email, password, name);
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+    
+    // Set cookie
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        credits_balance: user.credits_balance
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Failed to create account', message: error.message });
+  }
+});
+
+// POST /api/auth/login
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    // Find user
+    const user = User.findByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    // Verify password
+    const isValid = await User.verifyPassword(user, password);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+    
+    // Set cookie
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        credits_balance: user.credits_balance
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Failed to login', message: error.message });
+  }
+});
+
+// POST /api/auth/logout
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('authToken');
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// GET /api/auth/me
+app.get('/api/auth/me', authenticateToken, (req, res) => {
+  try {
+    const user = User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      credits_balance: user.credits_balance,
+      created_at: user.created_at
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to get user', message: error.message });
+  }
+});
+
+// ========== CREDIT ENDPOINTS ==========
+
+// Credit bundle configurations
+const CREDIT_BUNDLES = {
+  starter: { credits: 20, priceCents: 999, name: 'Starter' },
+  core: { credits: 75, priceCents: 2499, name: 'Core' },
+  serious: { credits: 200, priceCents: 5999, name: 'Serious' },
+  heavy: { credits: 500, priceCents: 11999, name: 'Heavy' }
+};
+
+// GET /api/credits/balance
+app.get('/api/credits/balance', optionalAuth, (req, res) => {
+  try {
+    if (!req.user) {
+      // Anonymous user - return trial credits info
+      return res.json({
+        isAuthenticated: false,
+        credits_balance: 0,
+        isTrialUser: true
+      });
+    }
+    
+    const user = User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({
+      isAuthenticated: true,
+      credits_balance: user.credits_balance,
+      isTrialUser: false
+    });
+  } catch (error) {
+    console.error('Get credits balance error:', error);
+    res.status(500).json({ error: 'Failed to get credits balance', message: error.message });
+  }
+});
+
+// GET /api/credits/bundles - Get available credit bundles
+app.get('/api/credits/bundles', (req, res) => {
+  res.json({
+    bundles: Object.entries(CREDIT_BUNDLES).map(([id, bundle]) => ({
+      id,
+      name: bundle.name,
+      credits: bundle.credits,
+      price_cents: bundle.priceCents,
+      price_dollars: (bundle.priceCents / 100).toFixed(2)
+    }))
+  });
+});
+
+// POST /api/credits/create-checkout-session - Create Stripe checkout session
+app.post('/api/credits/create-checkout-session', authenticateToken, async (req, res) => {
+  try {
+    const { packId } = req.body;
+    
+    if (!packId || !CREDIT_BUNDLES[packId]) {
+      return res.status(400).json({ error: 'Invalid pack ID' });
+    }
+    
+    const bundle = CREDIT_BUNDLES[packId];
+    const user = User.findById(req.user.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Initialize Stripe if not already done
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+    
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    
+    // Create transaction record
+    const transaction = Transaction.create(
+      user.id,
+      packId,
+      bundle.credits,
+      bundle.priceCents,
+      'usd',
+      'pending',
+      null
+    );
+    
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `${bundle.name} Pack - ${bundle.credits} Credits`,
+            description: `${bundle.credits} coaching sessions with full detailed feedback`
+          },
+          unit_amount: bundle.priceCents
+        },
+        quantity: 1
+      }],
+      mode: 'payment',
+      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-cancel`,
+      metadata: {
+        userId: user.id.toString(),
+        transactionId: transaction.id.toString(),
+        packId: packId,
+        credits: bundle.credits.toString()
+      },
+      customer_email: user.email
+    });
+    
+    // Update transaction with payment intent ID
+    Transaction.updateStatus(transaction.id, 'processing');
+    
+    res.json({
+      sessionId: session.id,
+      url: session.url
+    });
+  } catch (error) {
+    console.error('Create checkout session error:', error);
+    res.status(500).json({ error: 'Failed to create checkout session', message: error.message });
+  }
+});
+
+// POST /api/credits/webhook - Stripe webhook handler
+app.post('/api/credits/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
+  let event;
+  
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  
+  // Handle the event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    
+    try {
+      const userId = parseInt(session.metadata.userId);
+      const transactionId = parseInt(session.metadata.transactionId);
+      const credits = parseInt(session.metadata.credits);
+      
+      // Get user to verify
+      const user = User.findById(userId);
+      if (!user) {
+        console.error(`User ${userId} not found for webhook`);
+        return;
+      }
+      
+      // Add credits to user (transaction was already created in create-checkout-session)
+      User.addCredits(userId, credits, `purchase_${transactionId}`);
+      
+      // Update transaction status
+      Transaction.updateStatus(transactionId, 'completed');
+      
+      console.log(`Credits added: ${credits} to user ${userId} from transaction ${transactionId}`);
+    } catch (error) {
+      console.error('Error processing webhook:', error);
+    }
+  }
+  
+  res.json({ received: true });
 });
 
 // Test endpoint to verify Mapbox token is configured
@@ -816,9 +1168,45 @@ Return ONLY the category and question.`
 });
 
 // POST /api/analyze-answer - Analyze candidate's answer
-app.post('/api/analyze-answer', async (req, res) => {
+app.post('/api/analyze-answer', optionalAuth, async (req, res) => {
   try {
-    const { question, answer, motionScore, resumeAnalysis, resumeText, conversationHistory = [], cityResearch, category, sessionId, questionCount } = req.body;
+    const { question, answer, motionScore, resumeAnalysis, resumeText, conversationHistory = [], cityResearch, category, sessionId, questionCount, trialCreditsRemaining } = req.body;
+    
+    // Check credits: trial or paid
+    let hasPaidCredits = false;
+    let isTrialUser = false;
+    let canAccessDetailedFeedback = false;
+    
+    if (req.user) {
+      // Authenticated user - check paid credits
+      const user = User.findById(req.user.userId);
+      if (user && user.credits_balance > 0) {
+        hasPaidCredits = true;
+        canAccessDetailedFeedback = true;
+      } else {
+        // Authenticated but no credits - need to purchase
+        return res.status(402).json({ 
+          error: 'NO_CREDITS',
+          message: 'You have no credits remaining. Please purchase credits to continue.',
+          requiresPayment: true
+        });
+      }
+    } else {
+      // Anonymous user - check trial credits
+      const trialRemaining = trialCreditsRemaining !== undefined ? parseInt(trialCreditsRemaining) : 3;
+      if (trialRemaining > 0) {
+        isTrialUser = true;
+        canAccessDetailedFeedback = false; // Trial users never get detailed feedback
+      } else {
+        // Trial exhausted - need to sign up and purchase
+        return res.status(402).json({ 
+          error: 'NO_CREDITS',
+          message: 'You have used all 3 free sessions. Please sign up and purchase credits to continue.',
+          requiresPayment: true,
+          requiresSignup: true
+        });
+      }
+    }
 
     // Check if this is a knowledge-testing question (City & Department Specific)
     const isKnowledgeQuestion = category === "City & Department Specific" ||
@@ -974,11 +1362,12 @@ The feedback MUST include:
             "- **Step 1:** [What they should do first and why]\n" +
             "- **Step 2:** [Next key step, including chain of command / safety / communication]\n" +
             "- **Step 3:** [How they would wrap up, debrief, or follow up]\n\n" +
+            (canAccessDetailedFeedback ? 
             "## Panel-Ready 10/10 Answer\n" +
             "Write a single, polished answer that would earn 10/10 on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:\n" +
             "- 1 short opening sentence that orients the panel.\n" +
             "- 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.\n" +
-            "- Keep language natural, plain, and realistic for a firefighter candidate.\n\n") +
+            "- Keep language natural, plain, and realistic for a firefighter candidate.\n\n" : "") +
             "Rules:\n" +
             "- Use markdown bullets (dash) with bold labels using double asterisks, e.g., use dash followed by space and double asterisks for bold.\n" +
             "- Do NOT use star symbols or plain asterisks for formatting.\n" +
@@ -990,6 +1379,17 @@ The feedback MUST include:
     });
 
     const aiFeedback = response.choices[0].message.content;
+    
+    // Deduct credit for paid users (only after successful AI response)
+    if (hasPaidCredits && req.user) {
+      try {
+        User.deductCredit(req.user.userId, 'coached_question');
+        console.log(`[CREDITS] Deducted 1 credit from user ${req.user.userId}`);
+      } catch (creditError) {
+        console.error('Error deducting credit:', creditError);
+        // Don't fail the request, but log the error
+      }
+    }
     
     // Track answer analysis after 5 questions for "areas to work on" feature
     if (sessionId && questionCount && questionCount >= 5) {
@@ -1015,7 +1415,12 @@ The feedback MUST include:
       }
     }
     
-    res.json({ feedback: aiFeedback });
+    res.json({ 
+      feedback: aiFeedback,
+      hasDetailedFeedback: canAccessDetailedFeedback,
+      isTrialUser: isTrialUser,
+      creditsRemaining: hasPaidCredits && req.user ? User.findById(req.user.userId).credits_balance : null
+    });
   } catch (error) {
     console.error('Error analyzing answer:', error);
     res.status(500).json({ error: 'Failed to analyze answer', message: error.message });

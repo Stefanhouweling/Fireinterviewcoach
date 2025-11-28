@@ -111,8 +111,11 @@ app.get('/health', (req, res) => {
 
 // GET /api/config - Get public configuration (like Google Client ID)
 app.get('/api/config', (req, res) => {
+  const hasGoogleClientId = !!GOOGLE_CLIENT_ID;
+  console.log('Config request - GOOGLE_CLIENT_ID exists:', hasGoogleClientId);
   res.json({
-    googleClientId: GOOGLE_CLIENT_ID || null
+    googleClientId: GOOGLE_CLIENT_ID || null,
+    configured: hasGoogleClientId
   });
 });
 

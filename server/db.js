@@ -336,6 +336,15 @@ const Referral = {
       throw new Error('Cannot use your own referral code');
     }
     
+    // PREVENT ABUSE: Check if this user has already used this referral code before
+    const existingUsage = await query(
+      'SELECT * FROM referrals WHERE referral_code = $1 AND referred_user_id = $2',
+      [code, referredUserId]
+    );
+    if (existingUsage.rows.length > 0) {
+      throw new Error('You have already used this referral code. Each referral code can only be used once per account.');
+    }
+    
     await query(`
       UPDATE referrals 
       SET referred_user_id = $1, used_at = CURRENT_TIMESTAMP 

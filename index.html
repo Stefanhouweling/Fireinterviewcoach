@@ -5166,7 +5166,7 @@ Return ONLY the category and question.`
         
         // Check if this is the premium section that should be fully blurred for trial users
         const isPremiumSection = sectionTitle.toLowerCase().includes('panel-ready') || 
-                                 sectionTitle.toLowerCase().includes('10/10') ||
+                                 sectionTitle.toLowerCase().includes('panel ready') ||
                                  sectionTitle.toLowerCase().includes('detailed');
         
         // Check if this is a section where only content should be blurred (not the title)
@@ -5913,9 +5913,31 @@ Return ONLY the category and question.`
   const closeSignupModal = document.getElementById('closeSignupModal');
   const closePaywallModal = document.getElementById('closePaywallModal');
   const buyCreditsFromPaywall = document.getElementById('buyCreditsFromPaywall');
+  const cancelPaywall = document.getElementById('cancelPaywall');
   const closeCreditPurchaseModal = document.getElementById('closeCreditPurchaseModal');
   const userMenuBtn = document.getElementById('userMenuBtn');
   const userMenuDropdown = document.getElementById('userMenuDropdown');
+  const switchToLogin = document.getElementById('switchToLogin');
+  const switchToSignup = document.getElementById('switchToSignup');
+  
+  // Switch between login and signup modals
+  if (switchToLogin) {
+    switchToLogin.addEventListener('click', () => {
+      const signupModal = document.getElementById('signupModal');
+      const loginModal = document.getElementById('loginModal');
+      if (signupModal) signupModal.style.display = 'none';
+      if (loginModal) loginModal.style.display = 'flex';
+    });
+  }
+  
+  if (switchToSignup) {
+    switchToSignup.addEventListener('click', () => {
+      const loginModal = document.getElementById('loginModal');
+      const signupModal = document.getElementById('signupModal');
+      if (loginModal) loginModal.style.display = 'none';
+      if (signupModal) signupModal.style.display = 'flex';
+    });
+  }
   
   // Header button handlers
   // Login/signup buttons are already handled by the existing event listeners below
@@ -5937,18 +5959,31 @@ Return ONLY the category and question.`
   });
   
   if (closePaywallModal) closePaywallModal.addEventListener('click', () => {
-    document.getElementById('paywallModal').style.display = 'none';
+    const paywallModal = document.getElementById('paywallModal');
+    if (paywallModal) paywallModal.style.display = 'none';
+  });
+  
+  if (cancelPaywall) cancelPaywall.addEventListener('click', () => {
+    const paywallModal = document.getElementById('paywallModal');
+    if (paywallModal) paywallModal.style.display = 'none';
   });
   
   if (buyCreditsFromPaywall) buyCreditsFromPaywall.addEventListener('click', () => {
-    document.getElementById('paywallModal').style.display = 'none';
+    const paywallModal = document.getElementById('paywallModal');
+    if (paywallModal) paywallModal.style.display = 'none';
     if (!currentUser) {
       // Need to sign up first
       window.showCreditPurchaseAfterAuth = true;
-      document.getElementById('signupModal').style.display = 'flex';
+      const signupModal = document.getElementById('signupModal');
+      if (signupModal) signupModal.style.display = 'flex';
     } else {
       showCreditPurchaseModal();
     }
+  });
+  
+  if (closeCreditPurchaseModal) closeCreditPurchaseModal.addEventListener('click', () => {
+    const creditPurchaseModal = document.getElementById('creditPurchaseModal');
+    if (creditPurchaseModal) creditPurchaseModal.style.display = 'none';
   });
   
   if (userMenuBtn) userMenuBtn.addEventListener('click', () => {

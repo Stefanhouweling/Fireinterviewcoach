@@ -246,11 +246,13 @@ app.post('/api/auth/signup', async (req, res) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      path: '/'
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
     };
     
     res.cookie('authToken', token, cookieOptions);
     
+    // Also return token in response body so frontend can store it
     res.json({
       success: true,
       user: {
@@ -259,7 +261,7 @@ app.post('/api/auth/signup', async (req, res) => {
         name: user.name,
         credits_balance: user.credits_balance
       },
-      token
+      token // Include token in response for localStorage fallback
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -339,11 +341,13 @@ app.post('/api/auth/login', async (req, res) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      path: '/'
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
     };
     
     res.cookie('authToken', token, cookieOptions);
     
+    // Also return token in response body so frontend can store it
     res.json({
       success: true,
       user: {
@@ -352,7 +356,7 @@ app.post('/api/auth/login', async (req, res) => {
         name: user.name,
         credits_balance: user.credits_balance
       },
-      token
+      token // Include token in response for localStorage fallback
     });
   } catch (error) {
     console.error('Login error:', error);

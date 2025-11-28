@@ -2738,6 +2738,7 @@
     console.log('Authentication error detected - clearing user state');
     currentUser = null;
     authToken = null;
+    setAuthToken(null);
     // Clear cookie
     document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.onrender.com;';
     document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -2745,16 +2746,56 @@
     updateTrialCreditsDisplay();
   }
   
+  // Helper to get auth token (from cookie or localStorage)
+  function getAuthToken() {
+    // Try cookie first
+    const cookieToken = document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+    if (cookieToken) return cookieToken;
+    
+    // Fallback to localStorage
+    const storedToken = localStorage.getItem('authToken');
+    if (storedToken) return storedToken;
+    
+    return null;
+  }
+  
+  // Helper to set auth token in localStorage as fallback
+  function setAuthToken(token) {
+    if (token) {
+      localStorage.setItem('authToken', token);
+    } else {
+      localStorage.removeItem('authToken');
+    }
+  }
+  
+  // Helper to make authenticated fetch requests
+  async function authenticatedFetch(url, options = {}) {
+    const token = getAuthToken();
+    
+    // Add Authorization header if we have a token
+    if (token && !options.headers) {
+      options.headers = {};
+    }
+    if (token) {
+      options.headers = options.headers || {};
+      options.headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Always include credentials for cookies
+    options.credentials = 'include';
+    
+    return fetch(url, options);
+  }
+  
   // Check authentication on page load
   async function checkAuth() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${BACKEND_URL}/api/auth/me`);
       
       if (response.ok) {
         currentUser = await response.json();
-        authToken = document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+        // Update token from cookie or keep existing
+        authToken = getAuthToken();
         updateAuthUI();
         await updateCreditsDisplay();
       } else {
@@ -2764,6 +2805,7 @@
         } else {
           currentUser = null;
           authToken = null;
+          setAuthToken(null);
           updateAuthUI();
           updateTrialCreditsDisplay();
         }
@@ -2772,6 +2814,7 @@
       console.error('Auth check error:', error);
       currentUser = null;
       authToken = null;
+      setAuthToken(null);
       updateAuthUI();
       updateTrialCreditsDisplay();
     }
@@ -6026,6 +6069,11 @@ Return ONLY the category and question.`
         
         if (response.ok) {
           currentUser = data.user;
+          // Store token in localStorage as fallback
+          if (data.token) {
+            authToken = data.token;
+            setAuthToken(data.token);
+          }
           // Clear trial credits from localStorage after successful transfer
           if (trialCredits > 0) {
             localStorage.removeItem('trial_credits_remaining');
@@ -6121,6 +6169,11 @@ Return ONLY the category and question.`
         
         if (response.ok) {
           currentUser = data.user;
+          // Store token in localStorage as fallback
+          if (data.token) {
+            authToken = data.token;
+            setAuthToken(data.token);
+          }
           // Clear trial credits from localStorage after successful transfer
           if (trialCredits > 0) {
             localStorage.removeItem('trial_credits_remaining');
@@ -6357,6 +6410,11 @@ Return ONLY the category and question.`
             
             if (res.ok) {
               currentUser = data.user;
+              // Store token in localStorage as fallback
+              if (data.token) {
+                authToken = data.token;
+                setAuthToken(data.token);
+              }
               // Clear trial credits from localStorage after successful transfer
               if (trialCredits > 0) {
                 localStorage.removeItem('trial_credits_remaining');
@@ -6401,6 +6459,11 @@ Return ONLY the category and question.`
       
       if (res.ok) {
         currentUser = data.user;
+        // Store token in localStorage as fallback
+        if (data.token) {
+          authToken = data.token;
+          setAuthToken(data.token);
+        }
         updateAuthUI();
         await updateCreditsDisplay();
         
@@ -6596,10 +6659,9 @@ Return ONLY the category and question.`
           updateData.currentPassword = settingsCurrentPassword ? settingsCurrentPassword.value : '';
         }
         
-        const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
+        const res = await authenticatedFetch(`${BACKEND_URL}/api/auth/profile`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify(updateData)
         });
         
@@ -6643,9 +6705,7 @@ Return ONLY the category and question.`
     if (!purchaseHistory) return;
     
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/purchase-history`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${BACKEND_URL}/api/auth/purchase-history`);
       
       const data = await res.json();
       
@@ -6697,9 +6757,7 @@ Return ONLY the category and question.`
     if (!creditHistory) return;
     
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/purchase-history`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${BACKEND_URL}/api/auth/purchase-history`);
       
       const data = await res.json();
       
@@ -6785,10 +6843,9 @@ Return ONLY the category and question.`
         }
         
         // Redeem the referral code
-        const redeemRes = await fetch(`${BACKEND_URL}/api/referrals/redeem`, {
+        const redeemRes = await authenticatedFetch(`${BACKEND_URL}/api/referrals/redeem`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ code })
         });
         
@@ -6861,9 +6918,7 @@ Return ONLY the category and question.`
     if (modal) modal.style.display = 'flex';
     
     try {
-      const refResponse = await fetch(`${BACKEND_URL}/api/referrals/my-code`, {
-        credentials: 'include'
-      });
+      const refResponse = await authenticatedFetch(`${BACKEND_URL}/api/referrals/my-code`);
       if (refResponse.ok) {
         const refData = await refResponse.json();
         const referralCodeInput = document.getElementById('referralCodeDisplay');

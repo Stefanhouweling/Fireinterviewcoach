@@ -2679,6 +2679,18 @@
   let currentUser = null;
   let authToken = null;
   
+  // Helper function to handle 401 errors globally
+  function handleAuthError() {
+    console.log('Authentication error detected - clearing user state');
+    currentUser = null;
+    authToken = null;
+    // Clear cookie
+    document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.onrender.com;';
+    document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    updateAuthUI();
+    updateTrialCreditsDisplay();
+  }
+  
   // Check authentication on page load
   async function checkAuth() {
     try {
@@ -2692,14 +2704,20 @@
         updateAuthUI();
         await updateCreditsDisplay();
       } else {
-        currentUser = null;
-        authToken = null;
-        updateAuthUI();
-        updateTrialCreditsDisplay();
+        // Clear user state on 401/403
+        if (response.status === 401 || response.status === 403) {
+          handleAuthError();
+        } else {
+          currentUser = null;
+          authToken = null;
+          updateAuthUI();
+          updateTrialCreditsDisplay();
+        }
       }
     } catch (error) {
       console.error('Auth check error:', error);
       currentUser = null;
+      authToken = null;
       updateAuthUI();
       updateTrialCreditsDisplay();
     }

@@ -1240,11 +1240,11 @@
   </div>
 </div>
 
-<!-- Areas to Work On Modal -->
+<!-- Practice Insights Modal -->
 <div id="areasToWorkOnModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 10003; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);">
   <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%); border: 2px solid rgba(251, 191, 36, 0.3); border-radius: 16px; padding: 24px; max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="color: #fbbf24; font-size: 1.5em; margin: 0;">💡 What You Should Work On</h2>
+      <h2 style="color: #fbbf24; font-size: 1.5em; margin: 0;">💡 Practice Insights</h2>
       <button id="closeAreasToWorkOnModal" style="background: transparent; border: none; color: #cbd5e1; font-size: 1.5rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(251, 191, 36, 0.2)'" onmouseout="this.style.background='transparent'">×</button>
     </div>
     <div id="areasToWorkOnContent" style="color: #e5e7eb; line-height: 1.7; font-size: 1rem;">
@@ -1601,9 +1601,9 @@
             <button id="viewFlaggedBtn" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #cbd5e1; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;" title="View flagged questions" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.5)'" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
               🚩 <span id="flaggedCount">0</span>
             </button>
-            <!-- What You Should Work On Button (appears after 5 questions) -->
-            <button id="areasToWorkOnBtn" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 6px; color: #cbd5e1; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; display: none; font-weight: 500;" title="View personalized areas to work on" onmouseover="this.style.background='rgba(251, 191, 36, 0.1)'; this.style.borderColor='rgba(251, 191, 36, 0.5)'" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(251, 191, 36, 0.3)'">
-              💡 What You Should Work On
+            <!-- Practice Insights Button (appears after 5 questions) -->
+            <button id="areasToWorkOnBtn" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 6px; color: #cbd5e1; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; display: none; font-weight: 500;" title="View personalized practice insights" onmouseover="this.style.background='rgba(251, 191, 36, 0.1)'; this.style.borderColor='rgba(251, 191, 36, 0.5)'" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(251, 191, 36, 0.3)'">
+              💡 Practice Insights
             </button>
           </div>
         </div>
@@ -5473,7 +5473,7 @@ Return ONLY the category and question.`
 
         addFollowupButton();
         
-        // Show "What You Should Work On" button after 5 questions
+        // Show "Practice Insights" button after 5 questions
         if (questionCount >= 5) {
           // Auto-open modal only after receiving feedback for the 5th question (not before)
           const shouldAutoOpen = questionCount === 5 && !hasAutoOpenedAreasModal;

@@ -2030,15 +2030,13 @@
   </div>
 </div>
 
-<!-- Onboarding Modal -->
-<div id="onboardingModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10001; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); overflow-y: auto;">
-  <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 40px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);">
-    <div style="text-align: center; margin-bottom: 30px;">
-      <h2 style="color: #ef4444; font-size: 2em; margin-bottom: 10px;">🎯 Let's Get Started</h2>
-      <p style="color: #cbd5e1; font-size: 1.1em;">Help us personalize your interview practice</p>
-    </div>
+<!-- Onboarding Step 2: Personalize -->
+<div id="onboardingStep2" class="onboarding-step">
+  <div class="onboarding-content">
+    <h2>Personalize</h2>
+    <p>Tell us a bit about yourself to get started</p>
     
-    <form id="onboardingForm" style="display: flex; flex-direction: column; gap: 20px;">
+    <form id="onboardingForm" class="onboarding-form">
       <!-- Resume Upload (Optional) -->
       <div>
         <label style="display: block; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;" id="onboardingResumeLabel">
@@ -2230,9 +2228,9 @@
     </div>
   </header>
 
-  <main class="layout">
-    <!-- LEFT SIDE -->
-    <section class="left">
+  <main class="main-layout">
+    <!-- LEFT COLUMN: Question & Answer (65-70%) -->
+    <section class="question-column">
       <!-- Resume card -->
       <div class="card">
         <div class="card-header">

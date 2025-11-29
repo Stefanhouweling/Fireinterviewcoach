@@ -2098,6 +2098,18 @@
   const TRIAL_CREDITS_MAX = 3;
   const TRIAL_CREDITS_KEY = 'trial_credits_remaining';
   
+  // Initialize trial credits - only if not already set (preserve existing credits)
+  function initializeTrialCredits() {
+    const existing = localStorage.getItem(TRIAL_CREDITS_KEY);
+    if (existing === null || existing === undefined) {
+      // Only initialize if truly missing
+      localStorage.setItem(TRIAL_CREDITS_KEY, TRIAL_CREDITS_MAX.toString());
+      console.log('[TRIAL CREDITS] Initialized with', TRIAL_CREDITS_MAX, 'credits');
+    } else {
+      console.log('[TRIAL CREDITS] Preserved existing credits:', existing);
+    }
+  }
+  
   // ========== LOAD CONFIGURATION TEXT ==========
   // Update all text elements from config.js
   document.addEventListener('DOMContentLoaded', function() {
@@ -3493,16 +3505,8 @@
     "training", "drill", "community", "volunteer", "rescue"
   ];
 
-  // Additional state variables (resumeKeywords, currentQuestion, etc. declared here)
-  let currentQuestion = null;
-  let questionCount = 0;
-  let conversationHistory = []; // Track Q&A for context-aware followups
-  let isFollowupQuestion = false; // Track if current question is a followup
-  let askedQuestions = new Set(); // Track all asked questions (by text) to prevent duplicates
-  let askedCategories = new Set(); // Track question categories to ensure diversity
-  let resumeTopicsCovered = new Set(); // Track resume topics/questions covered
-  let flaggedQuestions = []; // Track flagged questions
-  let onlyFlaggedMode = false; // Toggle for practicing only flagged questions
+  // Additional state variables (resumeKeywords, currentQuestion, etc. already declared at top of first script tag)
+  // DO NOT redeclare - these are already declared at line 2084+
 
   let cameraStream = null;
   let motionCtx = null;
@@ -3517,21 +3521,9 @@
   let motionScoreForAnswer = null;
 
   // ========== CREDIT SYSTEM ==========
-  // Note: currentUser, onboardingData, resumeText, etc. are all declared in the FIRST script tag
-  const TRIAL_CREDITS_MAX = 3;
-  const TRIAL_CREDITS_KEY = 'trial_credits_remaining';
-  
-  // Initialize trial credits - only if not already set (preserve existing credits)
-  function initializeTrialCredits() {
-    const existing = localStorage.getItem(TRIAL_CREDITS_KEY);
-    if (existing === null || existing === undefined) {
-      // Only initialize if truly missing
-      localStorage.setItem(TRIAL_CREDITS_KEY, TRIAL_CREDITS_MAX.toString());
-      console.log('[TRIAL CREDITS] Initialized with', TRIAL_CREDITS_MAX, 'credits');
-    } else {
-      console.log('[TRIAL CREDITS] Preserved existing credits:', existing);
-    }
-  }
+  // Note: TRIAL_CREDITS_MAX, TRIAL_CREDITS_KEY, and initializeTrialCredits() 
+  // are all declared in the FIRST script tag (around line 2097-2100)
+  // DO NOT redeclare them here
   
   // Note: getTrialCreditsRemaining, setTrialCreditsRemaining, consumeTrialCredit 
   // are defined earlier in this script tag (around line 2844)

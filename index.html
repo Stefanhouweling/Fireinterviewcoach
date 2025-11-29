@@ -6057,8 +6057,12 @@ Return ONLY the category and question.`
       followupBtn.textContent = "🤖 Generating followup...";
       try {
         currentQuestion = await generateFollowupQuestion();
+        // Ensure isFollowup is set on the question object
+        if (currentQuestion) {
+          currentQuestion.isFollowup = true;
+          isFollowupQuestion = true; // Also set global flag
+        }
         questionCount++;
-        isFollowupQuestion = true; // Ensure flag is set
         updateNextQuestionButtonText();
         renderQuestion(currentQuestion);
         speakQuestionWithCaptions(currentQuestion.template);

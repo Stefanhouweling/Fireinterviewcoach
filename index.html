@@ -2077,10 +2077,26 @@
   let resumeAnalysis = null;
   let currentUser = null;
   let authToken = null;
+  let onboardingComplete = false; // Will be updated from localStorage
+  
+  // Question state
+  let questionCount = 0;
+  let currentQuestion = null;
+  let conversationHistory = [];
+  let isFollowupQuestion = false;
+  let askedQuestions = new Set();
+  let askedCategories = new Set();
+  let resumeTopicsCovered = new Set();
+  let flaggedQuestions = [];
+  let onlyFlaggedMode = false;
   
   // Practice mode
   let practiceMode = "simulation";
   let selectedCategory = "";
+  
+  // Trial credits constants (must be declared early)
+  const TRIAL_CREDITS_MAX = 3;
+  const TRIAL_CREDITS_KEY = 'trial_credits_remaining';
   
   // ========== LOAD CONFIGURATION TEXT ==========
   // Update all text elements from config.js
@@ -2090,7 +2106,9 @@
       const nextQuestionBtn = document.getElementById('nextQuestionBtn');
       if (nextQuestionBtn) {
         // Only update if not the first question (Start Interview)
-        if (questionCount > 0) {
+        // Use typeof check to avoid ReferenceError if questionCount not yet initialized
+        const currentQuestionCount = (typeof questionCount !== 'undefined') ? questionCount : 0;
+        if (currentQuestionCount > 0) {
           nextQuestionBtn.textContent = APP_CONFIG.buttons.nextQuestion;
         } else {
           // Ensure it says "Start Interview" for first question
@@ -2156,20 +2174,25 @@
     mainApp.style.display = "none";
   }
   
+  // Update onboardingComplete from localStorage (variable already declared at top)
+  onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+  
   // Check if user just logged in - if so, don't interfere with login handler
   if (window.justLoggedIn) {
     console.log('User just logged in - skipping page load modal logic');
     // Still ensure main app is visible
-    const mainApp = document.getElementById('mainApp');
-    if (mainApp && mainApp.style.display !== 'block') {
-      mainApp.style.display = 'block';
+    const mainAppCheck = document.getElementById('mainApp');
+    if (mainAppCheck && mainAppCheck.style.display !== 'block') {
+      mainAppCheck.style.display = 'block';
     }
+    // Update onboardingComplete flag
+    onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
   } else {
     // Normal page load logic
     // Check if user has already accepted terms
     const termsAccepted = localStorage.getItem("termsAccepted") === "true";
     const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
-    const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+    onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
     
     // Check if user is authenticated (has token or currentUser in localStorage)
     // Check cookie directly (getAuthToken might not be defined yet)

@@ -1560,11 +1560,11 @@
           </div>
           <div style="display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap;">
             <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-              <input type="radio" name="practiceMode" id="simulationMode" value="simulation" checked style="margin-right: 6px; accent-color: #ef4444; width: 16px; height: 16px; cursor: pointer;">
+              <input type="checkbox" id="simulationMode" value="simulation" checked style="margin-right: 6px; accent-color: #ef4444; width: 16px; height: 16px; cursor: pointer;">
               <span>🎲 Interview Simulation (Random)</span>
             </label>
             <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-              <input type="radio" name="practiceMode" id="specificMode" value="specific" style="margin-right: 6px; accent-color: #ef4444; width: 16px; height: 16px; cursor: pointer;">
+              <input type="checkbox" id="specificMode" value="specific" style="margin-right: 6px; accent-color: #ef4444; width: 16px; height: 16px; cursor: pointer;">
               <span>🎯 User-Specific Practice</span>
             </label>
             <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
@@ -3100,22 +3100,49 @@
     const categorySelectEl = document.getElementById("categorySelect");
     
     if (simulationModeEl && specificModeEl) {
-      simulationModeEl.addEventListener("change", () => {
-        practiceMode = "simulation";
-        if (categorySelectorEl) categorySelectorEl.style.display = "none";
-        selectedCategory = "";
-        if (categorySelectEl) categorySelectEl.value = "";
-        console.log("Practice mode: Interview Simulation (Random)");
+      simulationModeEl.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          practiceMode = "simulation";
+          // Uncheck the other practice mode
+          if (specificModeEl) specificModeEl.checked = false;
+          if (categorySelectorEl) categorySelectorEl.style.display = "none";
+          selectedCategory = "";
+          if (categorySelectEl) categorySelectEl.value = "";
+          console.log("Practice mode: Interview Simulation (Random)");
+        } else {
+          // If unchecking, ensure at least one is checked
+          if (!specificModeEl.checked) {
+            e.target.checked = true;
+          }
+        }
       });
       
-      specificModeEl.addEventListener("change", () => {
-        practiceMode = "specific";
-        if (categorySelectorEl) {
-          categorySelectorEl.style.display = "block";
-          console.log("Category selector shown");
+      specificModeEl.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          practiceMode = "specific";
+          // Uncheck the other practice mode
+          if (simulationModeEl) simulationModeEl.checked = false;
+          if (categorySelectorEl) {
+            categorySelectorEl.style.display = "block";
+            console.log("Category selector shown");
+          }
+          console.log("Practice mode: User-Specific Practice");
+        } else {
+          // If unchecking, ensure at least one is checked
+          if (!simulationModeEl.checked) {
+            e.target.checked = true;
+          }
         }
-        console.log("Practice mode: User-Specific Practice");
       });
+      
+      // Sync initial state
+      if (simulationModeEl.checked) {
+        practiceMode = "simulation";
+        if (categorySelectorEl) categorySelectorEl.style.display = "none";
+      } else if (specificModeEl.checked) {
+        practiceMode = "specific";
+        if (categorySelectorEl) categorySelectorEl.style.display = "block";
+      }
     } else {
       console.warn("Practice mode toggle elements not found");
     }

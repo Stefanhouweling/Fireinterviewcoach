@@ -1791,8 +1791,8 @@ The feedback MUST include:
       }
     }
     
-    // Track answer analysis after 5 questions for "areas to work on" feature
-    if (sessionId && questionCount && questionCount >= 5) {
+    // Track answer analysis for "areas to work on" feature (start from question 1 to have enough data by question 5)
+    if (sessionId && questionCount && questionCount >= 1) {
       try {
         const profile = getUserProfile(sessionId);
         const analysisEntry = {
@@ -1808,7 +1808,7 @@ The feedback MUST include:
         profile.answerAnalyses = (profile.answerAnalyses || []).slice(-9).concat([analysisEntry]);
         updateUserProfile(sessionId, { answerAnalyses: profile.answerAnalyses });
         
-        console.log(`[AREAS TO WORK ON] Tracked analysis #${questionCount} for session ${sessionId}`);
+        console.log(`[AREAS TO WORK ON] Tracked analysis #${questionCount} for session ${sessionId} (total: ${profile.answerAnalyses.length})`);
       } catch (trackError) {
         console.error('Error tracking answer analysis:', trackError);
         // Don't fail the request if tracking fails

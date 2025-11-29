@@ -1537,6 +1537,424 @@
       background-position: right 12px center;
       padding-right: 40px;
     }
+    /* Loading Screen */
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, var(--bg-secondary), var(--bg-primary) 55%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    .loader-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-inner {
+      text-align: center;
+      animation: floatUp 0.5s ease-out;
+    }
+
+    .loader-logo {
+      font-size: 2.5rem;
+      animation: pulseGlow 1.2s ease-in-out infinite;
+      margin-bottom: var(--space-4);
+    }
+
+    @keyframes floatUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+      }
+      50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.8));
+      }
+    }
+
+    .loader-overlay p {
+      color: var(--text-tertiary);
+      font-size: var(--text-base);
+      margin: 0;
+    }
+
+    /* Transition Classes */
+    .fade-in {
+      animation: fadeInUp 0.35s ease-out;
+    }
+
+    .fade-out {
+      animation: fadeOutDown 0.25s ease-in forwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOutDown {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
+
+    /* Question Swap Animation */
+    .question-swap {
+      animation: questionSwap 0.25s ease-out;
+    }
+
+    @keyframes questionSwap {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Unified Modal Animations */
+    .modal-backdrop {
+      animation: backdropFade 0.2s ease-out;
+    }
+
+    .modal-panel {
+      animation: slideUpModal 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes backdropFade {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUpModal {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Top Progress Bar for Question Loading */
+    .top-progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+      box-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
+      animation: loadingBar 1.2s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    @keyframes loadingBar {
+      0%, 100% {
+        opacity: 0.8;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* Microinteractions */
+    .pulse-on-change {
+      animation: pulseCredit 0.4s ease-out;
+    }
+
+    @keyframes pulseCredit {
+      0% {
+        transform: scale(1);
+        background: rgba(148, 163, 184, 0.1);
+      }
+      30% {
+        transform: scale(1.03);
+        background: rgba(251, 146, 60, 0.18);
+      }
+      100% {
+        transform: scale(1);
+        background: rgba(148, 163, 184, 0.1);
+      }
+    }
+
+    .flag-icon.flagged {
+      color: var(--accent-warning);
+      transform: scale(1.1);
+    }
+
+    .fire-tips-title {
+      position: relative;
+      display: inline-block;
+    }
+
+    .fire-tips-title::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+      box-shadow: 0 0 8px rgba(248, 113, 113, 0.8);
+      transition: width 0.3s ease;
+    }
+
+    .fire-tips-title.active::after {
+      width: 100%;
+    }
+
+    /* Full-Screen Onboarding Styles */
+    .onboarding-step {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-6);
+    }
+
+    .onboarding-step.active {
+      display: flex;
+    }
+
+    .onboarding-content {
+      max-width: 600px;
+      width: 100%;
+      background: var(--bg-elevated);
+      border-radius: 20px;
+      padding: var(--space-10);
+      box-shadow: var(--card-shadow-xl);
+      animation: fadeInUp 0.35s ease-out;
+    }
+
+    .onboarding-content h2 {
+      font-size: var(--text-3xl);
+      font-weight: var(--font-bold);
+      color: var(--text-primary);
+      margin: 0 0 var(--space-2) 0;
+      text-align: center;
+    }
+
+    .onboarding-content p {
+      font-size: var(--text-base);
+      color: var(--text-tertiary);
+      text-align: center;
+      margin: 0 0 var(--space-8) 0;
+    }
+
+    .onboarding-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    .onboarding-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .onboarding-field label {
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      color: var(--text-secondary);
+    }
+
+    .onboarding-field input,
+    .onboarding-field select {
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: var(--text-base);
+      transition: border-color 0.2s ease;
+    }
+
+    .onboarding-field input:focus,
+    .onboarding-field select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .onboarding-checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      cursor: pointer;
+    }
+
+    .onboarding-checkbox input {
+      margin-top: 2px;
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent-primary);
+      cursor: pointer;
+    }
+
+    .onboarding-checkbox span {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: var(--leading-normal);
+    }
+
+    .onboarding-button {
+      width: 100%;
+      margin-top: var(--space-4);
+    }
+
+    /* Simplified Main Layout - 2 Column */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .question-column {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+
+    .sidebar-column {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+
+    /* Combined Feedback Card */
+    .feedback-combined {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .feedback-section {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .feedback-section:last-child {
+      border-bottom: none;
+    }
+
+    .feedback-section h4 {
+      font-size: var(--text-sm);
+      font-weight: var(--font-semibold);
+      color: var(--text-primary);
+      margin: 0 0 var(--space-2) 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .feedback-section p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: var(--leading-normal);
+    }
+
+    /* Simplified Practice Mode */
+    .practice-mode-inline {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      margin-top: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--text-tertiary);
+    }
+
+    .practice-mode-inline select {
+      padding: var(--space-1) var(--space-3);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      cursor: pointer;
+    }
+
+    /* Flag Button Inline */
+    .flag-inline {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-left: auto;
+      font-size: var(--text-sm);
+    }
+
+    .flag-inline button {
+      background: transparent;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: var(--space-1);
+      font-size: var(--text-base);
+      transition: color 0.2s ease;
+    }
+
+    .flag-inline button:hover {
+      color: var(--accent-warning);
+    }
+
+    /* Links */
+    .link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.15s ease, text-decoration-color 0.15s ease;
+    }
+
+    .link:hover {
+      color: var(--accent-secondary);
+      text-decoration: underline;
+      text-decoration-color: rgba(251, 146, 60, 0.7);
+    }
   </style>
   <!-- PDF.js for PDF text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1549,6 +1967,14 @@
   </script>
 </head>
 <body>
+
+<!-- Initial Loading Screen -->
+<div id="appLoader" class="loader-overlay">
+  <div class="loader-inner">
+    <div class="loader-logo">🔥</div>
+    <p>Warming up your interview coach…</p>
+  </div>
+</div>
 
 <!-- Flagged Questions Modal -->
 <div id="flaggedModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 10002; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);">
@@ -1580,45 +2006,27 @@
   </div>
 </div>
 
-<!-- Terms & Privacy Acceptance Modal -->
-<div id="termsModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);">
-  <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 40px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);">
-    <div style="text-align: center; margin-bottom: 30px;">
-      <h2 style="color: #ef4444; font-size: 2em; margin-bottom: 10px;">🔥 Welcome to Fire Interview Coach</h2>
-      <p style="color: #cbd5e1; font-size: 1.1em;">Please review and accept our terms to continue</p>
-    </div>
+<!-- Onboarding Step 1: Terms -->
+<div id="onboardingStep1" class="onboarding-step">
+  <div class="onboarding-content">
+    <h2>Before we start</h2>
+    <p>Fire Interview Coach is a practice tool only and does not guarantee job offers or employment.</p>
     
-    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; margin-bottom: 25px; border-radius: 4px;">
-      <p style="color: #fca5a5; margin: 0; font-size: 0.95em;">
-        <strong>Important:</strong> Fire Interview Coach is a practice tool only and does not guarantee job offers or employment.
-      </p>
-    </div>
-    
-    <div style="margin-bottom: 25px;">
-      <label style="display: flex; align-items: flex-start; cursor: pointer; color: #e2e8f0; margin-bottom: 15px;">
-        <input type="checkbox" id="acceptTerms" style="margin-right: 12px; margin-top: 4px; width: 20px; height: 20px; cursor: pointer; accent-color: #ef4444;">
-        <span style="line-height: 1.6;">
-          I have read and agree to the <a href="terms-of-service.html" target="_blank" style="color: #fca5a5; text-decoration: underline;">Terms of Service</a>
-        </span>
+    <div class="onboarding-form">
+      <label class="onboarding-checkbox">
+        <input type="checkbox" id="acceptTerms" />
+        <span>I agree to the <a href="terms-of-service.html" target="_blank" class="link">Terms of Service</a></span>
       </label>
       
-      <label style="display: flex; align-items: flex-start; cursor: pointer; color: #e2e8f0;">
-        <input type="checkbox" id="acceptPrivacy" style="margin-right: 12px; margin-top: 4px; width: 20px; height: 20px; cursor: pointer; accent-color: #ef4444;">
-        <span style="line-height: 1.6;">
-          I have read and agree to the <a href="privacy-policy.html" target="_blank" style="color: #fca5a5; text-decoration: underline;">Privacy Policy</a>
-        </span>
+      <label class="onboarding-checkbox">
+        <input type="checkbox" id="acceptPrivacy" />
+        <span>I agree to the <a href="privacy-policy.html" target="_blank" class="link">Privacy Policy</a></span>
       </label>
-    </div>
-    
-    <div style="display: flex; gap: 15px; justify-content: center;">
-      <button id="acceptTermsBtn" style="padding: 14px 28px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);" disabled>
+      
+      <button id="acceptTermsBtn" class="primary onboarding-button" disabled>
         Accept & Continue
       </button>
     </div>
-    
-    <p style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 0.85em;">
-      You must accept both terms to use Fire Interview Coach
-    </p>
   </div>
 </div>
 

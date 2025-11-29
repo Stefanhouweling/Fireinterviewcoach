@@ -343,7 +343,7 @@ const Referral = {
       [referral.referrer_user_id, referredUserId]
     );
     if (existingUsage.rows.length > 0) {
-      throw new Error('You have already used a referral code from this person. Each account can only use one referral code per referrer. Please create a new account to use a different referral code.');
+      throw new Error('You have already used a referral code from this person. Each account can only use one referral code per referrer.');
     }
     
     await query(`

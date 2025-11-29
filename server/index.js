@@ -2384,8 +2384,8 @@ app.post('/api/research-city', async (req, res) => {
     // All 17 critical searches for comprehensive research
     // Run in parallel batches of 2 for speed
     const criticalSearches = [
-      { query: `current fire chief ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'fire chief name' },
-      { query: `current deputy chief assistant chief ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'deputy chiefs' },
+      { query: `fire chief ${departmentName} ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'fire chief name' },
+      { query: `deputy chief assistant chief ${departmentName} ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'deputy chiefs' },
       { query: `current mayor ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'mayor name' },
       { query: `city council public safety committee ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'city council members' },
       { query: `city manager chief administrative officer ${city} ${stateProvince || ''} ${country} 2024 2025`, fact: 'city manager' },

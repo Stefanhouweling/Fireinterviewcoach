@@ -2294,19 +2294,58 @@
         </div>
         
         <div class="question-text" id="questionText">
-            <label style="display: block; font-size: 0.85rem; color: #cbd5e1; font-weight: 600; margin: 0;">Practice Mode:</label>
-            <span style="background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.5); color: #fbbf24; padding: 2px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">V1</span>
+          Click <strong>Start Interview</strong> to get your first question.
+        </div>
+        
+        <div id="questionSubtitles" style="margin-top: var(--space-2); padding: var(--space-2); background: var(--bg-tertiary); border-radius: 8px; font-size: var(--text-sm); color: var(--text-tertiary); min-height: 24px; display: none;"></div>
+        
+        <div class="question-meta" style="margin-top: var(--space-2);">
+          <span>Question #<span id="questionIndex">0</span></span>
+        </div>
+        
+        <div id="followupButtonContainer" style="margin-top: var(--space-3);"></div>
+        
+        <div class="question-controls" style="margin-top: var(--space-4);">
+          <button id="startAnswerBtn" class="secondary" type="button">
+            🎤 Answer Question
+          </button>
+          <button id="stopAnswerBtn" class="secondary" type="button" disabled>
+            ✅ Finish Answering
+          </button>
+          <div class="status">
+            <span class="status-dot off" id="micStatusDot"></span>
+            <span id="micStatusText"><!-- Loaded from config.js --></span>
           </div>
-          <div style="display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap;">
-            <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-              <input type="radio" name="practiceMode" id="simulationMode" value="simulation" checked style="margin-right: 6px; accent-color: #ef4444;">
-              <span>🎲 Interview Simulation (Random)</span>
-            </label>
-            <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
-              <input type="radio" name="practiceMode" id="specificMode" value="specific" style="margin-right: 6px; accent-color: #ef4444;">
-              <span>🎯 User-Specific Practice</span>
-            </label>
+        </div>
+        
+        <!-- Transcript Card (below question) -->
+        <div class="card" style="margin-top: var(--space-4); padding: var(--space-4);">
+          <div class="card-title" style="font-size: var(--text-sm); margin-bottom: var(--space-2);">
+            Your Transcript
           </div>
+          <div style="position: relative;">
+            <div class="transcript" id="transcriptBox" style="min-height: 80px; cursor: text;">
+              Your transcript will appear here. You can edit it before we analyze it.
+            </div>
+            <div id="transcriptEditHint" style="position: absolute; bottom: var(--space-2); right: var(--space-3); font-size: var(--text-xs); color: var(--text-muted); pointer-events: none; opacity: 0.7;">
+              ✏️ Click to edit
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- What You Should Work On (below transcript, appears after 5 questions) -->
+      <div class="card" id="areasToWorkOnCard" style="display: none;">
+        <div class="card-title" style="margin-bottom: var(--space-2);">
+          💡 What You Should Work On
+        </div>
+        <div id="areasToWorkOnCardContent" style="color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed);">
+          Analyzing your answers...
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Camera & Feedback (30-35%) -->
           
           <!-- Only Flagged Toggle -->
           <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.85rem; gap: 6px; margin-top: 8px;">
@@ -3108,7 +3147,6 @@
     if (savedData) {
       try {
         onboardingData = JSON.parse(savedData);
-        console.log("Loaded onboarding data:", onboardingData);
       } catch (e) {
         console.error("Failed to parse saved onboarding data:", e);
       }
@@ -3520,7 +3558,6 @@
       // This won't block the user from proceeding
       (async () => {
         try {
-          console.log("Starting background city research...");
           
           // Call backend to research city information (no await - runs in background)
           const response = await fetch(`${BACKEND_URL}/api/research-city`, {
@@ -3588,7 +3625,6 @@
     if (stored === null || stored === undefined) {
       // Only initialize if truly missing (first visit)
       localStorage.setItem('trial_credits_remaining', '3');
-      console.log('[TRIAL CREDITS] First visit - initialized with 3 credits');
       return 3;
     }
     const credits = parseInt(stored, 10);
@@ -3599,7 +3635,6 @@
   function setTrialCreditsRemaining(count) {
     const safeCount = Math.max(0, Math.min(3, parseInt(count, 10) || 0));
     localStorage.setItem('trial_credits_remaining', safeCount.toString());
-    console.log('[TRIAL CREDITS] Updated to:', safeCount);
     updateTrialCreditsDisplay();
   }
   
@@ -3789,6 +3824,9 @@
     
     if (currentUser) {
       if (creditsCountEl) {
+        // Add pulse animation when credits change
+        creditsCountEl.parentElement?.classList.add('pulse-on-change');
+        setTimeout(() => creditsCountEl.parentElement?.classList.remove('pulse-on-change'), 400);
         creditsCountEl.textContent = currentUser.credits_balance || 0;
       }
       if (creditsDisplay) creditsDisplay.style.display = 'flex';
@@ -3805,6 +3843,12 @@
       const trialCreditsDisplay = document.getElementById('trialCreditsDisplay');
       
       if (trialCreditsCountEl) {
+        // Add pulse animation when credits decrement
+        const oldValue = parseInt(trialCreditsCountEl.textContent) || 0;
+        if (remaining < oldValue && trialCreditsDisplay) {
+          trialCreditsDisplay.classList.add('pulse-on-change');
+          setTimeout(() => trialCreditsDisplay.classList.remove('pulse-on-change'), 400);
+        }
         trialCreditsCountEl.textContent = remaining;
       }
       // Update dropdown count too
@@ -3840,43 +3884,39 @@
     return false;
   }
   
-  // Initialize practice mode toggle listeners (run immediately, not on DOMContentLoaded)
+  // Initialize practice mode toggle listeners for inline dropdowns
   function initializePracticeModeToggle() {
-    const simulationModeEl = document.getElementById("simulationMode");
-    const specificModeEl = document.getElementById("specificMode");
-    const categorySelectorEl = document.getElementById("categorySelector");
-    const categorySelectEl = document.getElementById("categorySelect");
+    const practiceModeSelectEl = document.getElementById("practiceModeSelect");
+    const categorySelectInlineEl = document.getElementById("categorySelectInline");
     
-    if (simulationModeEl && specificModeEl) {
-      simulationModeEl.addEventListener("change", () => {
-        practiceMode = "simulation";
-        if (categorySelectorEl) categorySelectorEl.style.display = "none";
-        selectedCategory = "";
-        if (categorySelectEl) categorySelectEl.value = "";
-        console.log("Practice mode: Interview Simulation (Random)");
-      });
-      
-      specificModeEl.addEventListener("change", () => {
-        practiceMode = "specific";
-        if (categorySelectorEl) {
-          categorySelectorEl.style.display = "block";
-          console.log("Category selector shown");
+    // Handle practice mode dropdown change
+    if (practiceModeSelectEl) {
+      practiceModeSelectEl.addEventListener("change", () => {
+        practiceMode = practiceModeSelectEl.value;
+        
+        // Show/hide category dropdown based on mode
+        if (categorySelectInlineEl) {
+          if (practiceMode === "specific") {
+            categorySelectInlineEl.style.display = "inline-block";
+          } else {
+            categorySelectInlineEl.style.display = "none";
+            categorySelectInlineEl.value = "";
+            selectedCategory = "";
+          }
         }
-        console.log("Practice mode: User-Specific Practice");
+        
+        console.log("Practice mode:", practiceMode === "simulation" ? "Interview Simulation" : "User-Specific Practice");
       });
-    } else {
-      console.warn("Practice mode toggle elements not found");
     }
     
-    if (categorySelectEl) {
-      categorySelectEl.addEventListener("change", () => {
-        selectedCategory = categorySelectEl.value;
-        console.log("Selected category:", selectedCategory || "All Categories");
+    // Handle category dropdown change (inline version)
+    if (categorySelectInlineEl) {
+      categorySelectInlineEl.addEventListener("change", () => {
+        selectedCategory = categorySelectInlineEl.value;
         
         // Check if City & Department Specific is selected and research is not ready
         if (selectedCategory === "City & Department Specific") {
           const savedOnboarding = localStorage.getItem("onboardingData");
-          // onboardingData is already declared in first script tag
           if (savedOnboarding) {
             try {
               onboardingData = JSON.parse(savedOnboarding);
@@ -3887,13 +3927,16 @@
           
           if (!onboardingData || !onboardingData.cityResearch) {
             alert("City research is still in progress. Please wait a moment for the research to complete, or select a different category. You'll see a notification when research is ready.");
-            categorySelectEl.value = "";
+            categorySelectInlineEl.value = "";
             selectedCategory = "";
           }
         }
       });
-    } else {
-      console.warn("Category select element not found");
+      
+      // Initially hide category dropdown if mode is simulation
+      if (practiceModeSelectEl && practiceModeSelectEl.value === "simulation") {
+        categorySelectInlineEl.style.display = "none";
+      }
     }
   }
   
@@ -4034,9 +4077,7 @@
     if (existing === null || existing === undefined) {
       // Only initialize if truly missing
       localStorage.setItem(TRIAL_CREDITS_KEY, TRIAL_CREDITS_MAX.toString());
-      console.log('[TRIAL CREDITS] Initialized with', TRIAL_CREDITS_MAX, 'credits');
     } else {
-      console.log('[TRIAL CREDITS] Preserved existing credits:', existing);
     }
   }
   
@@ -4226,12 +4267,16 @@
 
   // Function to update Resume-Based option state based on resume availability
   function updateResumeBasedOption() {
+    // Update both old and new inline dropdown options
     const resumeBasedOption = document.getElementById('resumeBasedOption');
+    const resumeBasedOptionInline = document.getElementById('resumeBasedOptionInline');
     const categorySelectEl = document.getElementById('categorySelect');
+    const categorySelectInlineEl = document.getElementById('categorySelectInline');
     
-    if (resumeBasedOption && categorySelectEl) {
-      const hasResume = (resumeText && resumeText.length > 10) || (resumeAnalysis !== null);
-      
+    const hasResume = (resumeText && resumeText.length > 10) || (resumeAnalysis !== null);
+    
+    // Update old dropdown option (if it exists)
+    if (resumeBasedOption) {
       if (hasResume) {
         resumeBasedOption.disabled = false;
         resumeBasedOption.style.color = '';
@@ -4241,9 +4286,26 @@
         resumeBasedOption.style.color = '#64748b';
         resumeBasedOption.style.opacity = '0.6';
         
-        // If Resume-Based is currently selected, clear the selection
-        if (categorySelectEl.value === 'Resume-Based') {
+        if (categorySelectEl && categorySelectEl.value === 'Resume-Based') {
           categorySelectEl.value = '';
+          selectedCategory = '';
+        }
+      }
+    }
+    
+    // Update new inline dropdown option
+    if (resumeBasedOptionInline) {
+      if (hasResume) {
+        resumeBasedOptionInline.disabled = false;
+        resumeBasedOptionInline.style.color = '';
+        resumeBasedOptionInline.style.opacity = '1';
+      } else {
+        resumeBasedOptionInline.disabled = true;
+        resumeBasedOptionInline.style.color = '#64748b';
+        resumeBasedOptionInline.style.opacity = '0.6';
+        
+        if (categorySelectInlineEl && categorySelectInlineEl.value === 'Resume-Based') {
+          categorySelectInlineEl.value = '';
           selectedCategory = '';
         }
       }
@@ -4423,7 +4485,6 @@
       
       if (response.ok) {
         const data = await response.json();
-        console.log("[RESUME] Received analysis data:", data);
         resumeAnalysis = data.analysis;
         formatResumeSummary(resumeSummaryEl, resumeAnalysis, resumeText);
         
@@ -4556,6 +4617,9 @@
           questionCount++;
           isFollowupQuestion = false;
           
+          // Show "What You Should Work On" card after 5 questions
+          checkAndShowAreasToWorkOnCard();
+          
           // Track asked questions to prevent duplicates
           const questionText = currentQuestion.template.toLowerCase().trim();
           askedQuestions.add(questionText);
@@ -4566,10 +4630,8 @@
           renderQuestion(currentQuestion);
           
           // Speak question - ensure it happens
-          console.log("About to speak question:", currentQuestion.template.substring(0, 50) + "...");
           try {
             await speakQuestionWithCaptions(currentQuestion.template);
-            console.log("Question speaking completed");
           } catch (ttsError) {
             console.error("TTS error:", ttsError);
             console.error("TTS error stack:", ttsError.stack);
@@ -4946,7 +5008,6 @@ Return ONLY the category and question.`
       newFlagBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("Flag button clicked for question:", q.template.substring(0, 50));
         toggleFlagQuestion(q);
       });
     }
@@ -4993,7 +5054,6 @@ Return ONLY the category and question.`
     if (index >= 0) {
       // Unflag
       flaggedQuestions.splice(index, 1);
-      console.log("Question unflagged");
       if (flagBtn && flagIcon) {
         flagBtn.style.opacity = '0.8';
         flagBtn.style.background = 'rgba(239, 68, 68, 0.15)';
@@ -5009,6 +5069,9 @@ Return ONLY the category and question.`
       });
       console.log("Question flagged. Total flagged:", flaggedQuestions.length);
       if (flagBtn && flagIcon) {
+        // Add animation when flagging
+        flagBtn.style.transform = 'scale(1.1)';
+        setTimeout(() => flagBtn.style.transform = '', 200);
         flagBtn.style.opacity = '1';
         flagBtn.style.background = 'rgba(239, 68, 68, 0.3)';
         flagBtn.style.borderColor = 'rgba(239, 68, 68, 0.6)';
@@ -5113,6 +5176,46 @@ Return ONLY the category and question.`
   const areasToWorkOnModal = document.getElementById('areasToWorkOnModal');
   const areasToWorkOnContent = document.getElementById('areasToWorkOnContent');
   const closeAreasToWorkOnModal = document.getElementById('closeAreasToWorkOnModal');
+  
+  // Show "What You Should Work On" card after 5 questions
+  async function checkAndShowAreasToWorkOnCard() {
+    const areasToWorkOnCard = document.getElementById('areasToWorkOnCard');
+    if (!areasToWorkOnCard) return;
+    
+    if (questionCount >= 5) {
+      areasToWorkOnCard.style.display = 'block';
+      areasToWorkOnCard.classList.add('fade-in');
+      // Load and update the card content
+      await loadAreasToWorkOnForCard();
+      // Trigger the backend check asynchronously
+      checkAndShowAreasToWorkOnButton();
+    }
+  }
+  
+  // Load areas to work on content for the card (not modal)
+  async function loadAreasToWorkOnForCard() {
+    const cardContent = document.getElementById('areasToWorkOnCardContent');
+    if (!cardContent) return;
+    
+    try {
+      const sessionId = getSessionId();
+      const response = await fetch(`${BACKEND_URL}/api/areas-to-work-on?sessionId=${sessionId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.hasData && data.areasToWorkOn) {
+          // Show summary in card
+          const summary = data.areasToWorkOn.summary || 'Keep practicing to see personalized feedback.';
+          cardContent.textContent = summary;
+        } else {
+          cardContent.textContent = 'Analyzing your answers...';
+        }
+      }
+    } catch (err) {
+      console.error('Error loading areas to work on for card:', err);
+      cardContent.textContent = 'Loading feedback...';
+    }
+  }
   
   // Check if button should be shown and fetch/update areas to work on
   async function checkAndShowAreasToWorkOnButton() {
@@ -5252,7 +5355,6 @@ Return ONLY the category and question.`
   
   // ========== FEEDBACK SYSTEM ==========
   function setupFeedbackSystem() {
-    console.log("Setting up feedback system...");
     const feedbackBtn = document.getElementById('feedbackBtn');
     const feedbackModal = document.getElementById('feedbackModal');
     const closeFeedbackModal = document.getElementById('closeFeedbackModal');
@@ -5289,7 +5391,6 @@ Return ONLY the category and question.`
       newBtn.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("Feedback button clicked (onclick)!");
         const modal = document.getElementById('feedbackModal');
         if (modal) {
           modal.style.display = 'flex';
@@ -5449,7 +5550,6 @@ Return ONLY the category and question.`
   setTimeout(setupFeedbackSystem, 1000);
 
   async function speakQuestionWithCaptions(text) {
-    console.log("speakQuestionWithCaptions called with text:", text ? text.substring(0, 50) + "..." : "NO TEXT");
     
     if (!text || text.trim().length === 0) {
       console.error("speakQuestionWithCaptions: No text provided!");
@@ -5480,7 +5580,6 @@ Return ONLY the category and question.`
     // Use OpenAI TTS if backend is enabled (high quality, natural voice)
     // Always use backend
     {
-      console.log("Using backend OpenAI TTS...");
       console.log("BACKEND_URL:", typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'NOT DEFINED');
       
       if (typeof BACKEND_URL === 'undefined') {
@@ -6058,7 +6157,6 @@ Return ONLY the category and question.`
     // Compute motion score
     motionScoreForAnswer = computeMotionScoreForAnswer();
     
-    console.log("Recording stopped. Final transcript length:", lastAnswerTranscript.length, "words:", lastAnswerTranscript.split(/\s+/).length);
     
     // Automatically trigger analysis
     if (lastAnswerTranscript.trim()) {
@@ -6120,6 +6218,11 @@ Return ONLY the category and question.`
     voiceFeedbackEl.textContent = voice.feedback;
     bodyFeedbackEl.textContent = body.feedback;
     fireTipsEl.textContent = tips;
+    // Activate fire tips underline animation
+    const fireTipsTitle = document.querySelector('.fire-tips-title');
+    if (fireTipsTitle && tips && tips.trim()) {
+      fireTipsTitle.classList.add('active');
+    }
 
     // ====== POPUP + AI LOADING BAR ======
     if (analyzeBtn) {
@@ -6569,6 +6672,7 @@ Return ONLY the category and question.`
       try {
         currentQuestion = await generateFollowupQuestion();
         questionCount++;
+        checkAndShowAreasToWorkOnCard();
         updateNextQuestionButtonText();
         renderQuestion(currentQuestion);
         speakQuestionWithCaptions(currentQuestion.template);
@@ -6813,7 +6917,7 @@ Return ONLY the category and question.`
 </script>
 
 <!-- Feedback Button (Fixed at bottom) -->
-<button id="feedbackBtn" onclick="document.getElementById('feedbackModal').style.display='flex'; console.log('Feedback button clicked (inline)');" style="position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%); color: white; border: none; border-radius: 50px; padding: 12px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); z-index: 9999; transition: all 0.3s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.4)'">
+<button id="feedbackBtn" onclick="document.getElementById('feedbackModal').style.display='flex';" style="position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%); color: white; border: none; border-radius: 50px; padding: 12px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); z-index: 9999; transition: all 0.3s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.4)'">
   💬 Feedback
 </button>
 

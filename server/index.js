@@ -1439,7 +1439,62 @@ app.post('/api/question', async (req, res) => {
       } else if (selectedCategory === "Resume-Based") {
         questionStrategy = `Resume-based ${questionTypeToUse} question. Reference their actual experience from ALL past jobs (fire and non-fire). Connect to their background while testing general firefighter competencies.`;
       } else if (selectedCategory === "City & Department Specific") {
-        questionStrategy = `KNOWLEDGE question (Who/What/When/How many) about ${profileCity || 'city'} and ${profileDepartmentName || 'department'} facts. Use city research data. FORBIDDEN: "How would you..." or "Tell us about a time...".`;
+        // Extract what knowledge questions have already been asked
+        const knowledgeQuestionsAsked = profileAskedQuestions.filter(q => {
+          const qLower = q.toLowerCase();
+          return qLower.includes('who is') || qLower.includes('what is') || 
+                 qLower.includes('how many') || qLower.includes('when was') ||
+                 qLower.includes('fire chief') || qLower.includes('mayor') ||
+                 qLower.includes('union') || qLower.includes('station');
+        });
+        
+        // Build list of knowledge question types to vary
+        const knowledgeTopics = [
+          'fire chief name',
+          'mayor name',
+          'union number',
+          'number of fire stations',
+          'number of members/staff',
+          'department history/established',
+          'mission statement/values',
+          'community programs',
+          'equipment/apparatus',
+          'response areas',
+          'city population',
+          'major industries',
+          'city manager',
+          'deputy chief',
+          'city council members'
+        ];
+        
+        // Find topics that haven't been asked yet
+        const askedTopics = knowledgeQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('chief') && !qLower.includes('deputy')) return 'fire chief name';
+          if (qLower.includes('deputy chief')) return 'deputy chief';
+          if (qLower.includes('mayor')) return 'mayor name';
+          if (qLower.includes('union')) return 'union number';
+          if (qLower.includes('station')) return 'number of fire stations';
+          if (qLower.includes('member') || qLower.includes('staff')) return 'number of members/staff';
+          if (qLower.includes('established') || qLower.includes('history')) return 'department history/established';
+          if (qLower.includes('mission') || qLower.includes('value')) return 'mission statement/values';
+          if (qLower.includes('program') || qLower.includes('community')) return 'community programs';
+          if (qLower.includes('equipment') || qLower.includes('apparatus')) return 'equipment/apparatus';
+          if (qLower.includes('response') || qLower.includes('area')) return 'response areas';
+          if (qLower.includes('population')) return 'city population';
+          if (qLower.includes('industry')) return 'major industries';
+          if (qLower.includes('city manager')) return 'city manager';
+          if (qLower.includes('council')) return 'city council members';
+          return null;
+        }).filter(Boolean);
+        
+        const unusedTopics = knowledgeTopics.filter(topic => !askedTopics.includes(topic));
+        
+        const diversityHint = unusedTopics.length > 0
+          ? `\n\nCRITICAL: Vary the knowledge question topic. Topics NOT yet asked: ${unusedTopics.slice(0, 5).join(", ")}. Choose a DIFFERENT topic from this list.`
+          : `\n\nCRITICAL: All major topics have been covered. Vary the question significantly - ask about different aspects, details, or related facts.`;
+        
+        questionStrategy = `KNOWLEDGE question (Who/What/When/How many) about ${profileCity || 'city'} and ${profileDepartmentName || 'department'} facts. Use city research data. FORBIDDEN: "How would you..." or "Tell us about a time...".${diversityHint}`;
       } else {
         questionStrategy = `${questionTypeToUse} question focused on "${selectedCategory}" category only.`;
       }

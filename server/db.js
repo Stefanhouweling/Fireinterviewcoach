@@ -144,6 +144,23 @@ async function initializeSchema() {
       console.log('Migration complete: visit_count column added');
     }
 
+    // Migration: Add onboarding data columns to users table
+    try {
+      await query('SELECT city FROM users LIMIT 1');
+    } catch (e) {
+      console.log('Adding onboarding data columns to users table...');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(255)');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS state_province VARCHAR(255)');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(255)');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS department_name VARCHAR(255)');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS job_type VARCHAR(100)');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS voice_preference VARCHAR(50)');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS resume_text TEXT');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS resume_analysis JSONB');
+      await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS city_research JSONB');
+      console.log('Migration complete: onboarding data columns added');
+    }
+
     console.log('✅ Database schema initialized');
   } catch (error) {
     console.error('❌ Schema initialization error:', error);
@@ -239,6 +256,54 @@ const User = {
       [name, userId]
     );
     return this.findById(userId);
+  },
+
+  async updateOnboardingData(userId, onboardingData) {
+    const {
+      city,
+      stateProvince,
+      country,
+      departmentName,
+      jobType,
+      voicePreference,
+      resumeText,
+      resumeAnalysis,
+      cityResearch
+    } = onboardingData;
+
+    await query(
+      `UPDATE users SET 
+        city = COALESCE($1, city),
+        state_province = COALESCE($2, state_province),
+        country = COALESCE($3, country),
+        department_name = COALESCE($4, department_name),
+        job_type = COALESCE($5, job_type),
+        voice_preference = COALESCE($6, voice_preference),
+        resume_text = COALESCE($7, resume_text),
+        resume_analysis = COALESCE($8, resume_analysis),
+        city_research = COALESCE($9, city_research),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $10`,
+      [city, stateProvince, country, departmentName, jobType, voicePreference, resumeText, resumeAnalysis, cityResearch, userId]
+    );
+    return this.findById(userId);
+  },
+
+  async getOnboardingData(userId) {
+    const user = await this.findById(userId);
+    if (!user) return null;
+
+    return {
+      city: user.city,
+      stateProvince: user.state_province,
+      country: user.country,
+      departmentName: user.department_name,
+      jobType: user.job_type,
+      voicePreference: user.voice_preference,
+      resumeText: user.resume_text,
+      resumeAnalysis: user.resume_analysis,
+      cityResearch: user.city_research
+    };
   }
 };
 

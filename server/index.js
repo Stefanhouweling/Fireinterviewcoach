@@ -186,7 +186,7 @@ app.get('/api/analytics/check-secret', (req, res) => {
 // POST /api/auth/signup
 app.post('/api/auth/signup', async (req, res) => {
   try {
-    const { email, password, name, trialCredits, referralCode } = req.body;
+    const { email, password, name, trialCredits, referralCode, onboardingData } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -258,8 +258,20 @@ app.post('/api/auth/signup', async (req, res) => {
     
     res.cookie('authToken', token, cookieOptions);
     
+    // Save onboarding data if provided (from pre-signup onboarding)
+    if (onboardingData) {
+      try {
+        await User.updateOnboardingData(user.id, onboardingData);
+        console.log(`[SIGNUP] Saved onboarding data for user ${user.id}`);
+      } catch (onboardingError) {
+        console.error('Error saving onboarding data on signup:', onboardingError);
+        // Don't fail signup if onboarding data save fails
+      }
+    }
+    
     // Refresh user from database to get latest credits after any updates
     const freshUser = await User.findById(user.id);
+    const onboardingDataResponse = await User.getOnboardingData(user.id);
     console.log(`[SIGNUP] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,
@@ -269,6 +281,7 @@ app.post('/api/auth/signup', async (req, res) => {
         name: freshUser.name,
         credits_balance: freshUser.credits_balance
       },
+      onboardingData: onboardingDataResponse,
       token // Include token in response for localStorage fallback
     });
   } catch (error) {
@@ -363,6 +376,7 @@ app.post('/api/auth/login', async (req, res) => {
     
     // Refresh user from database to get latest credits after any updates
     const freshUser = await User.findById(user.id);
+    const onboardingData = await User.getOnboardingData(user.id);
     console.log(`[LOGIN] User ${freshUser.id} (${freshUser.email}) - Credits: ${freshUser.credits_balance}`);
     res.json({
       success: true,
@@ -372,6 +386,7 @@ app.post('/api/auth/login', async (req, res) => {
         name: freshUser.name,
         credits_balance: freshUser.credits_balance
       },
+      onboardingData: onboardingData,
       token // Include token in response for localStorage fallback
     });
   } catch (error) {

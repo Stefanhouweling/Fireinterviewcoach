@@ -1389,6 +1389,12 @@
       <p style="text-align: center; margin-top: 10px; color: #94a3b8; font-size: 0.85em;" id="onboardingRequiredFields">
         <span style="color: #ef4444;">*</span> Required fields
       </p>
+      
+      <!-- Login option for existing users -->
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(239, 68, 68, 0.2); text-align: center;">
+        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 12px;">Already have an account?</p>
+        <button id="onboardingLoginBtn" type="button" class="ghost" style="padding: 10px 24px; font-size: 0.95rem;">Log in to restore your data</button>
+      </div>
     </form>
   </div>
 </div>
@@ -2248,6 +2254,86 @@
   }
 
   // Load onboarding config on page load
+  // Function to load onboarding data into the form
+  function loadOnboardingDataIntoForm(data) {
+    if (!data) return;
+    
+    try {
+      // Load city
+      if (data.city && document.getElementById('onboardingCity')) {
+        document.getElementById('onboardingCity').value = data.city;
+      }
+      
+      // Load state/province and country (store in hidden field for Mapbox)
+      if (data.stateProvince && document.getElementById('selectedCityData')) {
+        const cityData = {
+          city: data.city,
+          stateProvince: data.stateProvince,
+          country: data.country
+        };
+        document.getElementById('selectedCityData').value = JSON.stringify(cityData);
+      }
+      
+      // Load job type
+      if (data.jobType && document.getElementById('onboardingJobType')) {
+        document.getElementById('onboardingJobType').value = data.jobType;
+      }
+      
+      // Load department name
+      if (data.departmentName && document.getElementById('onboardingDepartmentName')) {
+        document.getElementById('onboardingDepartmentName').value = data.departmentName;
+      }
+      
+      // Load name
+      if (data.name && document.getElementById('onboardingName')) {
+        document.getElementById('onboardingName').value = data.name;
+      }
+      
+      // Load voice preference
+      if (data.voicePreference && document.getElementById('onboardingVoice')) {
+        document.getElementById('onboardingVoice').value = data.voicePreference;
+        selectedVoicePreference = data.voicePreference;
+      }
+      
+      // Load resume text if available
+      if (data.resumeText) {
+        resumeText = data.resumeText;
+        resumeAnalysis = data.resumeAnalysis || null;
+        if (document.getElementById('onboardingResumeStatus')) {
+          document.getElementById('onboardingResumeStatus').textContent = `✓ Resume loaded from your account (${data.resumeText.length} characters)`;
+          document.getElementById('onboardingResumeStatus').style.color = "#10b981";
+        }
+        updateResumeBasedOption();
+      }
+      
+      // Load city research if available
+      if (data.cityResearch) {
+        onboardingData = onboardingData || {};
+        onboardingData.cityResearch = data.cityResearch;
+      }
+      
+      console.log('Onboarding data loaded into form');
+    } catch (error) {
+      console.error('Error loading onboarding data into form:', error);
+    }
+  }
+  
+  // Handler for onboarding login button
+  const onboardingLoginBtn = document.getElementById('onboardingLoginBtn');
+  if (onboardingLoginBtn) {
+    onboardingLoginBtn.addEventListener('click', () => {
+      // Close onboarding modal
+      if (onboardingModal) {
+        onboardingModal.style.display = 'none';
+      }
+      // Open login modal
+      const loginModal = document.getElementById('loginModal');
+      if (loginModal) {
+        loginModal.style.display = 'flex';
+      }
+    });
+  }
+  
   function loadOnboardingConfig() {
     if (typeof ONBOARDING_CONFIG === 'undefined') {
       console.warn('Onboarding config not loaded');
@@ -6323,11 +6409,14 @@ Return ONLY the category and question.`
         }
         if (referralCode) referralCode = referralCode.toUpperCase();
         
+        // Get existing onboarding data if available (from pre-signup onboarding)
+        const existingOnboardingData = onboardingData || (localStorage.getItem('onboardingData') ? JSON.parse(localStorage.getItem('onboardingData')) : null);
+        
         const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ name, email, password, trialCredits, referralCode })
+          body: JSON.stringify({ name, email, password, trialCredits, referralCode, onboardingData: existingOnboardingData })
         });
         
         const data = await response.json();
@@ -6340,6 +6429,10 @@ Return ONLY the category and question.`
           if (data.token) {
             authToken = data.token;
             setAuthToken(data.token);
+          }
+          // Load onboarding data if returned from server
+          if (data.onboardingData) {
+            loadOnboardingDataIntoForm(data.onboardingData);
           }
           // Clear trial credits from localStorage after successful transfer
           if (trialCredits > 0) {
@@ -6446,7 +6539,7 @@ Return ONLY the category and question.`
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, password, trialCredits, referralCode })
+          body: JSON.stringify({ email, password, trialCredits, referralCode, rememberMe })
         });
         
         const data = await response.json();
@@ -6459,6 +6552,14 @@ Return ONLY the category and question.`
           if (data.token) {
             authToken = data.token;
             setAuthToken(data.token);
+          }
+          // Load onboarding data if returned from server
+          if (data.onboardingData) {
+            loadOnboardingDataIntoForm(data.onboardingData);
+            // Save to localStorage and update global onboardingData
+            onboardingData = data.onboardingData;
+            localStorage.setItem('onboardingData', JSON.stringify(data.onboardingData));
+            localStorage.setItem('onboardingComplete', 'true');
           }
           // Clear trial credits from localStorage after successful transfer
           if (trialCredits > 0) {

@@ -2322,6 +2322,8 @@
   const onboardingLoginBtn = document.getElementById('onboardingLoginBtn');
   if (onboardingLoginBtn) {
     onboardingLoginBtn.addEventListener('click', () => {
+      // Mark that we're opening login from onboarding (so we can restore onboarding if user closes login)
+      window.loginOpenedFromOnboarding = true;
       // Close onboarding modal
       if (onboardingModal) {
         onboardingModal.style.display = 'none';
@@ -6582,6 +6584,10 @@ Return ONLY the category and question.`
           await updateCreditsDisplay();
           const loginModal = document.getElementById('loginModal');
           if (loginModal) loginModal.style.display = 'none';
+          // Clear the flag if login was opened from onboarding (successful login means they don't need onboarding)
+          if (window.loginOpenedFromOnboarding) {
+            window.loginOpenedFromOnboarding = false;
+          }
           // If coming from paywall, show credit purchase
           if (window.showCreditPurchaseAfterAuth) {
             window.showCreditPurchaseAfterAuth = false;
@@ -6991,6 +6997,14 @@ Return ONLY the category and question.`
       const loginModal = document.getElementById('loginModal');
       if (loginModal) {
         loginModal.style.display = 'none';
+      }
+      // If login was opened from onboarding, restore the onboarding modal
+      if (window.loginOpenedFromOnboarding) {
+        window.loginOpenedFromOnboarding = false;
+        const onboardingModal = document.getElementById('onboardingModal');
+        if (onboardingModal) {
+          onboardingModal.style.display = 'flex';
+        }
       }
     });
   }

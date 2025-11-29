@@ -2156,31 +2156,41 @@
     mainApp.style.display = "none";
   }
   
-  // Check if user has already accepted terms
-  const termsAccepted = localStorage.getItem("termsAccepted") === "true";
-  const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
-  const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
-  
-  // Check if user is authenticated (has token or currentUser in localStorage)
-  // Check cookie directly (getAuthToken might not be defined yet)
-  const cookieToken = document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
-  const hasAuthToken = cookieToken || localStorage.getItem('authToken');
-  const hasStoredUser = localStorage.getItem('currentUser');
-  const isAuthenticated = hasAuthToken || hasStoredUser;
-  
-  // Show modal if terms not accepted
-  if (!termsAccepted || !privacyAccepted) {
-    if (termsModal) {
-      termsModal.style.display = "flex";
-      // Disable all interactions until accepted
-      document.body.style.overflow = "hidden";
-      console.log("Terms modal displayed - terms not yet accepted");
-    } else {
-      console.error("Terms modal element not found!");
-      // Fallback: show main app if modal doesn't exist
-      if (mainApp) mainApp.style.display = "block";
+  // Check if user just logged in - if so, don't interfere with login handler
+  if (window.justLoggedIn) {
+    console.log('User just logged in - skipping page load modal logic');
+    // Still ensure main app is visible
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp && mainApp.style.display !== 'block') {
+      mainApp.style.display = 'block';
     }
-  } else if (isAuthenticated) {
+  } else {
+    // Normal page load logic
+    // Check if user has already accepted terms
+    const termsAccepted = localStorage.getItem("termsAccepted") === "true";
+    const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
+    const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
+    
+    // Check if user is authenticated (has token or currentUser in localStorage)
+    // Check cookie directly (getAuthToken might not be defined yet)
+    const cookieToken = document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+    const hasAuthToken = cookieToken || localStorage.getItem('authToken');
+    const hasStoredUser = localStorage.getItem('currentUser');
+    const isAuthenticated = hasAuthToken || hasStoredUser;
+    
+    // Show modal if terms not accepted
+    if (!termsAccepted || !privacyAccepted) {
+      if (termsModal) {
+        termsModal.style.display = "flex";
+        // Disable all interactions until accepted
+        document.body.style.overflow = "hidden";
+        console.log("Terms modal displayed - terms not yet accepted");
+      } else {
+        console.error("Terms modal element not found!");
+        // Fallback: show main app if modal doesn't exist
+        if (mainApp) mainApp.style.display = "block";
+      }
+    } else if (isAuthenticated) {
     // User is authenticated - always show main app (they can access onboarding from settings if needed)
     // Set onboardingComplete to true if authenticated (they've logged in, so onboarding is complete)
     if (!onboardingComplete) {
@@ -2213,6 +2223,7 @@
       console.error("Main app element not found!");
     }
   }
+  } // End of else block for normal page load
   
   // Update accept button state
   function updateAcceptButton() {
@@ -6648,20 +6659,54 @@ Return ONLY the category and question.`
           // Handle login from onboarding modal
           if (window.loginOpenedFromOnboarding) {
             window.loginOpenedFromOnboarding = false;
-            // Close onboarding modal
+            
+            // Set a flag to prevent page load logic from interfering
+            window.justLoggedIn = true;
+            
+            // Explicitly close ALL modals to ensure nothing is blocking the view
             const onboardingModal = document.getElementById('onboardingModal');
+            const termsModal = document.getElementById('termsModal');
+            const loginModal = document.getElementById('loginModal');
+            const signupModal = document.getElementById('signupModal');
+            
             if (onboardingModal) {
               onboardingModal.style.display = 'none';
+              onboardingModal.style.visibility = 'hidden';
+              console.log('Onboarding modal closed');
             }
-            // Show main app - ensure it's visible
+            if (termsModal) {
+              termsModal.style.display = 'none';
+              termsModal.style.visibility = 'hidden';
+            }
+            if (loginModal) {
+              loginModal.style.display = 'none';
+              loginModal.style.visibility = 'hidden';
+            }
+            if (signupModal) {
+              signupModal.style.display = 'none';
+              signupModal.style.visibility = 'hidden';
+            }
+            
+            // Restore body overflow and remove any modal-related classes
+            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-open');
+            
+            // Show main app - use multiple methods to ensure it's visible
             const mainApp = document.getElementById('mainApp');
             if (mainApp) {
+              // Remove any inline styles that might hide it
+              mainApp.removeAttribute('hidden');
               mainApp.style.display = 'block';
+              mainApp.style.visibility = 'visible';
+              mainApp.style.opacity = '1';
+              mainApp.style.position = 'relative';
+              mainApp.style.zIndex = '1';
+              // Force a reflow to ensure the display change takes effect
+              void mainApp.offsetHeight;
               console.log('Main app displayed after login from onboarding');
             } else {
               console.error('Main app element not found after login!');
             }
-            document.body.style.overflow = 'auto';
             
             // Also ensure onboarding data is loaded into the app if available
             if (data.onboardingData && onboardingData) {
@@ -6669,6 +6714,35 @@ Return ONLY the category and question.`
               await updateUserProfile();
               console.log('Onboarding data loaded and profile updated after login');
             }
+            
+            // Multiple checks to ensure main app stays visible
+            setTimeout(() => {
+              const mainAppCheck = document.getElementById('mainApp');
+              if (mainAppCheck) {
+                if (mainAppCheck.style.display !== 'block') {
+                  console.warn('Main app was hidden again, forcing it visible');
+                  mainAppCheck.style.display = 'block';
+                }
+                mainAppCheck.style.visibility = 'visible';
+                mainAppCheck.style.opacity = '1';
+              }
+              
+              // Ensure all modals are still closed
+              const modals = ['onboardingModal', 'termsModal', 'loginModal', 'signupModal'];
+              modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && modal.style.display !== 'none') {
+                  console.warn(`Modal ${modalId} was reopened, closing it`);
+                  modal.style.display = 'none';
+                  modal.style.visibility = 'hidden';
+                }
+              });
+            }, 100);
+            
+            // Clear the flag after a delay
+            setTimeout(() => {
+              window.justLoggedIn = false;
+            }, 1000);
           }
           
           // If coming from paywall, show credit purchase

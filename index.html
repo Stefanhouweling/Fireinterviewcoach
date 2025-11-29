@@ -2293,9 +2293,7 @@
           </div>
         </div>
         
-        <!-- Old Practice Mode Toggle (to be removed) -->
-        <div style="padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; margin: 12px; border: 1px solid rgba(239, 68, 68, 0.2); position: relative; display: none;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <div class="question-text" id="questionText">
             <label style="display: block; font-size: 0.85rem; color: #cbd5e1; font-weight: 600; margin: 0;">Practice Mode:</label>
             <span style="background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.5); color: #fbbf24; padding: 2px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">V1</span>
           </div>
@@ -2398,8 +2396,8 @@
 
     </section>
 
-    <!-- RIGHT SIDE -->
-    <section class="right">
+    <!-- RIGHT COLUMN: Camera & Feedback (30-35%) -->
+    <section class="sidebar-column">
       <!-- Video card -->
       <div class="card">
         <div class="card-header">
@@ -2823,12 +2821,33 @@
     }
   });
 
-  // ========== TERMS & PRIVACY ACCEPTANCE ==========
-  const termsModal = document.getElementById("termsModal");
+  // ========== LOADING SCREEN ==========
+  const appLoader = document.getElementById("appLoader");
+  
+  function hideLoadingScreen() {
+    if (appLoader) {
+      appLoader.classList.add("hidden");
+      setTimeout(() => {
+        if (appLoader) appLoader.style.display = "none";
+      }, 400); // Wait for fade-out animation
+    }
+  }
+  
+  // Hide loading screen once DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(hideLoadingScreen, 800); // Show loader for at least 800ms
+    });
+  } else {
+    setTimeout(hideLoadingScreen, 800);
+  }
+  
+  // ========== ONBOARDING FLOW (2-Step) ==========
+  const onboardingStep1 = document.getElementById("onboardingStep1");
+  const onboardingStep2 = document.getElementById("onboardingStep2");
   const acceptTermsCheckbox = document.getElementById("acceptTerms");
   const acceptPrivacyCheckbox = document.getElementById("acceptPrivacy");
   const acceptTermsBtn = document.getElementById("acceptTermsBtn");
-  const onboardingModal = document.getElementById("onboardingModal");
   const mainApp = document.getElementById("mainApp");
   
   // Hide main app by default
@@ -2836,41 +2855,29 @@
     mainApp.style.display = "none";
   }
   
-  // Check if user has already accepted terms
+  // Check if user has already completed onboarding
   const termsAccepted = localStorage.getItem("termsAccepted") === "true";
   const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
   const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
   
-  // Show modal if terms not accepted
+  // Show appropriate step
   if (!termsAccepted || !privacyAccepted) {
-    if (termsModal) {
-      termsModal.style.display = "flex";
-      // Disable all interactions until accepted
+    // Show Step 1: Terms
+    if (onboardingStep1) {
+      onboardingStep1.classList.add("active");
       document.body.style.overflow = "hidden";
-      console.log("Terms modal displayed - terms not yet accepted");
-    } else {
-      console.error("Terms modal element not found!");
-      // Fallback: show main app if modal doesn't exist
-      if (mainApp) mainApp.style.display = "block";
     }
   } else if (!onboardingComplete) {
-    // Terms accepted but onboarding not complete - show onboarding modal
-    if (onboardingModal) {
-      onboardingModal.style.display = "flex";
+    // Show Step 2: Personalize
+    if (onboardingStep2) {
+      onboardingStep2.classList.add("active");
       document.body.style.overflow = "hidden";
-      console.log("Onboarding modal displayed - onboarding not yet complete");
-    } else {
-      console.error("Onboarding modal element not found!");
-      // Fallback: show main app if modal doesn't exist
-      if (mainApp) mainApp.style.display = "block";
     }
   } else {
-    // Both terms and onboarding complete - show main app
+    // Show main app
     if (mainApp) {
       mainApp.style.display = "block";
-      console.log("Terms and onboarding already complete - showing main app");
-    } else {
-      console.error("Main app element not found!");
+      mainApp.classList.add("fade-in");
     }
   }
   
@@ -2896,7 +2903,7 @@
     acceptPrivacyCheckbox.addEventListener("change", updateAcceptButton);
   }
   
-  // Handle accept button click
+  // Handle accept button click (Step 1 → Step 2)
   if (acceptTermsBtn) {
     acceptTermsBtn.addEventListener("click", () => {
       if (acceptTermsCheckbox.checked && acceptPrivacyCheckbox.checked) {
@@ -2905,40 +2912,39 @@
         localStorage.setItem("privacyAccepted", "true");
         localStorage.setItem("termsAcceptedDate", new Date().toISOString());
         
-        // Hide terms modal
-        if (termsModal) {
-          termsModal.style.display = "none";
+        // Transition: Step 1 → Step 2
+        if (onboardingStep1) {
+          onboardingStep1.classList.remove("active");
+          onboardingStep1.classList.add("fade-out");
         }
         
-        // Check if onboarding is complete
-        const onboardingCompleteCheck = localStorage.getItem("onboardingComplete") === "true";
-        if (!onboardingCompleteCheck) {
-          // Show onboarding modal
-          if (onboardingModal) {
-            onboardingModal.style.display = "flex";
-            document.body.style.overflow = "hidden";
+        setTimeout(() => {
+          if (onboardingStep1) onboardingStep1.style.display = "none";
+          
+          // Show Step 2: Personalize
+          if (onboardingStep2) {
+            onboardingStep2.classList.add("active");
+            onboardingStep2.classList.add("fade-in");
           }
-        } else {
-          // Show main app
-          if (mainApp) {
-            mainApp.style.display = "block";
-          }
-          document.body.style.overflow = "auto";
-        }
+        }, 250); // Wait for fade-out animation
         
-        console.log("Terms and Privacy Policy accepted");
+        console.log("Terms accepted - transitioning to Personalize step");
       }
     });
   }
   
-  // Prevent closing modal by clicking outside (user must accept)
-  if (termsModal) {
-    termsModal.addEventListener("click", (e) => {
-      if (e.target === termsModal) {
-        // Optionally show a message that they must accept
-        alert("You must accept the Terms of Service and Privacy Policy to use Fire Interview Coach.");
-      }
-    });
+  // Update accept button state based on checkboxes
+  function updateAcceptButton() {
+    if (acceptTermsBtn && acceptTermsCheckbox && acceptPrivacyCheckbox) {
+      acceptTermsBtn.disabled = !(acceptTermsCheckbox.checked && acceptPrivacyCheckbox.checked);
+    }
+  }
+  
+  if (acceptTermsCheckbox) {
+    acceptTermsCheckbox.addEventListener("change", updateAcceptButton);
+  }
+  if (acceptPrivacyCheckbox) {
+    acceptPrivacyCheckbox.addEventListener("change", updateAcceptButton);
   }
 
   // Load onboarding config on page load
@@ -3128,13 +3134,7 @@
       }
     }
   } else {
-    // Show onboarding modal if terms are accepted but onboarding is not
-    const termsAccepted = localStorage.getItem("termsAccepted") === "true";
-    const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
-    if (termsAccepted && privacyAccepted && onboardingModal) {
-      onboardingModal.style.display = "flex";
-      document.body.style.overflow = "hidden";
-    }
+    // Already handled in the onboarding flow section above
   }
   
   // ========== MAPBOX LOCATION AUTCOMPLETE ==========
@@ -3499,14 +3499,22 @@
       // Update user profile on backend with onboarding data (without city research for now)
       await updateUserProfile();
       
-      // Hide onboarding modal and show main app immediately
-      if (onboardingModal) {
-        onboardingModal.style.display = "none";
+      // Transition: Step 2 → Main App
+      if (onboardingStep2) {
+        onboardingStep2.classList.remove("active");
+        onboardingStep2.classList.add("fade-out");
       }
-      if (mainApp) {
-        mainApp.style.display = "block";
-      }
-      document.body.style.overflow = "auto";
+      
+      setTimeout(() => {
+        if (onboardingStep2) onboardingStep2.style.display = "none";
+        
+        // Show main app with fade-in
+        if (mainApp) {
+          mainApp.style.display = "block";
+          mainApp.classList.add("fade-in");
+        }
+        document.body.style.overflow = "auto";
+      }, 250); // Wait for fade-out animation
       
       // Research city information in the background (fire-and-forget)
       // This won't block the user from proceeding

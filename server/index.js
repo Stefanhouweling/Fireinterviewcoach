@@ -1312,8 +1312,36 @@ app.post('/api/question', async (req, res) => {
     const profileAskedCategories = userProfile?.askedCategories || askedCategories || [];
 
     // Build optimized resume context (summary only, no full JSON)
+    // For Resume-Based questions, include more detail
     let resumeContext = "";
-    if (profileResumeAnalysis) {
+    if (selectedCategory === "Resume-Based" && profileResumeAnalysis) {
+      // For resume-based questions, provide detailed resume information
+      const analysis = profileResumeAnalysis;
+      const allJobs = analysis.allJobs || analysis.workHistory || [];
+      const jobsList = Array.isArray(allJobs) && allJobs.length > 0 
+        ? allJobs.map((job, idx) => `${idx + 1}. ${job}`).join("\n")
+        : (Array.isArray(analysis.workHistory) ? analysis.workHistory.map((job, idx) => `${idx + 1}. ${job}`).join("\n") : "N/A");
+      
+      const certsList = Array.isArray(analysis.certifications) && analysis.certifications.length > 0
+        ? analysis.certifications.join(", ")
+        : "None listed";
+      
+      const skillsList = Array.isArray(analysis.skills) && analysis.skills.length > 0
+        ? analysis.skills.join(", ")
+        : "General skills";
+      
+      resumeContext = `DETAILED RESUME INFORMATION (use this to ask SPECIFIC questions):
+Experience: ${analysis.experience || analysis.yearsOfExperience || "N/A"} years
+Work History:
+${jobsList}
+Certifications: ${certsList}
+Skills: ${skillsList}
+${analysis.education ? `Education: ${analysis.education}` : ''}
+${analysis.summary ? `Summary: ${analysis.summary}` : ''}
+
+IMPORTANT: You MUST reference specific details from the above resume (job titles, companies, certifications, skills) in your question.`;
+    } else if (profileResumeAnalysis) {
+      // For other categories, use condensed version
       const analysis = profileResumeAnalysis;
       const allJobs = analysis.allJobs || analysis.workHistory || [];
       const jobsList = Array.isArray(allJobs) && allJobs.length > 0 
@@ -1322,8 +1350,9 @@ app.post('/api/question', async (req, res) => {
       
       resumeContext = `Resume: ${analysis.experience || analysis.yearsOfExperience || "N/A"} exp. Jobs: ${jobsList}. Certs: ${Array.isArray(analysis.certifications) ? analysis.certifications.slice(0, 3).join(", ") : "None"}. Skills: ${Array.isArray(analysis.skills) ? analysis.skills.slice(0, 5).join(", ") : "General"}.`;
     } else if (profileResumeText) {
-      // Only send first 500 chars of resume text if no analysis
-      resumeContext = `Resume (excerpt): ${profileResumeText.slice(0, 500)}${profileResumeText.length > 500 ? "..." : ""}`;
+      // For resume-based questions without analysis, send more text
+      const textLength = selectedCategory === "Resume-Based" ? 1500 : 500;
+      resumeContext = `Resume (excerpt): ${profileResumeText.slice(0, textLength)}${profileResumeText.length > textLength ? "..." : ""}`;
     }
     
     // Only send last 3 questions (not 10) to reduce tokens
@@ -1878,7 +1907,14 @@ ${questionStrategy}${bankReferenceText}
 
 ${resumeContext ? `Resume: ${resumeContext}` : ''}${diversityContext}${userProfileContext}
 
-${selectedCategory === "City & Department Specific" ? `\nREQUIRED: Knowledge question (Who/What/When/How many) about ${profileCity || 'city'} and ${profileDepartmentName || 'department'} facts.` : selectedCategory && selectedCategory !== "Resume-Based" ? `\nCategory: "${selectedCategory}" only.` : ''}
+${selectedCategory === "City & Department Specific" ? `\nREQUIRED: Knowledge question (Who/What/When/How many) about ${profileCity || 'city'} and ${profileDepartmentName || 'department'} facts.` : selectedCategory === "Resume-Based" ? `\nREQUIRED: This is a RESUME-BASED question. You MUST ask a SPECIFIC question that references their actual resume details. Examples:
+- "Tell us about your experience as [specific job title from resume] and how it prepared you for firefighting."
+- "I see you have [specific certification from resume]. How has that certification helped you in your work?"
+- "You worked at [specific company/job from resume]. Describe a challenging situation you faced there and how you handled it."
+- "Your resume shows [specific skill/experience]. Give me an example of when you used that skill."
+- "I notice you have experience with [specific aspect from resume]. How would that experience help you as a firefighter?"
+
+CRITICAL: The question MUST mention specific details from their resume (job titles, companies, certifications, skills, or experiences). Do NOT ask a generic question. Reference their actual background explicitly.` : selectedCategory ? `\nCategory: "${selectedCategory}" only.` : ''}
 
 Format: "Category: [category]\nQuestion: [question text]"`
         }

@@ -6804,9 +6804,10 @@ Return ONLY the category and question.`
       
       if (!googleClientId) {
         console.error('[GOOGLE SIGN-IN] No client ID available - attempting to fetch again...');
-        const config = await fetchConfig();
-        if (config) {
-          googleClientId = config.googleClientId;
+        try {
+          const config = await fetchConfig();
+          if (config) {
+            googleClientId = config.googleClientId;
             if (!googleClientId) {
               alert('Google Sign-In is not configured on the backend. Please ensure GOOGLE_CLIENT_ID is set in your Render environment variables and the backend service has been restarted.');
               return;

@@ -287,14 +287,19 @@
     .layout {
       display: grid;
       grid-template-columns: 1.2fr 1fr;
-      gap: 12px;
+      gap: var(--space-5);
     }
 
     /* Responsive Styles */
-    @media (max-width: 1024px) {
+    @media (max-width: 1280px) {
       .layout {
         grid-template-columns: 1fr;
       }
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
     }
 
     /* Tablet Styles - 1024px and below */
@@ -304,8 +309,8 @@
       }
       
       .app {
-        margin: 16px auto;
-        padding: 24px;
+        margin: var(--space-4) auto;
+        padding: var(--space-6);
         border-radius: 20px;
         width: 100%;
         box-sizing: border-box;
@@ -315,21 +320,21 @@
       header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 20px;
-        padding: 32px 24px;
+        gap: var(--space-5);
+        padding: var(--space-8) var(--space-6);
         min-height: auto;
       }
       
       .title {
         flex-direction: row;
         align-items: center;
-        gap: 16px;
+        gap: var(--space-4);
         width: 100%;
       }
       
       h1 {
         font-size: clamp(1.4rem, 4vw, 1.6rem);
-        line-height: 1.3;
+        line-height: var(--leading-tight);
       }
       
       h1 span.logo {
@@ -340,13 +345,13 @@
       }
       
       .card {
-        padding: 24px;
+        padding: var(--space-6);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
       
       .feedback-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: var(--space-3);
       }
       
       .question-controls {
@@ -370,28 +375,28 @@
       }
       
       .app {
-        margin: 12px 8px;
-        padding: 20px;
+        margin: var(--space-3) var(--space-2);
+        padding: var(--space-5);
         border-radius: 20px;
         box-shadow: 
           0 8px 32px rgba(0, 0, 0, 0.4),
-          0 0 0 1px rgba(239, 68, 68, 0.15);
+          0 0 0 1px var(--card-border);
       }
       
       /* Modern header with better spacing */
       header {
-        padding: 24px 20px;
-        gap: 20px;
+        padding: var(--space-6) var(--space-5);
+        gap: var(--space-5);
         flex-direction: column;
         align-items: stretch;
-        border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+        border-bottom: 1px solid var(--card-border);
       }
       
       header .title {
         display: flex;
         flex-direction: row;
         align-items: center;
-        gap: 16px;
+        gap: var(--space-4);
         width: 100%;
       }
       
@@ -435,13 +440,13 @@
       #headerAuthSection {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: var(--space-3);
         width: 100%;
       }
       
       #authButtons {
         display: flex;
-        gap: 8px;
+        gap: var(--space-2);
         width: 100%;
       }
       
@@ -452,9 +457,9 @@
       
       /* Card improvements */
       .card {
-        padding: 20px;
+        padding: var(--space-5);
         border-radius: 16px;
-        margin-bottom: 16px;
+        margin-bottom: var(--space-4);
         backdrop-filter: blur(12px);
         animation: fadeInUp 0.4s ease;
       }
@@ -477,29 +482,29 @@
       .card-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
-        margin-bottom: 16px;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
       }
       
       .card-title {
-        font-size: clamp(0.95rem, 3vw, 1rem);
-        line-height: 1.4;
+        font-size: clamp(var(--text-base), 3vw, var(--text-lg));
+        line-height: var(--leading-relaxed);
       }
       
       .card-title small {
         display: block;
-        margin-top: 4px;
-        line-height: 1.4;
+        margin-top: var(--space-1);
+        line-height: var(--leading-relaxed);
       }
       
       /* Modern button styling */
       button {
-        font-size: clamp(0.875rem, 2.5vw, 0.95rem);
-        padding: 14px 20px;
+        font-size: clamp(var(--text-sm), 2.5vw, var(--text-base));
+        padding: 14px var(--space-5);
         min-height: 48px;
         border-radius: 12px;
-        font-weight: 600;
-        letter-spacing: 0.01em;
+        font-weight: var(--font-semibold);
+        letter-spacing: var(--tracking-wide);
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
@@ -510,7 +515,7 @@
       }
       
       button.ghost {
-        padding: 10px 16px;
+        padding: var(--space-2) var(--space-4);
         min-height: 44px;
       }
       
@@ -524,10 +529,10 @@
         height: 22px !important;
         min-width: 22px !important;
         min-height: 22px !important;
-        accent-color: #ef4444;
+        accent-color: var(--accent-primary);
         cursor: pointer;
         flex-shrink: 0;
-        margin-right: 12px !important;
+        margin-right: var(--space-3) !important;
         border-radius: 4px;
         transition: transform 0.2s ease;
       }
@@ -539,17 +544,17 @@
       label {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
-        line-height: 1.5;
-        padding: 8px 0;
+        gap: var(--space-3);
+        line-height: var(--leading-normal);
+        padding: var(--space-2) 0;
       }
       
       /* Question controls in a clean stack */
       .question-controls {
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        margin-top: 16px;
+        gap: var(--space-3);
+        margin-top: var(--space-4);
       }
       
       .question-controls button {
@@ -561,7 +566,7 @@
         max-height: 320px;
         border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        box-shadow: var(--card-shadow-lg);
       }
       
       video, canvas {
@@ -571,37 +576,37 @@
       /* Transcript box improvements */
       .transcript {
         min-height: 80px;
-        padding: 16px;
+        padding: var(--space-4);
         border-radius: 12px;
-        font-size: clamp(0.8rem, 2.5vw, 0.85rem);
-        line-height: 1.6;
+        font-size: clamp(var(--text-sm), 2.5vw, var(--text-base));
+        line-height: var(--leading-relaxed);
         backdrop-filter: blur(10px);
       }
       
       /* Feedback grid spacing */
       .feedback-grid {
-        gap: 12px;
+        gap: var(--space-3);
       }
       
       .feedback-block {
-        padding: 16px;
+        padding: var(--space-4);
         border-radius: 12px;
         backdrop-filter: blur(10px);
       }
       
       .feedback-block h4 {
-        font-size: clamp(0.85rem, 2.5vw, 0.9rem);
-        margin-bottom: 10px;
+        font-size: clamp(var(--text-sm), 2.5vw, var(--text-base));
+        margin-bottom: var(--space-2);
       }
       
       .feedback-block p {
-        font-size: clamp(0.8rem, 2.5vw, 0.85rem);
-        line-height: 1.6;
+        font-size: clamp(var(--text-sm), 2.5vw, var(--text-base));
+        line-height: var(--leading-relaxed);
       }
       
       /* Modal improvements for mobile */
       .modal, .ai-modal {
-        padding: 24px;
+        padding: var(--space-6);
         border-radius: 20px;
         max-height: 85vh;
         animation: slideUpModal 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -638,7 +643,7 @@
       
       /* Practice mode section */
       #categorySelector {
-        margin-top: 12px;
+        margin-top: var(--space-3);
         animation: fadeIn 0.3s ease;
       }
       
@@ -649,15 +654,15 @@
       
       /* Tag improvements */
       .tag {
-        padding: 6px 12px;
-        font-size: clamp(0.7rem, 2vw, 0.75rem);
+        padding: var(--space-2) var(--space-3);
+        font-size: clamp(var(--text-xs), 2vw, var(--text-sm));
         border-radius: 999px;
       }
       
       /* Metric chips */
       .metric-chip {
-        padding: 4px 10px;
-        font-size: clamp(0.7rem, 2vw, 0.75rem);
+        padding: var(--space-1) var(--space-2);
+        font-size: clamp(var(--text-xs), 2vw, var(--text-sm));
         border-radius: 999px;
       }
     }
@@ -665,14 +670,14 @@
     /* Small Mobile - 480px and below */
     @media (max-width: 480px) {
       .app {
-        margin: 8px 4px;
-        padding: 16px;
+        margin: var(--space-2) var(--space-1);
+        padding: var(--space-4);
         border-radius: 16px;
       }
       
       header {
-        padding: 20px 16px;
-        gap: 16px;
+        padding: var(--space-5) var(--space-4);
+        gap: var(--space-4);
       }
       
       header .title img#logoImage {
@@ -688,13 +693,13 @@
       }
       
       .card {
-        padding: 16px;
+        padding: var(--space-4);
         border-radius: 14px;
       }
       
       button {
-        font-size: clamp(0.85rem, 2.5vw, 0.9rem);
-        padding: 13px 18px;
+        font-size: clamp(var(--text-sm), 2.5vw, var(--text-base));
+        padding: 13px var(--space-4);
         min-height: 48px;
       }
       
@@ -709,24 +714,24 @@
       
       /* Tighter modal padding */
       .modal, .ai-modal {
-        padding: 20px;
+        padding: var(--space-5);
         border-radius: 18px;
       }
       
       .modal-header h3, .ai-modal-header h3 {
-        font-size: clamp(1.2rem, 4vw, 1.3rem);
+        font-size: clamp(var(--text-xl), 4vw, var(--text-2xl));
       }
     }
     
     /* Extra Small - 360px and below */
     @media (max-width: 360px) {
       .app {
-        margin: 4px 2px;
-        padding: 14px;
+        margin: var(--space-1) var(--space-1);
+        padding: var(--space-3);
       }
       
       header {
-        padding: 16px 14px;
+        padding: var(--space-4) var(--space-3);
       }
       
       header .title img#logoImage {
@@ -738,12 +743,12 @@
       }
       
       .card {
-        padding: 14px;
+        padding: var(--space-3);
       }
       
       button {
-        font-size: clamp(0.8rem, 2.5vw, 0.875rem);
-        padding: 12px 16px;
+        font-size: clamp(var(--text-xs), 2.5vw, var(--text-sm));
+        padding: var(--space-3) var(--space-4);
         min-height: 46px;
       }
     }
@@ -751,21 +756,21 @@
     /* Landscape orientation optimizations */
     @media (max-height: 500px) and (orientation: landscape) {
       .app {
-        margin: 8px;
+        margin: var(--space-2);
       }
       
       header {
-        padding: 16px 20px;
+        padding: var(--space-4) var(--space-5);
         min-height: auto;
       }
       
       .card {
-        padding: 16px;
+        padding: var(--space-4);
       }
       
       .modal, .ai-modal {
         max-height: 95vh;
-        padding: 20px;
+        padding: var(--space-5);
       }
     }
 

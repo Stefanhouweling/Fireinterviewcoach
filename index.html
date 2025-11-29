@@ -1567,13 +1567,11 @@
               <input type="radio" name="practiceMode" id="specificMode" value="specific" style="margin-right: 6px; accent-color: #ef4444;">
               <span>🎯 User-Specific Practice</span>
             </label>
+            <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
+              <input type="checkbox" id="onlyFlaggedToggle" style="margin-right: 6px; accent-color: #ef4444; cursor: pointer;">
+              <span>🚩 Only Flagged Questions</span>
+            </label>
           </div>
-          
-          <!-- Only Flagged Toggle -->
-          <label style="display: flex; align-items: center; cursor: pointer; color: #e2e8f0; font-size: 0.85rem; gap: 6px; margin-top: 8px;">
-            <input type="checkbox" id="onlyFlaggedToggle" style="accent-color: #ef4444; cursor: pointer;">
-            <span>🚩 Only Flagged Questions</span>
-          </label>
           
           <!-- Category Selector (shown only in User-Specific mode) -->
           <div id="categorySelector" style="display: none; margin-top: 8px;">
@@ -1599,12 +1597,12 @@
           </div>
           
           <!-- Flagged Questions Controls -->
-          <div style="margin-top: 12px; padding: 10px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
-            <button id="viewFlaggedBtn" style="width: 100%; padding: 8px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; color: #fca5a5; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; margin-bottom: 8px;" title="View flagged questions">
-              🚩 Flagged: <span id="flaggedCount">0</span>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <button id="viewFlaggedBtn" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #cbd5e1; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;" title="View flagged questions" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.5)'" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
+              🚩 <span id="flaggedCount">0</span>
             </button>
             <!-- What You Should Work On Button (appears after 5 questions) -->
-            <button id="areasToWorkOnBtn" style="width: 100%; padding: 8px 12px; background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 6px; color: #fbbf24; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: none; font-weight: 600;" title="View personalized areas to work on">
+            <button id="areasToWorkOnBtn" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 6px; color: #cbd5e1; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; display: none; font-weight: 500;" title="View personalized areas to work on" onmouseover="this.style.background='rgba(251, 191, 36, 0.1)'; this.style.borderColor='rgba(251, 191, 36, 0.5)'" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(251, 191, 36, 0.3)'">
               💡 What You Should Work On
             </button>
           </div>

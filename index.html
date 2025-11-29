@@ -2161,6 +2161,13 @@
   const privacyAccepted = localStorage.getItem("privacyAccepted") === "true";
   const onboardingComplete = localStorage.getItem("onboardingComplete") === "true";
   
+  // Check if user is authenticated (has token or currentUser in localStorage)
+  // Check cookie directly (getAuthToken might not be defined yet)
+  const cookieToken = document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+  const hasAuthToken = cookieToken || localStorage.getItem('authToken');
+  const hasStoredUser = localStorage.getItem('currentUser');
+  const isAuthenticated = hasAuthToken || hasStoredUser;
+  
   // Show modal if terms not accepted
   if (!termsAccepted || !privacyAccepted) {
     if (termsModal) {
@@ -2173,8 +2180,21 @@
       // Fallback: show main app if modal doesn't exist
       if (mainApp) mainApp.style.display = "block";
     }
+  } else if (isAuthenticated) {
+    // User is authenticated - always show main app (they can access onboarding from settings if needed)
+    // Set onboardingComplete to true if authenticated (they've logged in, so onboarding is complete)
+    if (!onboardingComplete) {
+      localStorage.setItem('onboardingComplete', 'true');
+      console.log("User authenticated - setting onboardingComplete to true");
+    }
+    if (mainApp) {
+      mainApp.style.display = "block";
+      console.log("User authenticated - showing main app");
+    } else {
+      console.error("Main app element not found!");
+    }
   } else if (!onboardingComplete) {
-    // Terms accepted but onboarding not complete - show onboarding modal
+    // Terms accepted but onboarding not complete and user not authenticated - show onboarding modal
     if (onboardingModal) {
       onboardingModal.style.display = "flex";
       document.body.style.overflow = "hidden";
@@ -3081,6 +3101,24 @@
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         // Update token from cookie or keep existing
         authToken = getAuthToken();
+        
+        // If user is authenticated, ensure onboardingComplete is set and load onboarding data if available
+        const savedOnboardingData = localStorage.getItem('onboardingData');
+        if (savedOnboardingData) {
+          try {
+            onboardingData = JSON.parse(savedOnboardingData);
+            localStorage.setItem('onboardingComplete', 'true');
+            console.log('[AUTH] Loaded onboarding data from localStorage for authenticated user');
+          } catch (e) {
+            console.error('[AUTH] Failed to parse saved onboarding data:', e);
+          }
+        } else {
+          // User is authenticated but no onboarding data - still mark onboarding as complete
+          // (they can access onboarding from settings if needed)
+          localStorage.setItem('onboardingComplete', 'true');
+          console.log('[AUTH] User authenticated - setting onboardingComplete to true');
+        }
+        
         updateAuthUI();
         await updateCreditsDisplay();
         console.log('[AUTH] Successfully authenticated user:', currentUser.email);
@@ -6580,8 +6618,11 @@ Return ONLY the category and question.`
             // Save to localStorage and update global onboardingData
             onboardingData = data.onboardingData;
             localStorage.setItem('onboardingData', JSON.stringify(data.onboardingData));
-            localStorage.setItem('onboardingComplete', 'true');
           }
+          // If user logged in, they've completed onboarding (either now or previously)
+          // Always set onboardingComplete to true after successful login
+          localStorage.setItem('onboardingComplete', 'true');
+          
           // Clear trial credits from localStorage after successful transfer
           if (trialCredits > 0) {
             localStorage.removeItem('trial_credits_remaining');
@@ -6612,12 +6653,22 @@ Return ONLY the category and question.`
             if (onboardingModal) {
               onboardingModal.style.display = 'none';
             }
-            // Show main app
+            // Show main app - ensure it's visible
             const mainApp = document.getElementById('mainApp');
             if (mainApp) {
               mainApp.style.display = 'block';
+              console.log('Main app displayed after login from onboarding');
+            } else {
+              console.error('Main app element not found after login!');
             }
             document.body.style.overflow = 'auto';
+            
+            // Also ensure onboarding data is loaded into the app if available
+            if (data.onboardingData && onboardingData) {
+              // Update user profile with loaded data
+              await updateUserProfile();
+              console.log('Onboarding data loaded and profile updated after login');
+            }
           }
           
           // If coming from paywall, show credit purchase

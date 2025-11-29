@@ -1564,10 +1564,10 @@ IMPORTANT: The question MUST stay within the "${selectedCategory}" category. Do 
     } else if (practiceMode === "simulation") {
       questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) for an interview simulation.${personalizationContext}
 
-CRITICAL REQUIREMENTS FOR NEW PROBIE:
-- This candidate is a BRAND NEW PROBIE FIREFIGHTER (entry-level, no firefighting experience yet)
+CRITICAL REQUIREMENTS FOR FIREFIGHTER CANDIDATES:
+- This candidate is applying for an entry-level firefighter position (may or may not have firefighting experience)
 - ONLY ~10% of questions should be fire-related. ~90% should be GENERAL behavioral/situational questions
-- DO NOT ask about leading teams, making command decisions, or managing others
+- DO NOT ask about leading teams, making command decisions, or managing others (entry-level position)
 - DO ask about following orders, learning, being part of a team, respecting chain of command, adapting to new environments
 - Questions should reflect an entry-level position where they follow instructions and learn from experienced firefighters
 
@@ -1629,11 +1629,11 @@ Remember: Most questions should be GENERAL. Personalization should feel RANDOM.`
       messages: [
         {
           role: "system",
-          content: `You are an expert firefighter interview panel member. Your role is to generate realistic and challenging interview questions for a BRAND NEW PROBIE FIREFIGHTER (entry-level candidate with no firefighting experience yet).
+          content: `You are an expert firefighter interview panel member. Your role is to generate realistic and challenging interview questions for candidates applying for entry-level firefighter positions.
 
 CRITICAL REQUIREMENTS:
 1. ONLY ~10% of questions should be fire-related. The remaining ~90% should be GENERAL behavioral/situational questions that could apply to any profession or made-up scenarios.
-2. This candidate is a BRAND NEW PROBIE - they are NOT a captain, officer, or leader. Questions should reflect an entry-level position:
+2. This candidate is applying for an entry-level position - they are NOT a captain, officer, or leader. Questions should reflect an entry-level position:
    - DO NOT ask "how would you keep YOUR team safe" (they don't have a team)
    - DO NOT ask about leading others or managing a team
    - DO NOT ask about making command decisions
@@ -1652,7 +1652,7 @@ QUESTION TOPIC DISTRIBUTION:
 - ~10% fire-related scenarios (safety protocols, following fireground procedures, learning firefighting basics)
 - ~90% general scenarios (conflict resolution, following orders, teamwork, ethics, communication, stress management, adapting to new environments, etc.)
 
-EXAMPLES OF APPROPRIATE QUESTIONS FOR A NEW PROBIE:
+EXAMPLES OF APPROPRIATE QUESTIONS FOR ENTRY-LEVEL CANDIDATES:
 - "How would you handle a situation if you felt you weren't treated fairly?"
 - "Tell us about a time when you had to follow instructions you didn't fully understand."
 - "How would you handle a situation where a senior colleague asks you to do something that conflicts with what your supervisor told you?"
@@ -1728,9 +1728,9 @@ ${selectedCategory === "City & Department Specific" ? `  * KNOWLEDGE QUESTIONS (
   * "Describe a time when you had to communicate something difficult to a supervisor."
   * FIRE-RELATED questions (only ~10% of questions - use sparingly):
   * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
-  * "If you were on a fire scene and noticed a safety violation, how would you address it as a new probie?"
-  * FORBIDDEN for new probie: "How would you keep YOUR team safe?" (they don't have a team - they ARE part of a team)
-  * FORBIDDEN for new probie: "How would you lead your crew?" (they're not a leader - they follow leaders)`}
+  * "If you were on a fire scene and noticed a safety violation, how would you address it as a new firefighter?"
+  * FORBIDDEN for entry-level candidates: "How would you keep YOUR team safe?" (they don't have a team - they ARE part of a team)
+  * FORBIDDEN for entry-level candidates: "How would you lead your crew?" (they're not a leader - they follow leaders)`}
 - Test: ${selectedCategory === "City & Department Specific" ? 'candidate knowledge of specific facts about the city and department' : 'chain of command, ethics, judgment, decision-making, conflict resolution'}
 - CRITICAL: The question MUST be completely different from any question already asked (see list above)
 ${practiceMode === "simulation" ? `- If resume is provided and mode allows, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates
@@ -3305,27 +3305,22 @@ app.post('/api/areas-to-work-on', async (req, res) => {
       feedback: a.feedback
     }));
     
-    // Build personalization context from onboarding data
+    // Build personalization context from onboarding data (focus on interview preparation context)
     let personalizationContext = "";
     if (profile.name) {
       personalizationContext += `Candidate Name: ${profile.name}\n`;
     }
     if (profile.city || profile.departmentName) {
       const location = [profile.city, profile.departmentName].filter(Boolean).join(", ");
-      if (location) personalizationContext += `Location: ${location}\n`;
+      if (location) personalizationContext += `Applying to: ${location}\n`;
     }
-    if (profile.jobType) {
-      personalizationContext += `Position Type: ${profile.jobType}\n`;
-    }
+    // Note: jobType removed - not relevant for candidates preparing for interviews
     if (profile.resumeAnalysis) {
       const analysis = profile.resumeAnalysis;
-      const experience = analysis.experience || analysis.yearsOfExperience || null;
-      if (experience) {
-        personalizationContext += `Experience Level: ${experience}\n`;
-      }
+      // Only include relevant background that helps with interview context
       const certifications = analysis.certifications;
       if (Array.isArray(certifications) && certifications.length > 0) {
-        personalizationContext += `Key Certifications: ${certifications.slice(0, 3).join(", ")}\n`;
+        personalizationContext += `Relevant Certifications: ${certifications.slice(0, 3).join(", ")}\n`;
       }
     }
     
@@ -3336,13 +3331,13 @@ app.post('/api/areas-to-work-on', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert firefighter interview coach. Analyze multiple answer feedbacks and identify the most important areas a candidate should focus on improving. Be specific, actionable, and encouraging. Personalize your feedback based on their background when relevant."
+          content: "You are an expert firefighter interview coach helping candidates prepare for firefighter interview panels. Analyze multiple answer feedbacks and identify the most important areas a candidate should focus on improving for their interview. Be specific, actionable, and encouraging. Focus on interview performance, not their current job status."
         },
         {
           role: "user",
-          content: `Based on the candidate's recent interview practice sessions, analyze their performance and provide 2-3 key areas they should work on.
+          content: `Based on the candidate's recent interview practice sessions, analyze their performance and provide 2-3 key areas they should focus on improving for their firefighter interview panel.
 
-${personalizationContext ? `Candidate Background:\n${personalizationContext}\n` : ''}Recent Answer Analyses:
+${personalizationContext ? `Candidate Context (for interview preparation):\n${personalizationContext}\n` : ''}Recent Answer Analyses:
 ${feedbackSummary.map((a, i) => `
 Question ${i + 1} (${a.category}): ${a.question}
 Feedback: ${a.feedback.substring(0, 500)}...

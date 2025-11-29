@@ -4182,6 +4182,24 @@ Return ONLY the category and question.`
     questionCategoryLabelEl.textContent = categoryLabel;
     questionIndexEl.textContent = String(questionCount);
     
+    // Show followup explanation if this is a followup question
+    const questionSubtitlesEl = document.getElementById('questionSubtitles');
+    if (questionSubtitlesEl) {
+      if (q.isFollowup) {
+        questionSubtitlesEl.style.display = 'block';
+        questionSubtitlesEl.innerHTML = `
+          <div style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="font-size: 1.1rem; flex-shrink: 0;">💡</span>
+            <div style="line-height: 1.5;">
+              <strong style="color: #fbbf24;">Why a followup?</strong> This question digs deeper into your previous answer, helping you explore the topic more thoroughly and identify any areas that need clarification. Real interview panels often ask followups to test your depth of knowledge and ensure you can handle probing questions.
+            </div>
+          </div>
+        `;
+      } else {
+        questionSubtitlesEl.style.display = 'none';
+      }
+    }
+    
     // Show flag button and update its state
     const flagBtn = document.getElementById('flagQuestionBtn');
     const flagIcon = document.getElementById('flagIcon');

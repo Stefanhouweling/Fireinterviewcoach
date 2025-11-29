@@ -1238,38 +1238,25 @@ app.post('/api/question', async (req, res) => {
     const profileAskedQuestions = userProfile?.askedQuestions || askedQuestions || [];
     const profileAskedCategories = userProfile?.askedCategories || askedCategories || [];
 
-    // Build comprehensive resume context (use profile data)
+    // Build optimized resume context (summary only, no full JSON)
     let resumeContext = "";
     if (profileResumeAnalysis) {
       const analysis = profileResumeAnalysis;
       const allJobs = analysis.allJobs || analysis.workHistory || [];
       const jobsList = Array.isArray(allJobs) && allJobs.length > 0 
-        ? allJobs.join("; ")
-        : (Array.isArray(analysis.workHistory) ? analysis.workHistory.join("; ") : "N/A");
+        ? allJobs.slice(0, 5).join("; ") + (allJobs.length > 5 ? ` (+${allJobs.length - 5} more)` : "")
+        : (Array.isArray(analysis.workHistory) ? analysis.workHistory.slice(0, 5).join("; ") : "N/A");
       
-      resumeContext = `Resume Summary (COMPLETE - includes ALL jobs, not just fire-related):
-- Total Experience: ${analysis.experience || analysis.yearsOfExperience || "N/A"} (includes ALL work experience)
-- ALL Past Jobs: ${jobsList}
-- Certifications: ${Array.isArray(analysis.certifications) ? analysis.certifications.join(", ") : "None listed"}
-- Key Skills: ${Array.isArray(analysis.skills) ? analysis.skills.join(", ") : "General"}
-- Education: ${analysis.education ? (Array.isArray(analysis.education) ? analysis.education.join(", ") : analysis.education) : "N/A"}
-- Interview Focus Areas: ${Array.isArray(analysis.interviewFocus) ? analysis.interviewFocus.join(", ") : "General competencies"}
-
-Full Resume Analysis: ${JSON.stringify(profileResumeAnalysis)}
-
-IMPORTANT: Reference ALL past jobs and experiences when generating questions, not just fire-related experience. Past jobs in construction, retail, customer service, healthcare, etc. are all valuable for interview questions.`;
+      resumeContext = `Resume: ${analysis.experience || analysis.yearsOfExperience || "N/A"} exp. Jobs: ${jobsList}. Certs: ${Array.isArray(analysis.certifications) ? analysis.certifications.slice(0, 3).join(", ") : "None"}. Skills: ${Array.isArray(analysis.skills) ? analysis.skills.slice(0, 5).join(", ") : "General"}.`;
     } else if (profileResumeText) {
-      resumeContext = `Resume Text (full text for context - includes ALL jobs and experience):
-${profileResumeText}
-
-IMPORTANT: Reference ALL past jobs and experiences when generating questions, not just fire-related experience.`;
-    } else {
-      resumeContext = "No resume provided";
+      // Only send first 500 chars of resume text if no analysis
+      resumeContext = `Resume (excerpt): ${profileResumeText.slice(0, 500)}${profileResumeText.length > 500 ? "..." : ""}`;
     }
     
+    // Only send last 3 questions (not 10) to reduce tokens
     const conversationContext = profileHistory && profileHistory.length > 0
-      ? `\n\nPrevious questions asked:\n${profileHistory.slice(-3).map((item, i) => 
-          `${i + 1}. Q: ${item.question}\n   A: ${item.answer ? item.answer.slice(0, 200) + "..." : "No answer yet"}`
+      ? `\nRecent Q&A:\n${profileHistory.slice(-3).map((item, i) => 
+          `Q${i + 1}: ${item.question.substring(0, 100)}${item.question.length > 100 ? "..." : ""}`
         ).join("\n")}`
       : "";
     
@@ -1296,33 +1283,23 @@ IMPORTANT: Reference ALL past jobs and experiences when generating questions, no
       ? `\n\nCategory rotation hint: The following base categories have NOT been used yet in this session: ${unusedCategories.join(", ")}.\nFor THIS next question, choose ONE of these unused categories and clearly state it as the category.`
       : `\n\nCategory rotation hint: All base categories have been used at least once.\nYou may reuse categories, but vary the scenario and angle significantly from earlier questions.`;
 
+    // Only send last 5 questions (not 10) to reduce tokens
     const diversityContext = profileAskedQuestions.length > 0
-      ? `\n\nCRITICAL - Questions already asked in this session (DO NOT repeat these):\n${profileAskedQuestions.slice(-10).map((q, i) => `${i + 1}. ${q}`).join("\n")}\n\nCategories already covered: ${profileAskedCategories.join(", ") || "None"}\n\nYou MUST generate a completely different question that hasn't been asked yet.${categoryRotationHint}`
-      : `\n\nNo questions have been asked yet in this session. Start with any one of the base categories: ${baseCategories.join(", ")}. Make the category explicit.`;
+      ? `\nAsked: ${profileAskedQuestions.slice(-5).map((q, i) => `${i + 1}. ${q.substring(0, 80)}${q.length > 80 ? "..." : ""}`).join(" | ")}\nCategories: ${profileAskedCategories.slice(-5).join(", ") || "None"}\n${categoryRotationHint}`
+      : `\nStart with: ${baseCategories.join(", ")}`;
 
-    // Build comprehensive user profile context (city, department, job type, name, etc.)
+    // Build concise user profile context (removed redundant personalization instructions)
     let userProfileContext = "";
-    if (profileCity || profileDepartmentName || profileJobType || profileName) {
+    if (profileCity || profileDepartmentName || profileName) {
       const locationString = profileStateProvince 
-        ? `${profileCity}, ${profileStateProvince}, ${profileCountry}`
-        : `${profileCity}, ${profileCountry}`;
+        ? `${profileCity}, ${profileStateProvince}`
+        : profileCity || "";
       
-      userProfileContext = `\n\nCOMPREHENSIVE USER PROFILE (USE THIS TO CREATE HIGHLY PERSONALIZED QUESTIONS):
-- Candidate Name: ${profileName || "Not provided"}
-- Position Type: ${profileJobType || "Not specified"}
-- Department: ${profileDepartmentName || "Not specified"}
-- Location: ${locationString || "Not specified"}`;
+      userProfileContext = `\nProfile: ${profileName ? `Name: ${profileName}` : ""}${profileDepartmentName ? ` | Dept: ${profileDepartmentName}` : ""}${locationString ? ` | Location: ${locationString}` : ""}`;
       
       if (profileCityResearch) {
-        userProfileContext += `\n\nCity/Department Research:\n${profileCityResearch}\n\nIMPORTANT: RANDOMLY decide whether to incorporate this information. Most questions should be GENERAL and not reference specific departments or cities. Only occasionally (about 20-30% of the time) reference the department name "${profileDepartmentName}" or city-specific details. Make it feel random and natural - most questions should be general firefighter questions that apply to any department.`;
-      } else if (profileDepartmentName || profileCity) {
-        userProfileContext += `\n\nIMPORTANT: RANDOMLY decide whether to reference the department or city. Most questions should be GENERAL and not mention "${profileDepartmentName}" or "${profileCity}". Only occasionally (about 20-30% of the time) incorporate the department name or location context. Most questions should be general firefighter questions that apply to any department. Make it feel random - don't force personalization into every question.`;
-      }
-      
-      // Add name context if available
-      if (profileName) {
-        // Use name very randomly - only about 10-15% of the time
-        userProfileContext += `\n\nIMPORTANT: The candidate's name is ${profileName}. RANDOMLY decide whether to use it - only about 10-15% of questions should address them by name. Most questions should NOT use their name. Make it feel completely random and natural.`;
+        // Only send first 800 chars of city research to reduce tokens
+        userProfileContext += `\nCity Research: ${profileCityResearch.substring(0, 800)}${profileCityResearch.length > 800 ? "..." : ""}`;
       }
     }
 
@@ -1375,251 +1352,33 @@ IMPORTANT: Reference ALL past jobs and experiences when generating questions, no
       }
     }
     
-    // Build personalization context
+    // Build concise personalization context (removed redundant instructions - handled in system message)
     let personalizationContext = "";
-    if (profileName) {
-      personalizationContext += `\n- Candidate's name: ${profileName} (RANDOMLY decide - only use name in about 10-15% of questions. Most questions should NOT use their name. Make it feel completely random.)`;
-    }
-    if (profileDepartmentName) {
-      personalizationContext += `\n- Department: ${profileDepartmentName} (RANDOMLY decide - only reference department in about 20-30% of questions. Most questions should be GENERAL and not mention the department. Make it feel random.)`;
-    }
-    if (profileCity) {
-      personalizationContext += `\n- City: ${profileCity}${profileStateProvince ? `, ${profileStateProvince}` : ''}${profileCountry ? `, ${profileCountry}` : ''} (RANDOMLY decide - only reference city in about 20-30% of questions. Most questions should be GENERAL. Make it feel random.)`;
-    }
-    if (profileJobType) {
-      personalizationContext += `\n- Position: ${profileJobType}`;
-    }
-    if (profileResumeAnalysis) {
-      const allJobs = profileResumeAnalysis.allJobs || profileResumeAnalysis.workHistory || [];
-      const jobsText = Array.isArray(allJobs) && allJobs.length > 0 
-        ? `All past jobs: ${allJobs.slice(0, 5).join("; ")}${allJobs.length > 5 ? "..." : ""}`
-        : "Work history available";
-      personalizationContext += `\n- Resume highlights: ${profileResumeAnalysis.experience || 'N/A'} total experience (ALL jobs), ${jobsText}, Certifications: ${Array.isArray(profileResumeAnalysis.certifications) ? profileResumeAnalysis.certifications.slice(0, 3).join(", ") : 'None'}, Key skills: ${Array.isArray(profileResumeAnalysis.skills) ? profileResumeAnalysis.skills.slice(0, 5).join(", ") : 'General'}`;
-    }
-    if (profileCityResearch) {
-      personalizationContext += `\n- City/Department research available: Use specific details from this research to make questions feel authentic and personalized to this exact department and location.`;
+    if (profileName || profileDepartmentName || profileCity || profileResumeAnalysis || profileCityResearch) {
+      personalizationContext = "Personalization available (use randomly: 70-80% general, 20-30% personalized)";
     }
     
     if (practiceMode === "specific" && selectedCategory) {
       if (selectedCategory === "Situational") {
-        questionStrategy = `Generate a SITUATIONAL question (${difficultyToUse} difficulty). A situational question presents a hypothetical scenario and asks what the candidate would do.${personalizationContext}
-
-CRITICAL REQUIREMENTS:
-- This MUST be a SITUATIONAL question (hypothetical scenario)
-- Use formats like: "How would you handle...", "What would you do if...", "How would you approach...", "Imagine you are...", "You are faced with..."
-- DO NOT use "Tell us about a time..." or "Describe a situation where..." (those are behavioral questions)
-- Present a specific scenario or situation laid out for the candidate
-- Ask them to explain what they would do in that situation
-- Test their judgment, decision-making, chain of command understanding, ethics, and approach
-- RANDOMLY decide whether to personalize - most questions should be GENERAL
-- Only occasionally (20-30%) reference department/city, very rarely (10-15%) use their name
-- Most questions should be general firefighter questions that apply to any candidate
-
-EXAMPLES OF GOOD SITUATIONAL QUESTIONS:
-- "How would you handle a situation if you felt you weren't treated fairly?"
-- "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
-- "How would you handle a leader where you question their leadership, would you still respect them?"
-- "Imagine you're on a call and you notice a safety violation that could put your team at risk. How would you address this?"
-- "What would you do if you saw a fellow firefighter engaging in behavior that violates department policy?"
-
-The question should present a clear situation and ask what they would do, not ask about past experiences.`;
+        questionStrategy = `SITUATIONAL question (hypothetical scenario). Formats: "How would you handle...", "What would you do if...", "How would you approach...". DO NOT use "Tell us about a time..." (that's behavioral).`;
       } else if (selectedCategory === "Behavioral") {
-        questionStrategy = `Generate a BEHAVIORAL question (${difficultyToUse} difficulty). A behavioral question asks about past experiences and past behavior.${personalizationContext}
-
-CRITICAL REQUIREMENTS:
-- This MUST be a BEHAVIORAL question (past experiences)
-- Use formats like: "Tell us about a time when...", "Describe a situation where...", "Give me an example of...", "Share an experience where...", "Can you recall a time when..."
-- DO NOT use "How would you handle..." or "What would you do if..." (those are situational questions)
-- Ask about actual past experiences and behaviors
-- Test their ability to reflect on past actions and learn from experiences
-- RANDOMLY decide whether to personalize - most questions should be GENERAL
-- Only occasionally (20-30%) reference department/city, very rarely (10-15%) use their name
-- Most questions should be general firefighter questions that apply to any candidate
-
-EXAMPLES OF GOOD BEHAVIORAL QUESTIONS:
-- "Tell us about a time when you had to work under extreme pressure."
-- "Describe a situation where you had to resolve a conflict with a team member."
-- "Give me an example of a time when you had to make a difficult decision quickly."
-- "Share an experience where you had to adapt to a sudden change in plans."
-- "Can you recall a time when you had to step up and take leadership in a challenging situation?"
-
-The question should ask about past experiences and behaviors, not hypothetical future scenarios.`;
+        questionStrategy = `BEHAVIORAL question (past experiences). Formats: "Tell us about a time when...", "Describe a situation where...", "Give me an example of...". DO NOT use "How would you handle..." (that's situational).`;
       } else if (selectedCategory === "Resume-Based") {
-        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) SPECIFICALLY personalized to this candidate's COMPLETE resume and background.${personalizationContext}
-
-CRITICAL PERSONALIZATION REQUIREMENTS:
-- Reference their ACTUAL experience from ALL past jobs (fire-related AND non-fire-related jobs like construction, retail, customer service, healthcare, etc.)
-- Reference their certifications, skills, and achievements from ALL their work experience
-- RANDOMLY decide whether to use their name (${profileName ? profileName : 'if provided'}) - only about 10-15% of the time
-- Connect the question to their COMPLETE background while still testing general firefighter competencies
-- Make it feel like the panel researched their ENTIRE resume and is asking a tailored question
-- RANDOMLY decide whether to mention department - only about 20-30% of the time
-- Examples: 
-  * If they have construction experience, ask about safety protocols or working in teams
-  * If they have customer service experience, ask about communication or conflict resolution
-  * If they have healthcare experience, ask about medical scenarios or patient care
-  * If they have retail experience, ask about following procedures or handling stress
-  * If they have EMR certification, ask about a medical scenario
-  * Draw from ALL their past jobs, not just fire-related experience
-
-IMPORTANT: Reference ALL their work history, not just fire-related jobs. Past jobs provide valuable transferable skills and experiences that are relevant to firefighting. However, keep it general enough that it tests their judgment and understanding, not just their specific past. Mix resume-specific elements with general firefighter competencies.`;
+        questionStrategy = `Resume-based ${questionTypeToUse} question. Reference their actual experience from ALL past jobs (fire and non-fire). Connect to their background while testing general firefighter competencies.`;
       } else if (selectedCategory === "City & Department Specific") {
-        questionStrategy = `CRITICAL: Generate a KNOWLEDGE-TESTING question (NOT behavioral or situational) that asks about SPECIFIC FACTS regarding ${profileCity || 'the city'} and ${profileDepartmentName || 'the department'}.${personalizationContext}
-
-THIS CATEGORY IS FOR KNOWLEDGE TESTS ONLY - NOT BEHAVIORAL/SITUATIONAL QUESTIONS:
-- DO NOT ask "How would you handle..." or "Tell us about a time..."
-- DO NOT ask about hypothetical scenarios or past experiences
-- DO ask "Who is...", "What is...", "How many...", "When did...", "What is the..."
-- The question MUST test factual knowledge that a well-prepared candidate should know
-
-REQUIRED KNOWLEDGE AREAS TO TEST (use city research data):
-1. City Leadership: "Who is the mayor of ${profileCity || 'this city'}?" "What are the mayor's priorities for emergency services?"
-2. Fire Department Leadership: "Who is the fire chief of ${profileDepartmentName || 'this department'}?" "Who are the deputy chiefs?"
-3. Department Details: "How many members does ${profileDepartmentName || 'the department'} have?" "How many fire stations does ${profileDepartmentName || 'the department'} operate?"
-4. Union Information: "What is the local union number for ${profileDepartmentName || 'the fire department'}?" "What union represents ${profileDepartmentName || 'this department'}?"
-5. Department History: "When was ${profileDepartmentName || 'this department'} established?" "What is the history of ${profileDepartmentName || 'this department'}?"
-6. City/Department Facts: "What are the main industries in ${profileCity || 'this city'}?" "What challenges does ${profileCity || 'this city'} face?"
-
-QUESTION FORMAT EXAMPLES (USE THESE STYLES - VARIETY IS KEY):
-Leadership & Structure:
-- "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?"
-- "Who are the deputy chiefs of ${profileDepartmentName || 'this department'}?"
-- "What is the organizational structure of ${profileDepartmentName || 'this department'}?"
-- "Who is the mayor of ${profileCity || 'this city'}?"
-- "What city council members serve on the public safety committee for ${profileCity || 'this city'}?"
-
-Union & Labor:
-- "What is the local union number for ${profileDepartmentName || 'the fire department'} in ${profileCity || 'this city'}?"
-- "What union represents ${profileDepartmentName || 'this department'}?"
-- "Who is the union president for ${profileDepartmentName || 'this department'}?"
-
-Department Size & Resources:
-- "How many members does ${profileDepartmentName || 'the department'} currently have?"
-- "How many fire stations does ${profileDepartmentName || 'the department'} operate?"
-- "How many apparatus/engines does ${profileDepartmentName || 'the department'} have?"
-- "What is the annual budget for ${profileDepartmentName || 'this department'}?"
-
-Department History:
-- "When was ${profileDepartmentName || 'this department'} first established as a career department?"
-- "Can you tell us about the history of ${profileDepartmentName || 'this department'}?"
-- "What are some significant milestones in ${profileDepartmentName || 'this department'}'s history?"
-- "When did ${profileDepartmentName || 'this department'} transition from volunteer to career?"
-
-City & Department Context:
-- "What are the main industries in ${profileCity || 'this city'}?"
-- "What unique challenges does ${profileCity || 'this city'} face that affect fire department operations?"
-- "What is the population of ${profileCity || 'this city'}?"
-- "What response areas or coverage zones does ${profileDepartmentName || 'this department'} serve?"
-- "How does ${profileDepartmentName || 'this department'} coordinate with neighboring fire departments?"
-
-Programs & Initiatives:
-- "What community programs does ${profileDepartmentName || 'this department'} participate in?"
-- "What fire prevention programs does ${profileDepartmentName || 'this department'} offer?"
-- "What recent initiatives has ${profileDepartmentName || 'this department'} implemented?"
-- "Does ${profileDepartmentName || 'this department'} participate in any mutual aid agreements?"
-
-Values & Mission:
-- "What are the core values of ${profileDepartmentName || 'this department'}?"
-- "What is the mission statement of ${profileDepartmentName || 'this department'}?"
-- "What makes ${profileDepartmentName || 'this department'} unique or special?"
-
-Equipment & Capabilities:
-- "What specialized equipment or apparatus does ${profileDepartmentName || 'this department'} have?"
-- "Does ${profileDepartmentName || 'this department'} have any technical rescue capabilities?"
-- "What type of hazmat response capabilities does ${profileDepartmentName || 'this department'} have?"
-
-ABSOLUTELY FORBIDDEN QUESTION TYPES:
-- "How would you handle..." (situational)
-- "Tell us about a time..." (behavioral)
-- "What would you do if..." (hypothetical)
-- Any question about past experiences or future scenarios
-
-REQUIRED: The question MUST be a direct knowledge question asking about a specific fact. Use the city research data to find the actual facts and ask about them.
-
-IMPORTANT: Only ask knowledge questions about facts that are available in the city research data. If the research data doesn't contain specific information (e.g., "Information not found"), do NOT ask about that topic. Ask about facts that ARE available in the research.`;
+        questionStrategy = `KNOWLEDGE question (Who/What/When/How many) about ${profileCity || 'city'} and ${profileDepartmentName || 'department'} facts. Use city research data. FORBIDDEN: "How would you..." or "Tell us about a time...".`;
       } else {
-        questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) focused EXCLUSIVELY on the category: "${selectedCategory}".${personalizationContext}
-
-CRITICAL REQUIREMENTS:
-- The question MUST be about "${selectedCategory}" and ONLY this category
-- Do NOT generate questions about other categories like "Behavioural – High Stress", "Medical / EMR", "Teamwork", etc.
-- The question must directly test competencies related to "${selectedCategory}"
-- RANDOMLY decide whether to personalize - most questions should be GENERAL
-- Reference their name (${profileName ? profileName : 'if provided'}) very rarely (10-15% of questions), department/city only occasionally (20-30% of questions)
-- Most questions should be general firefighter questions that apply to any candidate
-- Make it relevant to this specific area while still being a general question that tests judgment
-
-CATEGORY-SPECIFIC GUIDANCE:
-- If category is "Behavioural – High Stress": Focus on stress management, pressure situations, crisis response
-- If category is "Behavioural – Conflict": Focus on conflict resolution, disagreements, interpersonal challenges
-- If category is "Safety & Accountability": Focus on safety protocols, hazard recognition, responsibility
-- If category is "Medical / EMR": Focus on medical emergencies, patient care, first aid scenarios
-- If category is "Teamwork": Focus on collaboration, team dynamics, working with others
-- If category is "Community Focus": Focus on public service, community relations, citizen interaction
-- If category is "Resilience": Focus on overcoming challenges, bouncing back, perseverance
-- If category is "Technical – Fireground": Focus on firefighting techniques, equipment, fireground operations
-
-IMPORTANT: The question MUST stay within the "${selectedCategory}" category. Do not drift into other competency areas.`;
+        questionStrategy = `${questionTypeToUse} question focused on "${selectedCategory}" category only.`;
       }
     } else if (practiceMode === "simulation") {
-      questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) for an interview simulation.${personalizationContext}
-
-CRITICAL REQUIREMENTS FOR FIREFIGHTER CANDIDATES:
-- This candidate is applying for an entry-level firefighter position (may or may not have firefighting experience)
-- ONLY ~10% of questions should be fire-related. ~90% should be GENERAL behavioral/situational questions
-- DO NOT ask about leading teams, making command decisions, or managing others (entry-level position)
-- DO ask about following orders, learning, being part of a team, respecting chain of command, adapting to new environments
-- Questions should reflect an entry-level position where they follow instructions and learn from experienced firefighters
-
-CRITICAL PERSONALIZATION REQUIREMENTS:
-- RANDOMLY decide whether to personalize - most questions should be GENERAL questions
-- Use the candidate's name (${profileName ? profileName : 'if provided'}) very rarely - only about 10-15% of questions, make it feel completely random
-- Reference their department "${profileDepartmentName || '[if provided]'}" only occasionally - about 20-30% of questions. Most questions should NOT mention the department
-- Reference their city "${profileCity || '[if provided]'}" only occasionally - about 20-30% of questions. Most questions should be general
-- Reference their COMPLETE resume background (ALL past jobs including non-fire jobs, experience, certifications, skills) naturally when it fits, but don't force it
-- Most questions should be general questions that apply to any candidate
-- Make personalization feel random and natural - don't include department/name in every question
-
-${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format asking about past experience (BEHAVIORAL question).' : 'Use "How would you handle..." format asking about a hypothetical situation (SITUATIONAL question).'} 
-
-IMPORTANT: Randomly vary between behavioral and situational questions. This is a ${questionTypeToUse} question.
-
-Vary the topics to simulate a real interview where questions come from different areas. Most questions should be general (70-80%), with occasional personalization (20-30%) that feels random.`;
+      questionStrategy = `Interview simulation ${questionTypeToUse} question. ${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format.' : 'Use "How would you handle..." format.'}`;
     } else {
-      questionStrategy = `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty) mixing general firefighter competencies with heavy personalization.${personalizationContext}
-
-CRITICAL PERSONALIZATION REQUIREMENTS:
-- RANDOMLY decide whether to personalize - most questions should be GENERAL
-- Reference their name only occasionally (10-15% of questions), department only occasionally (20-30% of questions), city only occasionally (20-30% of questions)
-- Most questions should be general firefighter questions that apply to any candidate
-- Make personalization feel random and natural - don't force it into every question
-- About 70-80% general questions, 20-30% personalized if profile information is available.`;
+      questionStrategy = `${questionTypeToUse} question mixing general competencies with optional personalization.`;
     }
     
-    // Add question bank reference as inspiration if available
-    // (This is defined earlier in the code, but ensure it's always initialized)
+    // Add question bank reference as inspiration if available (simplified)
     if (questionBankReference) {
-      bankReferenceText = `\n\nQUESTION BANK REFERENCE (use as inspiration and personalize it):
-- Type: ${questionBankReference.type}
-- Difficulty: ${questionBankReference.difficulty}
-- Category: ${questionBankReference.category}
-- Example question: "${questionBankReference.question}"
-
-CRITICAL INSTRUCTIONS:
-1. Use this question as a BASE/INSPIRATION - you can keep it general or personalize it
-2. RANDOMLY decide whether to personalize - most questions should be GENERAL
-3. If personalizing: incorporate their name very rarely (10-15%), department/city only occasionally (20-30%)
-4. Maintain the same TYPE (${questionBankReference.type}), DIFFICULTY level (${questionBankReference.difficulty}), and CATEGORY focus (${questionBankReference.category})
-5. Most questions should be general firefighter questions that apply to any candidate
-6. The final question should be UNIQUE, but doesn't need to be personalized - most should be general
-7. Make personalization feel random and natural - don't force department/name into every question
-
-Example transformation (RANDOM - sometimes keep it general):
-- Original: "What do you know about the demographics of [CITY]?"
-- General version: "What do you think are the biggest fire-related risks in a typical urban community and how would you prepare to serve that community?"
-- Personalized version (only 20-30% of the time): "Given your background in ${profileCity || 'this city'}, what do you think are the biggest fire-related risks in ${profileCity || 'this city'} and how would your experience help you serve this community?"
-
-Remember: Most questions should be GENERAL. Personalization should feel RANDOM.`;
+      bankReferenceText = `\nReference: ${questionBankReference.category} - "${questionBankReference.question.substring(0, 100)}..." (use as inspiration, keep general or personalize randomly)`;
     } else {
       bankReferenceText = "";
     }
@@ -1670,76 +1429,15 @@ CRITICAL: Most questions should be GENERAL. Personalization should feel RANDOM a
         },
         {
           role: "user",
-          content: `Generate a single ${profileJobType || 'firefighter'} interview question.
+          content: `Generate a ${questionTypeToUse} question (${difficultyToUse} difficulty)${selectedCategory ? ` for category: "${selectedCategory}"` : ''}.
 
 ${questionStrategy}${bankReferenceText}
 
-${resumeContext}${diversityContext}${userProfileContext}
+${resumeContext ? `Resume: ${resumeContext}` : ''}${diversityContext}${userProfileContext}
 
-CRITICAL PERSONALIZATION INSTRUCTIONS:
-- RANDOMLY decide whether to personalize - MOST questions should be GENERAL
-- If a name is provided, address them by name very rarely (only about 10-15% of the time, make it feel completely random)
-- If a department is provided, reference it only occasionally (about 20-30% of questions). Most questions should NOT mention the department
-- If city research is available, incorporate specific details only occasionally (about 20-30% of questions)
-- If resume information is available, reference their background naturally when it fits, but don't force it
-- Most questions should be general firefighter questions that apply to any candidate
-- Make personalization feel random and natural - don't include department/name in every question
-- About 70-80% of questions should be general, 20-30% can be personalized
+${selectedCategory === "City & Department Specific" ? `\nREQUIRED: Knowledge question (Who/What/When/How many) about ${profileCity || 'city'} and ${profileDepartmentName || 'department'} facts.` : selectedCategory && selectedCategory !== "Resume-Based" ? `\nCategory: "${selectedCategory}" only.` : ''}
 
-${selectedCategory === "City & Department Specific" ? `\n\nCRITICAL: This is the "City & Department Specific" category. The question MUST be a KNOWLEDGE-TESTING question asking about SPECIFIC FACTS about ${profileCity || 'the city'} and ${profileDepartmentName || 'the department'}.
-
-FORBIDDEN: Do NOT generate behavioral questions ("Tell us about a time...") or situational questions ("How would you handle..."). 
-REQUIRED: Generate a direct knowledge question like "Who is the fire chief?" or "What is the union number?" or "How many members does the department have?"
-
-Use the city research data provided above to find specific facts and ask about them.` : selectedCategory && selectedCategory !== "Resume-Based" ? `\nCRITICAL CATEGORY REQUIREMENT: The question MUST be about "${selectedCategory}" category ONLY. Do NOT generate questions about other categories. Stay strictly within the "${selectedCategory}" competency area.` : ''}
-
-IMPORTANT: This is a NEW, UNRELATED question. Do NOT make it a follow-up to previous questions. Generate a completely fresh question from a different topic/angle.
-
-The question must be highly personalized and feel authentic to this specific candidate's application.
-
-Requirements:
-${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !== "City & Department Specific" ? `- CRITICAL: The question MUST be about "${selectedCategory}" category. The category in your response MUST be exactly "${selectedCategory}". Do not use a different category.
-- Stay strictly within the "${selectedCategory}" competency area. Do NOT generate questions about other categories.
-` : practiceMode === "simulation" ? `- Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
-- Keep it broad and applicable to all candidates, not overly specific to their resume
-- Ensure diversity: Cover different topics and areas. If many questions have been asked, explore new categories/topics. Vary between: chain of command, ethics, conflict resolution, safety, teamwork, leadership, decision-making, communication, stress management, equipment, training, etc.
-` : `- Question should be a GENERAL situational/hypothetical question (like "How would you handle a situation if...")
-- Keep it broad and applicable to all candidates, not overly specific to their resume
-`}
-- Examples of good questions (REMEMBER: Only ~10% fire-related, ~90% general):
-${selectedCategory === "City & Department Specific" ? `  * KNOWLEDGE QUESTIONS (REQUIRED for this category - use city research data):
-    * Leadership: "${profileName ? profileName + ', ' : ''}Who is the fire chief of ${profileDepartmentName || 'this department'}?" "Who are the deputy chiefs?"
-    * Union: "What is the local union number for ${profileDepartmentName || 'the fire department'}?" "Who is the union president?"
-    * Department Size: "How many members does ${profileDepartmentName || 'the department'} have?" "How many fire stations does ${profileDepartmentName || 'the department'} operate?"
-    * City Leadership: "Who is the mayor of ${profileCity || 'this city'}?" "What are the mayor's priorities for emergency services?"
-    * History: "When was ${profileDepartmentName || 'this department'} established?" "What significant milestones has ${profileDepartmentName || 'this department'} achieved?"
-    * Programs: "What community programs does ${profileDepartmentName || 'this department'} participate in?" "What fire prevention programs does ${profileDepartmentName || 'this department'} offer?"
-    * City Context: "What are the main industries in ${profileCity || 'this city'}?" "What is the population of ${profileCity || 'this city'}?"
-    * Equipment: "What specialized equipment does ${profileDepartmentName || 'this department'} have?" "What technical rescue capabilities does ${profileDepartmentName || 'this department'} have?"
-    * Values: "What are the core values of ${profileDepartmentName || 'this department'}?" "What is the mission statement of ${profileDepartmentName || 'this department'}?"
-  * FORBIDDEN: "How would you handle..." or "Tell us about a time..." (these are behavioral/situational, NOT knowledge questions)` : `  * GENERAL Behavioral/Situational questions (90% of questions should be like these):
-  * "How would you handle a situation if you felt you weren't treated fairly?"
-  * "Tell us about a time when you had to follow instructions you didn't fully understand."
-  * "How would you handle a situation where two people you respect give you conflicting instructions?"
-  * "Describe a time when you had to work as part of a team under pressure."
-  * "How would you approach learning a completely new skill or procedure?"
-  * "Tell us about a time when you had to adapt to a completely new environment."
-  * "How would you handle a situation where you see someone doing something unsafe?"
-  * "Describe a time when you had to communicate something difficult to a supervisor."
-  * FIRE-RELATED questions (only ~10% of questions - use sparingly):
-  * "Your Captain orders you to get a radio from the engine. On the way a senior fire officer stops you and asks you to deliver an axe to the team on the roof right away. How would you handle this?"
-  * "If you were on a fire scene and noticed a safety violation, how would you address it as a new firefighter?"
-  * FORBIDDEN for entry-level candidates: "How would you keep YOUR team safe?" (they don't have a team - they ARE part of a team)
-  * FORBIDDEN for entry-level candidates: "How would you lead your crew?" (they're not a leader - they follow leaders)`}
-- Test: ${selectedCategory === "City & Department Specific" ? 'candidate knowledge of specific facts about the city and department' : 'chain of command, ethics, judgment, decision-making, conflict resolution'}
-- CRITICAL: The question MUST be completely different from any question already asked (see list above)
-${practiceMode === "simulation" ? `- If resume is provided and mode allows, occasionally reference different aspects of their background (certifications, experience, skills) but keep questions general enough for all candidates
-- Rotate through different question types: hypothetical scenarios, ethical dilemmas, chain of command situations, team dynamics, safety protocols, etc.
-` : ''}
-- Format: "Category: [category]\nQuestion: [question text]"
-${selectedCategory && selectedCategory !== "Resume-Based" && selectedCategory !== "City & Department Specific" ? `\nCRITICAL: The category in your response MUST be exactly "${selectedCategory}". Do not use a different category name.` : ''}
-
-Return ONLY the category and question in that format.`
+Format: "Category: [category]\nQuestion: [question text]"`
         }
       ]
     });
@@ -1878,11 +1576,16 @@ app.post('/api/analyze-answer', optionalAuth, async (req, res) => {
                                 question.toLowerCase().includes('how many') ||
                                 question.toLowerCase().includes('when was');
 
-    const resumeContext = resumeAnalysis 
-      ? `Resume Analysis: ${JSON.stringify(resumeAnalysis)}`
-      : resumeText 
-        ? `Resume (full): ${resumeText}`
-        : "No resume provided";
+    // Optimize resume context - send summary only, not full JSON
+    let resumeContext = "";
+    if (resumeAnalysis) {
+      const analysis = resumeAnalysis;
+      const jobs = (analysis.allJobs || analysis.workHistory || []).slice(0, 3);
+      resumeContext = `Resume: ${analysis.experience || 'N/A'} exp. Jobs: ${jobs.join("; ")}. Certs: ${Array.isArray(analysis.certifications) ? analysis.certifications.slice(0, 3).join(", ") : 'None'}. Skills: ${Array.isArray(analysis.skills) ? analysis.skills.slice(0, 5).join(", ") : 'General'}.`;
+    } else if (resumeText) {
+      // Only send first 300 chars if no analysis
+      resumeContext = `Resume: ${resumeText.substring(0, 300)}${resumeText.length > 300 ? "..." : ""}`;
+    }
     
     // Extract proper names from research data to help with transcript error matching
     function extractProperNames(text) {
@@ -1962,79 +1665,20 @@ The feedback MUST include:
       messages: [
         {
           role: "system",
-          content: "You are an expert firefighter interview coach. Your goal is to help candidates develop better answers. IMPORTANT: Distinguish between two types of questions:\n\n1. BEHAVIORAL QUESTIONS (past experiences): \"Tell me about a time when...\", \"Describe a situation where...\", \"Give me an example of...\" - Use STAR method (Situation-Task-Action-Result) for these\n2. HYPOTHETICAL/SITUATIONAL QUESTIONS: \"How would you...\", \"What would you do if...\", \"How would you approach...\" - DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.\n\nBe encouraging, specific, and actionable. Provide constructive feedback on what firefighter panels actually look for."
+          content: "You are an expert firefighter interview coach. Help candidates develop better answers.\n\nQuestion Types:\n1. BEHAVIORAL (past): \"Tell me about a time...\" → Use STAR method (Situation-Task-Action-Result)\n2. SITUATIONAL (hypothetical): \"How would you...\" → Focus on approach, reasoning, chain of command, ethics, steps.\n\nIMPORTANT: Answers are from SPEECH TRANSCRIPTS. Spelling variations (especially in names) are expected. Focus on CONTENT accuracy, not spelling. Phonetically similar names should be considered CORRECT.\n\nBe encouraging, specific, and actionable."
         },
         {
           role: "user",
-          content: ("You are an expert firefighter interview coach. Your goal is to help candidates develop better answers.\n\n" +
-            "Interview Question: " + question + "\n" +
-            `Question Category: ${category || 'General'}\n\n` +
-            "Candidate's Answer:\n" +
-            "\"" + String(answer).replace(/"/g, '\\"') + "\"\n\n" +
-            "⚠️ IMPORTANT: This answer is from a SPEECH TRANSCRIPT (speech-to-text). Spelling variations are expected and should NOT be penalized.\n" +
-            "- Focus on CONTENT ACCURACY, not exact spelling\n" +
-            "- For proper names (e.g., 'Eric' vs 'Erick', 'Peterson' vs 'Petersen'), consider them correct if phonetically similar\n" +
-            "- Only mark as incorrect if the CONTENT/FACTS are wrong, not spelling differences\n" +
-            "- Spelling errors in transcripts are NOT the candidate's fault\n\n" +
-            "Body Language Score (higher = more movement/fidgeting): " + (motionScore ?? "unknown") + "\n" +
-            resumeContext + knowledgeVerificationContext + "\n\n" +
+          content: ("Question: " + question + "\n" +
+            `Category: ${category || 'General'}\n` +
+            "Answer: \"" + String(answer).replace(/"/g, '\\"') + "\"\n" +
+            "Motion Score: " + (motionScore ?? "unknown") + "\n" +
+            (resumeContext ? resumeContext + "\n" : "") + 
+            knowledgeVerificationContext + "\n" +
             (isKnowledgeQuestion ? 
-            "CRITICAL: This is a KNOWLEDGE-TESTING question. You MUST:\n" +
-            "1. Verify the candidate's answer against the research data provided\n" +
-            "2. REMEMBER: This is a transcript - spelling variations (especially in names) are expected and should be considered CORRECT if phonetically similar\n" +
-            "3. State clearly if the answer was CORRECT, INCORRECT, or PARTIALLY CORRECT (based on CONTENT, not spelling)\n" +
-            "4. If incorrect or partially correct, provide the CORRECT answer from the research data\n" +
-            "5. List any specific facts they missed (but don't penalize spelling differences)\n" +
-            "6. Score based on CONTENT accuracy: 10/10 = completely correct with all details, lower scores only for factually incorrect or incomplete answers (NOT spelling)\n\n" :
-            "CRITICAL: First, determine if this is a BEHAVIORAL question (past experience) or HYPOTHETICAL question (future scenario).\n\n" +
-            "- BEHAVIORAL questions: \"Tell me about a time when...\", \"Describe a situation where...\", \"Give me an example of...\"\n" +
-            "  → Use STAR method (Situation-Task-Action-Result) for these.\n\n" +
-            "- HYPOTHETICAL questions: \"How would you...\", \"What would you do if...\", \"How would you approach...\"\n" +
-            "  → DO NOT use STAR method for these. Focus on: approach, reasoning, chain of command, ethics, decision-making process, specific steps they would take.\n\n") +
-            "Keep the response concise and easy to skim. Avoid long paragraphs. Use short sentences and compact sections.\n\n" +
-            "STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS (use markdown headings and bold labels with double asterisks, NOT star symbols):\n\n" +
-            "## Answer Summary & Score\n" +
-            (isKnowledgeQuestion ?
-            "- **Summary:** [1–2 short sentences summarizing what they said, and whether it was correct or incorrect. NOTE: Use the proper names list above - if transcript says 'Russ Simmons' but correct name is 'Ross Siemens', consider it CORRECT (phonetically similar)]\n" +
-            "- **Correctness:** [State clearly: CORRECT, INCORRECT, or PARTIALLY CORRECT. Remember: transcript variations in proper names (e.g., 'Russ' vs 'Ross', 'Simmons' vs 'Siemens') are CORRECT if phonetically similar. Only mark incorrect if FACTS are wrong or completely different person]\n" +
-            "- **Score:** [X/10 – based on CONTENT accuracy only. 10/10 = factually correct with all details. Do NOT deduct points for transcript/spelling differences - only deduct if facts are wrong]\n" :
-            "- **Summary:** [1–2 short sentences summarizing what they actually said, using plain language]\n" +
-            "- **Score:** [X/10 – very short explanation of why, and what would make it panel ready]\n") +
-            "\n\n## What You Did Well\n" +
-            "- **Positive 1:** [Short, specific positive point]" +
-            (isKnowledgeQuestion ? " (e.g., 'Got the fire chief's name correct' or 'Knew the union number')" : "") + "\n" +
-            "- **Positive 2:** [Short, specific positive point]\n" +
-            "- **Positive 3 (optional):** [Only if there is a clear extra strength]\n\n" +
-            "## What To Improve Next\n" +
-            "- **Focus 1:** " + (isKnowledgeQuestion ? "[If factually incorrect: 'The correct answer is [correct answer from research].' If missed details: 'You missed [specific fact].' DO NOT mention spelling - transcripts have spelling variations]" : "[Very practical change they can make next time]") + "\n" +
-            "- **Focus 2:** [Another clear tweak or addition]\n" +
-            "- **Focus 3 (optional):** [Only if it adds real value]\n\n" +
-            (isKnowledgeQuestion ? 
-            "## Correct Answer (from Research Data)\n" +
-            "Provide the complete, correct answer based on the research data:\n" +
-            "- **Correct Answer:** [The full, accurate answer from the research data]\n" +
-            "- **Additional Details:** [Any relevant context or additional facts they should know]\n\n" :
-            "## STAR or Approach Overview\n" +
-            "If this is a BEHAVIORAL (past) question, use STAR in a very compact way:\n" +
-            "- **Situation:** [1 short sentence: how they should set the scene]\n" +
-            "- **Task:** [1 short sentence: what the goal or responsibility was]\n" +
-            "- **Action:** [1–2 short sentences: the key actions they should clearly state]\n" +
-            "- **Result:** [1 short sentence: the outcome + what changed or improved]\n\n" +
-            "If this is a HYPOTHETICAL (future) question, DO NOT use STAR. Instead, describe a clear approach:\n" +
-            "- **Step 1:** [What they should do first and why]\n" +
-            "- **Step 2:** [Next key step, including chain of command / safety / communication]\n" +
-            "- **Step 3:** [How they would wrap up, debrief, or follow up]\n\n") +
-            "## Panel-Ready Answer\n" +
-            "Write a single, polished answer that would be panel ready on a real firefighter panel. Use the candidate's ideas and resume context but clean them up:\n" +
-            "- 1 short opening sentence that orients the panel.\n" +
-            "- 1–2 short paragraphs that walk through the STAR story or hypothetical approach clearly.\n" +
-            "- Keep language natural, plain, and realistic for a firefighter candidate.\n\n" +
-            "Rules:\n" +
-            "- Use markdown bullets (dash) with bold labels using double asterisks, e.g., use dash followed by space and double asterisks for bold.\n" +
-            "- Do NOT use star symbols or plain asterisks for formatting.\n" +
-            "- Keep each bullet to 1–2 short sentences.\n" +
-            "- Avoid walls of text – this should feel light, skimmable, and coach-like.\n" +
-            "- Be encouraging but very specific and honest about what needs to improve.")
+            "Knowledge question: Verify against research. Transcript spelling variations in names are CORRECT if phonetically similar. Score on CONTENT only.\n\nFormat:\n## Answer Summary & Score\n- **Summary:** [1–2 sentences, correctness]\n- **Correctness:** [CORRECT/INCORRECT/PARTIALLY CORRECT - content only]\n- **Score:** [X/10 - content accuracy]\n\n## What You Did Well\n- **Positive 1:** [Specific]\n- **Positive 2:** [Specific]\n\n## What To Improve Next\n- **Focus 1:** [Correct answer if wrong, or missing facts]\n- **Focus 2:** [Another tweak]\n\n## Correct Answer\n- **Correct Answer:** [From research]\n- **Additional Details:** [Context]\n\n## Panel-Ready Answer\n[1 opening + 1–2 paragraphs. Natural language.]" :
+            "Determine: BEHAVIORAL (past) → STAR. HYPOTHETICAL (future) → Approach/steps.\n\nFormat:\n## Answer Summary & Score\n- **Summary:** [1–2 sentences]\n- **Score:** [X/10 - brief why]\n\n## What You Did Well\n- **Positive 1:** [Specific]\n- **Positive 2:** [Specific]\n\n## What To Improve Next\n- **Focus 1:** [Practical change]\n- **Focus 2:** [Another tweak]\n\n## STAR or Approach\nBEHAVIORAL: **Situation:** [1 sentence] **Task:** [1 sentence] **Action:** [1–2 sentences] **Result:** [1 sentence]\n\nHYPOTHETICAL: **Step 1:** [First action] **Step 2:** [Chain of command/safety] **Step 3:** [Follow-up]\n\n## Panel-Ready Answer\n[1 opening + 1–2 paragraphs. Natural language.]") +
+            "\n\nUse markdown with **bold** labels. Keep concise, skimmable, encouraging.")
         }
       ]
     });
@@ -2117,16 +1761,28 @@ The feedback MUST include:
   }
 });
 
-// POST /api/parse-resume - Parse resume with AI
+// POST /api/parse-resume - Parse resume with AI (with caching)
 app.post('/api/parse-resume', async (req, res) => {
   try {
-    const { resumeText } = req.body;
+    const { resumeText, sessionId } = req.body;
 
     if (!resumeText || resumeText.trim().length === 0) {
       return res.status(400).json({ 
         error: 'Resume text is required',
         message: 'No resume text provided'
       });
+    }
+
+    // Check cache: if same resume text exists in profile, return cached analysis
+    if (sessionId) {
+      const profile = getUserProfile(sessionId);
+      const resumeHash = crypto.createHash('sha256').update(resumeText).digest('hex');
+      
+      // Check if we have cached analysis for this exact resume
+      if (profile.resumeTextHash === resumeHash && profile.resumeAnalysis) {
+        console.log(`[RESUME] Using cached analysis for session ${sessionId}`);
+        return res.json({ analysis: profile.resumeAnalysis });
+      }
     }
 
     console.log(`[RESUME] Parsing resume, text length: ${resumeText.length} characters`);
@@ -2192,6 +1848,19 @@ IMPORTANT: Include ALL jobs, not just fire-related ones. For example, if they wo
     }
 
     console.log('[RESUME] Successfully parsed resume analysis');
+    
+    // Cache the analysis if sessionId provided
+    if (sessionId) {
+      const profile = getUserProfile(sessionId);
+      const resumeHash = crypto.createHash('sha256').update(resumeText).digest('hex');
+      updateUserProfile(sessionId, { 
+        resumeAnalysis: resumeAnalysis,
+        resumeTextHash: resumeHash,
+        resumeText: resumeText // Also cache the text
+      });
+      console.log(`[RESUME] Cached analysis for session ${sessionId}`);
+    }
+    
     res.json({ analysis: resumeAnalysis });
   } catch (error) {
     console.error('[RESUME] Error parsing resume:', error);
@@ -2594,6 +2263,7 @@ function getUserProfile(sessionId) {
       voicePreference: null,
       resumeText: null,
       resumeAnalysis: null,
+      resumeTextHash: null, // Hash for caching
       cityResearch: null,
       conversationHistory: [],
       askedQuestions: [],
@@ -3335,25 +3005,12 @@ app.post('/api/areas-to-work-on', async (req, res) => {
         },
         {
           role: "user",
-          content: `Based on the candidate's recent interview practice sessions, analyze their performance and provide 2-3 key areas they should focus on improving for their firefighter interview panel.
+          content: `Analyze recent interview practice and provide 2-3 key areas to improve for firefighter interview panel.
 
-${personalizationContext ? `Candidate Context (for interview preparation):\n${personalizationContext}\n` : ''}Recent Answer Analyses:
-${feedbackSummary.map((a, i) => `
-Question ${i + 1} (${a.category}): ${a.question}
-Feedback: ${a.feedback.substring(0, 500)}...
-`).join('\n---\n')}
+${personalizationContext ? `Context: ${personalizationContext}\n` : ''}Recent Analyses:
+${feedbackSummary.map((a, i) => `Q${i + 1} (${a.category}): ${a.question.substring(0, 80)}... | Feedback: ${a.feedback.substring(0, 300)}...`).join('\n')}
 
-Instructions:
-- Identify the MOST IMPORTANT patterns across all their answers
-- Focus on areas where they consistently struggle or could improve
-- Be specific and actionable (not vague like "improve communication")
-- If you know their background (location, job type, experience level), reference it naturally when relevant
-- Write 2-3 sentences maximum
-- Be encouraging but honest
-- Update based on their recent performance (if they're improving, note it; if they're getting worse, address it)
-- Focus on what will have the biggest impact on their interview success
-
-Format your response as 2-3 clear, concise sentences that directly tell them what to work on.`
+Identify MOST IMPORTANT patterns. Be specific, actionable, encouraging. 2-3 sentences max.`
         }
       ],
       temperature: 0.7,

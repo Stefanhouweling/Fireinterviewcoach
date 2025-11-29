@@ -3668,7 +3668,7 @@
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ resumeText: text })
+        body: JSON.stringify({ resumeText: text, sessionId: getSessionId() })
       });
       
       console.log("[RESUME] Backend response status:", response.status);
@@ -4393,7 +4393,7 @@ Return ONLY the category and question.`
   // Track if we've already auto-opened the modal (to avoid showing it multiple times)
   let hasAutoOpenedAreasModal = false;
   
-  // Check if button should be shown and fetch/update areas to work on
+  // Check if button should be shown and fetch/update areas to work on (optimized - single call)
   async function checkAndShowAreasToWorkOnButton(autoOpen = false) {
     if (!areasToWorkOnBtn || questionCount < 5) return;
     
@@ -4401,7 +4401,6 @@ Return ONLY the category and question.`
     areasToWorkOnBtn.style.display = 'block';
     
     // If this is the first time reaching 5 questions and autoOpen is true, open the modal
-    // Add a delay to ensure feedback is fully displayed first
     if (autoOpen && !hasAutoOpenedAreasModal && areasToWorkOnModal) {
       hasAutoOpenedAreasModal = true;
       // Wait a moment for feedback to be fully displayed, then open the modal
@@ -4413,25 +4412,10 @@ Return ONLY the category and question.`
       }, 1500); // 1.5 second delay to let user see their feedback first
     }
     
-    // Try to pre-generate data in the background (non-blocking)
-    try {
-      const sessionId = getSessionId();
-      
-      // Check if we have existing data
-      const response = await fetch(`${BACKEND_URL}/api/areas-to-work-on?sessionId=${sessionId}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (!data.hasData) {
-          // Need to generate it - do this in background, don't wait
-          generateAreasToWorkOn().catch(err => {
-            console.warn('Background generation of areas to work on failed:', err);
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Error checking areas to work on:', err);
-      // Don't prevent button from showing if API fails
-    }
+    // Pre-generate in background (non-blocking, single call)
+    generateAreasToWorkOn().catch(err => {
+      console.warn('Background generation of areas to work on failed:', err);
+    });
   }
   
   // Generate or update areas to work on
@@ -4458,7 +4442,7 @@ Return ONLY the category and question.`
     }
   }
   
-  // Load and display areas to work on in modal
+  // Load and display areas to work on in modal (optimized - single call)
   async function loadAreasToWorkOn() {
     if (!areasToWorkOnContent) return;
     
@@ -4472,28 +4456,8 @@ Return ONLY the category and question.`
     `;
     
     try {
-      const sessionId = getSessionId();
-      
-      // First try to get existing data
-      let response = await fetch(`${BACKEND_URL}/api/areas-to-work-on?sessionId=${sessionId}`);
-      let areasToWorkOn = null;
-      
-      if (response.ok) {
-        const data = await response.json();
-        areasToWorkOn = data.areasToWorkOn;
-      }
-      
-      // If no data or we want to refresh, generate new
-      if (!areasToWorkOn) {
-        areasToWorkOn = await generateAreasToWorkOn();
-      } else {
-        // Regenerate to get latest insights
-        try {
-          areasToWorkOn = await generateAreasToWorkOn();
-        } catch (err) {
-          console.warn('Failed to regenerate, using existing:', err);
-        }
-      }
+      // Single call - generate/regenerate (POST handles both cases)
+      const areasToWorkOn = await generateAreasToWorkOn();
       
       // Display the content
       if (areasToWorkOn) {
@@ -6544,6 +6508,23 @@ Return ONLY the category and question.`
   
   let googleClientId = null;
   let googleInitialized = false;
+  let configCache = null; // Cache config to avoid multiple fetches
+  
+  // Fetch and cache config (optimized - only fetch once)
+  async function fetchConfig() {
+    if (configCache) return configCache;
+    
+    try {
+      const configRes = await fetch(`${BACKEND_URL}/api/config`);
+      if (configRes.ok) {
+        configCache = await configRes.json();
+        return configCache;
+      }
+    } catch (e) {
+      console.error('[CONFIG] Failed to fetch:', e);
+    }
+    return null;
+  }
   
   // Initialize Google Sign-In on page load
   async function initializeGoogleSignIn() {
@@ -6580,15 +6561,8 @@ Return ONLY the category and question.`
         }
         
         console.log('[GOOGLE SIGN-IN] Fetching config from:', `${BACKEND_URL}/api/config`);
-        const configRes = await fetch(`${BACKEND_URL}/api/config`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (configRes.ok) {
-          const config = await configRes.json();
+        const config = await fetchConfig();
+        if (config) {
           googleClientId = config.googleClientId || null;
           console.log('[GOOGLE SIGN-IN] Config response:', config);
           console.log('[GOOGLE SIGN-IN] Google Client ID:', googleClientId ? `Found (${googleClientId.substring(0, 20)}...)` : 'NOT FOUND');
@@ -6635,24 +6609,12 @@ Return ONLY the category and question.`
   
   async function handleGoogleSignIn() {
     try {
-      // Always fetch config fresh when button is clicked
+      // Use cached config or fetch if needed
       if (!googleClientId) {
-        try {
-          // Ensure BACKEND_URL is defined
-          if (typeof BACKEND_URL === 'undefined') {
-            console.error('BACKEND_URL is not defined - check script loading order');
-            return;
-          }
-          const configRes = await fetch(`${BACKEND_URL}/api/config`);
-          if (configRes.ok) {
-            const config = await configRes.json();
-            googleClientId = config.googleClientId;
-            console.log('Fetched Google Client ID on button click:', googleClientId ? 'Found' : 'Not found');
-          } else {
-            console.error('Config endpoint error:', configRes.status);
-          }
-        } catch (e) {
-          console.error('Failed to fetch config:', e);
+        const config = await fetchConfig();
+        if (config) {
+          googleClientId = config.googleClientId;
+          console.log('Fetched Google Client ID on button click:', googleClientId ? 'Found' : 'Not found');
         }
       }
       
@@ -6668,11 +6630,9 @@ Return ONLY the category and question.`
       
       if (!googleClientId) {
         console.error('[GOOGLE SIGN-IN] No client ID available - attempting to fetch again...');
-        try {
-          const configRes = await fetch(`${BACKEND_URL}/api/config`);
-          if (configRes.ok) {
-            const config = await configRes.json();
-            googleClientId = config.googleClientId;
+        const config = await fetchConfig();
+        if (config) {
+          googleClientId = config.googleClientId;
             if (!googleClientId) {
               alert('Google Sign-In is not configured on the backend. Please ensure GOOGLE_CLIENT_ID is set in your Render environment variables and the backend service has been restarted.');
               return;

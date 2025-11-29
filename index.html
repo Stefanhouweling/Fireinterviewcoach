@@ -6584,10 +6584,23 @@ Return ONLY the category and question.`
           await updateCreditsDisplay();
           const loginModal = document.getElementById('loginModal');
           if (loginModal) loginModal.style.display = 'none';
-          // Clear the flag if login was opened from onboarding (successful login means they don't need onboarding)
+          
+          // Handle login from onboarding modal
           if (window.loginOpenedFromOnboarding) {
             window.loginOpenedFromOnboarding = false;
+            // Close onboarding modal
+            const onboardingModal = document.getElementById('onboardingModal');
+            if (onboardingModal) {
+              onboardingModal.style.display = 'none';
+            }
+            // Show main app
+            const mainApp = document.getElementById('mainApp');
+            if (mainApp) {
+              mainApp.style.display = 'block';
+            }
+            document.body.style.overflow = 'auto';
           }
+          
           // If coming from paywall, show credit purchase
           if (window.showCreditPurchaseAfterAuth) {
             window.showCreditPurchaseAfterAuth = false;

@@ -1432,12 +1432,85 @@ app.post('/api/question', async (req, res) => {
     }
     
     if (practiceMode === "specific" && selectedCategory) {
+      // Build diversity context for all categories
+      const categoryQuestionsAsked = profileAskedQuestions.filter((q, idx) => {
+        const qCategory = profileAskedCategories[idx];
+        return qCategory && qCategory.toLowerCase() === selectedCategory.toLowerCase();
+      });
+      
+      let diversityHint = "";
+      if (categoryQuestionsAsked.length > 0) {
+        diversityHint = `\n\nCRITICAL: You have already asked ${categoryQuestionsAsked.length} question(s) in this category. The previous question(s) were: ${categoryQuestionsAsked.slice(-3).map(q => `"${q.substring(0, 60)}..."`).join(", ")}. Generate a COMPLETELY DIFFERENT question with a different scenario, angle, or focus. DO NOT repeat similar scenarios or topics.`;
+      }
+      
       if (selectedCategory === "Situational") {
-        questionStrategy = `SITUATIONAL question (hypothetical scenario). Formats: "How would you handle...", "What would you do if...", "How would you approach...". DO NOT use "Tell us about a time..." (that's behavioral).`;
+        // Track situational scenarios to ensure variety
+        const scenarioTypes = ['conflict', 'safety', 'ethics', 'chain of command', 'teamwork', 'stress', 'learning', 'communication', 'decision', 'supervision'];
+        const askedScenarios = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('conflict') || qLower.includes('disagree')) return 'conflict';
+          if (qLower.includes('safety') || qLower.includes('unsafe')) return 'safety';
+          if (qLower.includes('ethic') || qLower.includes('wrong')) return 'ethics';
+          if (qLower.includes('order') || qLower.includes('command') || qLower.includes('supervisor')) return 'chain of command';
+          if (qLower.includes('team') || qLower.includes('colleague')) return 'teamwork';
+          if (qLower.includes('stress') || qLower.includes('pressure')) return 'stress';
+          if (qLower.includes('learn') || qLower.includes('new') || qLower.includes('training')) return 'learning';
+          if (qLower.includes('communicat') || qLower.includes('explain')) return 'communication';
+          if (qLower.includes('decide') || qLower.includes('choose')) return 'decision';
+          if (qLower.includes('supervis') || qLower.includes('boss')) return 'supervision';
+          return null;
+        }).filter(Boolean);
+        const unusedScenarios = scenarioTypes.filter(s => !askedScenarios.includes(s));
+        
+        const scenarioHint = unusedScenarios.length > 0
+          ? ` Focus on a DIFFERENT scenario type: ${unusedScenarios.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different situation, context, or angle.";
+        
+        questionStrategy = `SITUATIONAL question (hypothetical scenario). Formats: "How would you handle...", "What would you do if...", "How would you approach...". DO NOT use "Tell us about a time..." (that's behavioral).${scenarioHint}${diversityHint}`;
       } else if (selectedCategory === "Behavioral") {
-        questionStrategy = `BEHAVIORAL question (past experiences). Formats: "Tell us about a time when...", "Describe a situation where...", "Give me an example of...". DO NOT use "How would you handle..." (that's situational).`;
+        // Track behavioral experience types to ensure variety
+        const experienceTypes = ['conflict', 'mistake', 'challenge', 'teamwork', 'stress', 'learning', 'leadership', 'communication', 'pressure', 'adaptation'];
+        const askedExperiences = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('conflict') || qLower.includes('disagree')) return 'conflict';
+          if (qLower.includes('mistake') || qLower.includes('error')) return 'mistake';
+          if (qLower.includes('challenge') || qLower.includes('difficult')) return 'challenge';
+          if (qLower.includes('team') || qLower.includes('group')) return 'teamwork';
+          if (qLower.includes('stress') || qLower.includes('pressure')) return 'stress';
+          if (qLower.includes('learn') || qLower.includes('new')) return 'learning';
+          if (qLower.includes('lead') || qLower.includes('manage')) return 'leadership';
+          if (qLower.includes('communicat') || qLower.includes('explain')) return 'communication';
+          if (qLower.includes('pressure') || qLower.includes('urgent')) return 'pressure';
+          if (qLower.includes('adapt') || qLower.includes('change')) return 'adaptation';
+          return null;
+        }).filter(Boolean);
+        const unusedExperiences = experienceTypes.filter(e => !askedExperiences.includes(e));
+        
+        const experienceHint = unusedExperiences.length > 0
+          ? ` Focus on a DIFFERENT experience type: ${unusedExperiences.slice(0, 3).join(", ")}.`
+          : " Vary the experience significantly - use a completely different situation, context, or angle.";
+        
+        questionStrategy = `BEHAVIORAL question (past experiences). Formats: "Tell us about a time when...", "Describe a situation where...", "Give me an example of...". DO NOT use "How would you handle..." (that's situational).${experienceHint}${diversityHint}`;
       } else if (selectedCategory === "Resume-Based") {
-        questionStrategy = `Resume-based ${questionTypeToUse} question. Reference their actual experience from ALL past jobs (fire and non-fire). Connect to their background while testing general firefighter competencies.`;
+        // Track which resume aspects have been covered
+        const resumeAspects = profileResumeAnalysis ? [
+          ...(Array.isArray(profileResumeAnalysis.certifications) ? profileResumeAnalysis.certifications.slice(0, 5) : []),
+          ...(Array.isArray(profileResumeAnalysis.skills) ? profileResumeAnalysis.skills.slice(0, 5) : []),
+          ...(Array.isArray(profileResumeAnalysis.workHistory) ? profileResumeAnalysis.workHistory.slice(0, 5).map(j => j.split(' with details')[0]) : [])
+        ] : [];
+        
+        const askedResumeAspects = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          return resumeAspects.find(aspect => qLower.includes(aspect.toLowerCase()));
+        }).filter(Boolean);
+        
+        const unusedAspects = resumeAspects.filter(a => !askedResumeAspects.includes(a));
+        
+        const resumeHint = unusedAspects.length > 0
+          ? ` Reference DIFFERENT aspects of their background: ${unusedAspects.slice(0, 3).join(", ")}.`
+          : " Reference different parts of their experience - vary which jobs, skills, or certifications you mention.";
+        
+        questionStrategy = `Resume-based ${questionTypeToUse} question. Reference their actual experience from ALL past jobs (fire and non-fire). Connect to their background while testing general firefighter competencies.${resumeHint}${diversityHint}`;
       } else if (selectedCategory === "City & Department Specific") {
         // Extract what knowledge questions have already been asked
         const knowledgeQuestionsAsked = profileAskedQuestions.filter(q => {
@@ -1495,8 +1568,250 @@ app.post('/api/question', async (req, res) => {
           : `\n\nCRITICAL: All major topics have been covered. Vary the question significantly - ask about different aspects, details, or related facts.`;
         
         questionStrategy = `KNOWLEDGE question (Who/What/When/How many) about ${profileCity || 'city'} and ${profileDepartmentName || 'department'} facts. Use city research data. FORBIDDEN: "How would you..." or "Tell us about a time...".${diversityHint}`;
+      } else if (selectedCategory === "Chain of Command") {
+        // Track chain of command topics to ensure variety
+        const chainTopics = ['following orders', 'disagreeing with supervisor', 'questioning authority', 'reporting violations', 'chain of command structure', 'delegation', 'supervisor relationship', 'protocol adherence', 'escalation', 'respect for authority'];
+        const askedChainTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('order') || qLower.includes('instruct')) return 'following orders';
+          if (qLower.includes('disagree') || qLower.includes('disagreement')) return 'disagreeing with supervisor';
+          if (qLower.includes('question') || qLower.includes('challenge authority')) return 'questioning authority';
+          if (qLower.includes('report') || qLower.includes('violation')) return 'reporting violations';
+          if (qLower.includes('structure') || qLower.includes('hierarchy')) return 'chain of command structure';
+          if (qLower.includes('delegat') || qLower.includes('assign')) return 'delegation';
+          if (qLower.includes('supervisor') || qLower.includes('boss')) return 'supervisor relationship';
+          if (qLower.includes('protocol') || qLower.includes('procedure')) return 'protocol adherence';
+          if (qLower.includes('escalat') || qLower.includes('higher')) return 'escalation';
+          if (qLower.includes('respect') || qLower.includes('authority')) return 'respect for authority';
+          return null;
+        }).filter(Boolean);
+        const unusedChainTopics = chainTopics.filter(t => !askedChainTopics.includes(t));
+        const chainHint = unusedChainTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedChainTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Chain of Command.${chainHint}${diversityHint}`;
+      } else if (selectedCategory === "Ethics & Integrity") {
+        // Track ethics topics to ensure variety
+        const ethicsTopics = ['conflict of interest', 'honesty', 'whistleblowing', 'moral dilemma', 'personal values', 'professional boundaries', 'bribery/corruption', 'confidentiality', 'fairness', 'transparency'];
+        const askedEthicsTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('conflict of interest') || qLower.includes('personal interest')) return 'conflict of interest';
+          if (qLower.includes('honest') || qLower.includes('truth')) return 'honesty';
+          if (qLower.includes('whistle') || qLower.includes('report wrongdoing')) return 'whistleblowing';
+          if (qLower.includes('dilemma') || qLower.includes('moral choice')) return 'moral dilemma';
+          if (qLower.includes('value') || qLower.includes('believe')) return 'personal values';
+          if (qLower.includes('boundary') || qLower.includes('professional relationship')) return 'professional boundaries';
+          if (qLower.includes('bribe') || qLower.includes('corrupt')) return 'bribery/corruption';
+          if (qLower.includes('confidential') || qLower.includes('private')) return 'confidentiality';
+          if (qLower.includes('fair') || qLower.includes('equal')) return 'fairness';
+          if (qLower.includes('transparent') || qLower.includes('open')) return 'transparency';
+          return null;
+        }).filter(Boolean);
+        const unusedEthicsTopics = ethicsTopics.filter(t => !askedEthicsTopics.includes(t));
+        const ethicsHint = unusedEthicsTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedEthicsTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different ethical situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Ethics & Integrity.${ethicsHint}${diversityHint}`;
+      } else if (selectedCategory === "Safety & Accountability") {
+        // Track safety topics to ensure variety
+        const safetyTopics = ['unsafe practice', 'safety violation', 'equipment safety', 'personal protective equipment', 'safety protocol', 'accountability', 'safety reporting', 'risk assessment', 'safety training', 'incident prevention'];
+        const askedSafetyTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('unsafe') || qLower.includes('dangerous practice')) return 'unsafe practice';
+          if (qLower.includes('violation') || qLower.includes('safety rule')) return 'safety violation';
+          if (qLower.includes('equipment') && qLower.includes('safety')) return 'equipment safety';
+          if (qLower.includes('ppe') || qLower.includes('protective equipment')) return 'personal protective equipment';
+          if (qLower.includes('protocol') || qLower.includes('procedure')) return 'safety protocol';
+          if (qLower.includes('accountable') || qLower.includes('responsible')) return 'accountability';
+          if (qLower.includes('report') && qLower.includes('safety')) return 'safety reporting';
+          if (qLower.includes('risk') || qLower.includes('assess')) return 'risk assessment';
+          if (qLower.includes('training') && qLower.includes('safety')) return 'safety training';
+          if (qLower.includes('prevent') || qLower.includes('incident')) return 'incident prevention';
+          return null;
+        }).filter(Boolean);
+        const unusedSafetyTopics = safetyTopics.filter(t => !askedSafetyTopics.includes(t));
+        const safetyHint = unusedSafetyTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedSafetyTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different safety situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Safety & Accountability.${safetyHint}${diversityHint}`;
+      } else if (selectedCategory === "Teamwork & Collaboration") {
+        // Track teamwork topics to ensure variety
+        const teamworkTopics = ['team conflict', 'collaboration', 'supporting teammates', 'team communication', 'shared responsibility', 'team dynamics', 'helping others', 'team goals', 'diverse perspectives', 'team problem-solving'];
+        const askedTeamworkTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('conflict') && qLower.includes('team')) return 'team conflict';
+          if (qLower.includes('collaborat') || qLower.includes('work together')) return 'collaboration';
+          if (qLower.includes('support') || qLower.includes('help teammate')) return 'supporting teammates';
+          if (qLower.includes('communicat') && qLower.includes('team')) return 'team communication';
+          if (qLower.includes('responsib') && qLower.includes('team')) return 'shared responsibility';
+          if (qLower.includes('dynamic') || qLower.includes('team member')) return 'team dynamics';
+          if (qLower.includes('help') || qLower.includes('assist')) return 'helping others';
+          if (qLower.includes('goal') && qLower.includes('team')) return 'team goals';
+          if (qLower.includes('perspective') || qLower.includes('diverse')) return 'diverse perspectives';
+          if (qLower.includes('problem') && qLower.includes('team')) return 'team problem-solving';
+          return null;
+        }).filter(Boolean);
+        const unusedTeamworkTopics = teamworkTopics.filter(t => !askedTeamworkTopics.includes(t));
+        const teamworkHint = unusedTeamworkTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedTeamworkTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different teamwork situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Teamwork & Collaboration.${teamworkHint}${diversityHint}`;
+      } else if (selectedCategory === "Conflict Resolution") {
+        // Track conflict resolution topics to ensure variety
+        const conflictTopics = ['interpersonal conflict', 'disagreement', 'mediation', 'de-escalation', 'compromise', 'finding common ground', 'difficult conversation', 'handling criticism', 'resolving disputes', 'managing tension'];
+        const askedConflictTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('interpersonal') || qLower.includes('between people')) return 'interpersonal conflict';
+          if (qLower.includes('disagree') || qLower.includes('disagreement')) return 'disagreement';
+          if (qLower.includes('mediat') || qLower.includes('mediate')) return 'mediation';
+          if (qLower.includes('de-escalat') || qLower.includes('calm')) return 'de-escalation';
+          if (qLower.includes('compromise') || qLower.includes('meet halfway')) return 'compromise';
+          if (qLower.includes('common ground') || qLower.includes('agree')) return 'finding common ground';
+          if (qLower.includes('difficult conversation') || qLower.includes('hard talk')) return 'difficult conversation';
+          if (qLower.includes('criticism') || qLower.includes('criticize')) return 'handling criticism';
+          if (qLower.includes('dispute') || qLower.includes('disagreement')) return 'resolving disputes';
+          if (qLower.includes('tension') || qLower.includes('stressful')) return 'managing tension';
+          return null;
+        }).filter(Boolean);
+        const unusedConflictTopics = conflictTopics.filter(t => !askedConflictTopics.includes(t));
+        const conflictHint = unusedConflictTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedConflictTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different conflict situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Conflict Resolution.${conflictHint}${diversityHint}`;
+      } else if (selectedCategory === "Decision Making") {
+        // Track decision making topics to ensure variety
+        const decisionTopics = ['quick decision', 'pressure decision', 'ethical decision', 'risk assessment', 'limited information', 'multiple options', 'consequences', 'prioritization', 'critical thinking', 'problem-solving'];
+        const askedDecisionTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('quick') || qLower.includes('fast decision')) return 'quick decision';
+          if (qLower.includes('pressure') || qLower.includes('urgent')) return 'pressure decision';
+          if (qLower.includes('ethic') || qLower.includes('moral')) return 'ethical decision';
+          if (qLower.includes('risk') || qLower.includes('assess')) return 'risk assessment';
+          if (qLower.includes('limited info') || qLower.includes('not enough information')) return 'limited information';
+          if (qLower.includes('option') || qLower.includes('choice')) return 'multiple options';
+          if (qLower.includes('consequence') || qLower.includes('outcome')) return 'consequences';
+          if (qLower.includes('priorit') || qLower.includes('important')) return 'prioritization';
+          if (qLower.includes('critical think') || qLower.includes('analyze')) return 'critical thinking';
+          if (qLower.includes('problem') || qLower.includes('solve')) return 'problem-solving';
+          return null;
+        }).filter(Boolean);
+        const unusedDecisionTopics = decisionTopics.filter(t => !askedDecisionTopics.includes(t));
+        const decisionHint = unusedDecisionTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedDecisionTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different decision-making situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Decision Making.${decisionHint}${diversityHint}`;
+      } else if (selectedCategory === "Communication") {
+        // Track communication topics to ensure variety
+        const communicationTopics = ['clear communication', 'difficult message', 'listening skills', 'written communication', 'public speaking', 'explaining complex topics', 'non-verbal communication', 'active listening', 'feedback delivery', 'cross-cultural communication'];
+        const askedCommunicationTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('clear') || qLower.includes('understand')) return 'clear communication';
+          if (qLower.includes('difficult') || qLower.includes('hard message')) return 'difficult message';
+          if (qLower.includes('listen') || qLower.includes('hear')) return 'listening skills';
+          if (qLower.includes('written') || qLower.includes('email') || qLower.includes('report')) return 'written communication';
+          if (qLower.includes('public speak') || qLower.includes('present')) return 'public speaking';
+          if (qLower.includes('explain') || qLower.includes('complex')) return 'explaining complex topics';
+          if (qLower.includes('non-verbal') || qLower.includes('body language')) return 'non-verbal communication';
+          if (qLower.includes('active listen') || qLower.includes('engage')) return 'active listening';
+          if (qLower.includes('feedback') || qLower.includes('constructive')) return 'feedback delivery';
+          if (qLower.includes('cultural') || qLower.includes('diverse')) return 'cross-cultural communication';
+          return null;
+        }).filter(Boolean);
+        const unusedCommunicationTopics = communicationTopics.filter(t => !askedCommunicationTopics.includes(t));
+        const communicationHint = unusedCommunicationTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedCommunicationTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different communication situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Communication.${communicationHint}${diversityHint}`;
+      } else if (selectedCategory === "Stress Management") {
+        // Track stress management topics to ensure variety
+        const stressTopics = ['high pressure', 'time pressure', 'emotional stress', 'physical stress', 'coping strategies', 'maintaining composure', 'work-life balance', 'burnout prevention', 'stressful situation', 'managing workload'];
+        const askedStressTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('pressure') || qLower.includes('stressful')) return 'high pressure';
+          if (qLower.includes('time') && qLower.includes('pressure')) return 'time pressure';
+          if (qLower.includes('emotional') || qLower.includes('feelings')) return 'emotional stress';
+          if (qLower.includes('physical') && qLower.includes('stress')) return 'physical stress';
+          if (qLower.includes('coping') || qLower.includes('manage stress')) return 'coping strategies';
+          if (qLower.includes('composure') || qLower.includes('calm')) return 'maintaining composure';
+          if (qLower.includes('work-life') || qLower.includes('balance')) return 'work-life balance';
+          if (qLower.includes('burnout') || qLower.includes('exhaust')) return 'burnout prevention';
+          if (qLower.includes('stressful situation') || qLower.includes('difficult')) return 'stressful situation';
+          if (qLower.includes('workload') || qLower.includes('overwhelm')) return 'managing workload';
+          return null;
+        }).filter(Boolean);
+        const unusedStressTopics = stressTopics.filter(t => !askedStressTopics.includes(t));
+        const stressHint = unusedStressTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedStressTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different stress management situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Stress Management.${stressHint}${diversityHint}`;
+      } else if (selectedCategory === "Leadership") {
+        // Track leadership topics to ensure variety
+        const leadershipTopics = ['leading team', 'mentoring', 'delegation', 'inspiring others', 'leading by example', 'handling difficult team member', 'decision making as leader', 'motivating team', 'conflict resolution as leader', 'developing others'];
+        const askedLeadershipTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('lead') && qLower.includes('team')) return 'leading team';
+          if (qLower.includes('mentor') || qLower.includes('teach')) return 'mentoring';
+          if (qLower.includes('delegat') || qLower.includes('assign')) return 'delegation';
+          if (qLower.includes('inspire') || qLower.includes('motivate')) return 'inspiring others';
+          if (qLower.includes('example') || qLower.includes('model')) return 'leading by example';
+          if (qLower.includes('difficult') && qLower.includes('team')) return 'handling difficult team member';
+          if (qLower.includes('decision') && qLower.includes('leader')) return 'decision making as leader';
+          if (qLower.includes('motivat') || qLower.includes('encourage')) return 'motivating team';
+          if (qLower.includes('conflict') && qLower.includes('leader')) return 'conflict resolution as leader';
+          if (qLower.includes('develop') || qLower.includes('grow')) return 'developing others';
+          return null;
+        }).filter(Boolean);
+        const unusedLeadershipTopics = leadershipTopics.filter(t => !askedLeadershipTopics.includes(t));
+        const leadershipHint = unusedLeadershipTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedLeadershipTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different leadership situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Leadership.${leadershipHint}${diversityHint}`;
+      } else if (selectedCategory === "Medical / EMR") {
+        // Track medical/EMR topics to ensure variety
+        const medicalTopics = ['patient assessment', 'medical emergency', 'trauma care', 'vital signs', 'medication administration', 'airway management', 'cardiac care', 'pediatric care', 'medical protocol', 'patient communication'];
+        const askedMedicalTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('assess') || qLower.includes('evaluate patient')) return 'patient assessment';
+          if (qLower.includes('emergency') || qLower.includes('medical')) return 'medical emergency';
+          if (qLower.includes('trauma') || qLower.includes('injury')) return 'trauma care';
+          if (qLower.includes('vital') || qLower.includes('pulse') || qLower.includes('blood pressure')) return 'vital signs';
+          if (qLower.includes('medication') || qLower.includes('drug')) return 'medication administration';
+          if (qLower.includes('airway') || qLower.includes('breathing')) return 'airway management';
+          if (qLower.includes('cardiac') || qLower.includes('heart')) return 'cardiac care';
+          if (qLower.includes('pediatric') || qLower.includes('child')) return 'pediatric care';
+          if (qLower.includes('protocol') && qLower.includes('medical')) return 'medical protocol';
+          if (qLower.includes('patient') && qLower.includes('communicat')) return 'patient communication';
+          return null;
+        }).filter(Boolean);
+        const unusedMedicalTopics = medicalTopics.filter(t => !askedMedicalTopics.includes(t));
+        const medicalHint = unusedMedicalTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedMedicalTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different medical/EMR situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Medical / EMR.${medicalHint}${diversityHint}`;
+      } else if (selectedCategory === "Technical – Fireground") {
+        // Track technical fireground topics to ensure variety
+        const technicalTopics = ['fire attack', 'ventilation', 'search and rescue', 'hose operations', 'ladder operations', 'apparatus positioning', 'water supply', 'fire behavior', 'building construction', 'hazardous materials'];
+        const askedTechnicalTopics = categoryQuestionsAsked.map(q => {
+          const qLower = q.toLowerCase();
+          if (qLower.includes('attack') || qLower.includes('firefighting')) return 'fire attack';
+          if (qLower.includes('ventilat') || qLower.includes('vent')) return 'ventilation';
+          if (qLower.includes('search') || qLower.includes('rescue')) return 'search and rescue';
+          if (qLower.includes('hose') || qLower.includes('line')) return 'hose operations';
+          if (qLower.includes('ladder') || qLower.includes('aerial')) return 'ladder operations';
+          if (qLower.includes('apparatus') || qLower.includes('engine') || qLower.includes('truck')) return 'apparatus positioning';
+          if (qLower.includes('water') || qLower.includes('supply')) return 'water supply';
+          if (qLower.includes('fire behavior') || qLower.includes('fire spread')) return 'fire behavior';
+          if (qLower.includes('construction') || qLower.includes('building')) return 'building construction';
+          if (qLower.includes('hazmat') || qLower.includes('hazardous')) return 'hazardous materials';
+          return null;
+        }).filter(Boolean);
+        const unusedTechnicalTopics = technicalTopics.filter(t => !askedTechnicalTopics.includes(t));
+        const technicalHint = unusedTechnicalTopics.length > 0
+          ? ` Focus on a DIFFERENT aspect: ${unusedTechnicalTopics.slice(0, 3).join(", ")}.`
+          : " Vary the scenario significantly - use a completely different technical fireground situation or angle.";
+        questionStrategy = `${questionTypeToUse} question focused on Technical – Fireground.${technicalHint}${diversityHint}`;
       } else {
-        questionStrategy = `${questionTypeToUse} question focused on "${selectedCategory}" category only.`;
+        questionStrategy = `${questionTypeToUse} question focused on "${selectedCategory}" category only.${diversityHint}`;
       }
     } else if (practiceMode === "simulation") {
       questionStrategy = `Interview simulation ${questionTypeToUse} question. ${questionTypeToUse === 'behavioral' ? 'Use "Tell us about a time..." format.' : 'Use "How would you handle..." format.'}`;

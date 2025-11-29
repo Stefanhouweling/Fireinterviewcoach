@@ -2231,49 +2231,70 @@
   <main class="main-layout">
     <!-- LEFT COLUMN: Question & Answer (65-70%) -->
     <section class="question-column">
-      <!-- Resume card -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            Resume
-            <small>(tailors questions to your background)</small>
+      <!-- Interview Question Card -->
+      <div class="card" style="position: relative;">
+        <!-- Top Progress Bar for Question Loading -->
+        <div class="top-progress-bar" id="questionProgressBar" style="display: none;"></div>
+        
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-4);">
+          <div style="flex: 1;">
+            <div class="card-title" style="margin-bottom: var(--space-2);">
+              Interview Question
+              <small id="questionCategoryLabel"></small>
+            </div>
+            <!-- Simplified Practice Mode Inline -->
+            <div class="practice-mode-inline">
+              <span>Mode:</span>
+              <select id="practiceModeSelect" style="appearance: none; padding: var(--space-1) var(--space-3); background: var(--bg-tertiary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-secondary); font-size: var(--text-sm); cursor: pointer;">
+                <option value="simulation">Interview Simulation</option>
+                <option value="specific">User-Specific Practice</option>
+              </select>
+              <span>Focus:</span>
+              <select id="categorySelectInline" style="appearance: none; padding: var(--space-1) var(--space-3); background: var(--bg-tertiary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-secondary); font-size: var(--text-sm); cursor: pointer; display: none;">
+                <option value="">All Categories</option>
+                <option value="Situational">Situational</option>
+                <option value="Behavioral">Behavioral</option>
+                <option value="Chain of Command">Chain of Command</option>
+                <option value="Ethics & Integrity">Ethics & Integrity</option>
+                <option value="Safety & Accountability">Safety & Accountability</option>
+                <option value="Teamwork & Collaboration">Teamwork & Collaboration</option>
+                <option value="Conflict Resolution">Conflict Resolution</option>
+                <option value="Decision Making">Decision Making</option>
+                <option value="Communication">Communication</option>
+                <option value="Stress Management">Stress Management</option>
+                <option value="Leadership">Leadership</option>
+                <option value="Medical / EMR">Medical / EMR</option>
+                <option value="Technical – Fireground">Technical – Fireground</option>
+                <option value="Resume-Based" id="resumeBasedOptionInline">Resume-Based</option>
+                <option value="City & Department Specific">City & Department Specific</option>
+              </select>
+              <label style="display: flex; align-items: center; gap: var(--space-1); cursor: pointer;">
+                <input type="checkbox" id="onlyFlaggedToggle" style="accent-color: var(--accent-primary); cursor: pointer; width: 16px; height: 16px;" />
+                <span>Only Flagged Questions</span>
+              </label>
+              <!-- Flag button inline -->
+              <div class="flag-inline">
+                <button id="flagQuestionBtn" class="flag-icon" style="display: none;" title="Flag this question">
+                  🚩
+                </button>
+                <button id="viewFlaggedBtn" class="ghost" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
+                  Flagged (<span id="flaggedCount">0</span>)
+                </button>
+              </div>
+            </div>
           </div>
-          <button class="ghost" id="clearResumeBtn" type="button">Clear</button>
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 6px;">
-          <label class="file-label">
-            <span class="icon">📄</span>
-            <span>Upload resume (PDF, DOC, DOCX, TXT, RTF)</span>
-            <input type="file" id="resumeInput" accept=".txt,.pdf,.doc,.docx,.rtf" />
-          </label>
-        </div>
-        <div class="resume-summary" id="resumeSummary" style="padding: 16px; background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); min-height: 120px;">
-          <div style="color: #94a3b8; font-size: 0.9rem; text-align: center; padding: 20px;">
-            No resume uploaded. Upload your resume to enable personalized questions tailored to your experience and background.
-          </div>
-        </div>
-        <div class="resume-tags" id="resumeTags" style="margin-top: 12px;"></div>
-      </div>
-
-      <!-- Question / mic card -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            Interview Question
-            <small id="questionCategoryLabel"></small>
-          </div>
-          <div class="question-controls">
-            <button id="nextQuestionBtn" type="button">
-              🎤 Start Interview
+          <div style="display: flex; gap: var(--space-2);">
+            <button id="nextQuestionBtn" type="button" class="primary">
+              Start Interview
             </button>
-            <button id="repeatQuestionBtn" class="secondary" type="button">
+            <button id="repeatQuestionBtn" class="secondary" type="button" style="display: none;">
               🔁 Repeat
             </button>
           </div>
         </div>
         
-        <!-- Practice Mode Toggle -->
-        <div style="padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; margin: 12px; border: 1px solid rgba(239, 68, 68, 0.2); position: relative;">
+        <!-- Old Practice Mode Toggle (to be removed) -->
+        <div style="padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; margin: 12px; border: 1px solid rgba(239, 68, 68, 0.2); position: relative; display: none;">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
             <label style="display: block; font-size: 0.85rem; color: #cbd5e1; font-weight: 600; margin: 0;">Practice Mode:</label>
             <span style="background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.5); color: #fbbf24; padding: 2px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">V1</span>
@@ -2384,7 +2405,6 @@
         <div class="card-header">
           <div class="card-title">
             Camera & Presence
-            <small>(simulates a realistic panel interview environment)</small>
           </div>
           <button id="cameraBtn" type="button" class="secondary">
             📷 Start Camera
@@ -2401,13 +2421,12 @@
             </span>
           </div>
         </div>
-        <div class="metrics-row">
-          <span class="metric-chip">Environment: Aim for chest-up framing, neutral background, good light.</span>
-          <span class="metric-chip">Goal: calm but engaged, limited fidgeting.</span>
-        </div>
+        <p style="margin-top: var(--space-2); font-size: var(--text-xs); color: var(--text-muted);">
+          One-line hint only
+        </p>
       </div>
 
-      <!-- Feedback card - moved under camera -->
+      <!-- Combined Feedback Card -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
@@ -2416,47 +2435,46 @@
         </div>
         
         <!-- Progress bar for AI analysis -->
-        <div id="aiProgressContainer" style="display: none; margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-size: 0.85rem; color: #cbd5e1;">🤖 AI Analyzing...</span>
-            <span id="aiProgressPercent" style="font-size: 0.85rem; color: #f97316; font-weight: 600;">0%</span>
+        <div id="aiProgressContainer" style="display: none; margin-bottom: var(--space-4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+            <span style="font-size: var(--text-sm); color: var(--text-tertiary);">🤖 AI Analyzing...</span>
+            <span id="aiProgressPercent" style="font-size: var(--text-sm); color: var(--accent-secondary); font-weight: var(--font-semibold);">0%</span>
           </div>
-          <div style="width: 100%; height: 8px; background: rgba(15, 23, 42, 0.6); border-radius: 4px; overflow: hidden;">
-            <div id="aiProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #f97316, #ef4444); border-radius: 4px; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);"></div>
+          <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
+            <div id="aiProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary)); border-radius: 4px; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);"></div>
           </div>
         </div>
         
-        <div class="feedback-grid">
-          <div class="feedback-block">
-            <h4>Content & Structure <span id="contentScore" class="score-pill low">–</span></h4>
-            <p id="contentFeedback">
+        <div class="feedback-combined">
+          <div class="feedback-section">
+            <h4>Content & Structure <span id="contentScore" class="score-pill low" style="float: right;">–</span></h4>
+            <p id="contentFeedback" style="margin: 0;">
               After you finish answering, feedback will appear here automatically.
             </p>
           </div>
-          <div class="feedback-block">
-            <h4>Voice & Filler Words <span id="voiceScore" class="score-pill low">–</span></h4>
-            <p id="voiceFeedback">
-              Filler words and speech patterns will be detected and analyzed here based on your transcript.
+          <div class="feedback-section">
+            <h4>Voice & Filler Words <span id="voiceScore" class="score-pill low" style="float: right;">–</span></h4>
+            <p id="voiceFeedback" style="margin: 0;">
+              Filler words and speech patterns will be detected and analyzed here.
             </p>
           </div>
-          <div class="feedback-block">
-            <h4>Body Language (Camera) <span id="bodyScore" class="score-pill low">–</span></h4>
-            <p id="bodyFeedback">
-              Movement and stability from the webcam feed will be scored as "steady / moderate / fidgety".
+          <div class="feedback-section">
+            <h4>Body Language <span id="bodyScore" class="score-pill low" style="float: right;">–</span></h4>
+            <p id="bodyFeedback" style="margin: 0;">
+              Movement and stability from the webcam feed will be scored.
             </p>
           </div>
-          <div class="feedback-block">
-            <h4>Fire-Specific Tips / AI Coach</h4>
-            <p id="fireTips">
+          <div class="feedback-section">
+            <h4 class="fire-tips-title">Fire-Specific Tips</h4>
+            <p id="fireTips" style="margin: 0;">
               We'll highlight if you're hitting key themes: safety, teamwork, accountability, medical care, community, and learning from mistakes.
             </p>
-            <button id="viewAIFeedbackBtn" type="button" style="margin-top: 8px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); color: #fca5a5; cursor: pointer; font-size: 0.85rem; display: none;">
-              📖 View Detailed AI Feedback
+            <button id="viewAIFeedbackBtn" type="button" class="link" style="margin-top: var(--space-2); display: none; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline;">
+              View Detailed AI Feedback
             </button>
           </div>
         </div>
       </div>
-
     </section>
   </main>
 </div>

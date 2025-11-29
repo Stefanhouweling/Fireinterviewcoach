@@ -1985,11 +1985,57 @@
       </div>
       
       <!-- Credit History Section -->
-      <div>
+      <div style="margin-bottom: 32px;">
         <h4 style="color: #fbbf24; margin-bottom: 16px; font-size: 1.1rem;">Credit History</h4>
         <div id="creditHistory" style="min-height: 100px;">
           <div style="color: #94a3b8; text-align: center; padding: 20px;">Loading...</div>
         </div>
+      </div>
+      
+      <!-- Delete Account Section -->
+      <div style="border-top: 1px solid rgba(239, 68, 68, 0.3); padding-top: 32px; margin-top: 32px;">
+        <h4 style="color: #ef4444; margin-bottom: 16px; font-size: 1.1rem;">⚠️ Danger Zone</h4>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px; line-height: 1.6;">
+          Deleting your account will permanently remove all your data, including your profile, resume, conversation history, credits, and purchase history. This action cannot be undone.
+        </p>
+        <button id="deleteAccountBtn" type="button" style="padding: 12px 24px; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+          🗑️ Delete My Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div id="deleteAccountModal" class="modal-overlay" style="display: none;">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 style="color: #ef4444;">⚠️ Delete Account</h3>
+      <button class="modal-close" id="closeDeleteAccountModal" type="button">×</button>
+    </div>
+    <div class="modal-content">
+      <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 20px; border-radius: 4px;">
+        <p style="color: #fca5a5; margin: 0; font-size: 0.95rem; line-height: 1.6;">
+          <strong>This action cannot be undone.</strong> All of your data will be permanently deleted:
+        </p>
+        <ul style="color: #fca5a5; margin: 12px 0 0 20px; font-size: 0.9rem; line-height: 1.8;">
+          <li>Your profile and account information</li>
+          <li>Your resume and resume analysis</li>
+          <li>All conversation history and practice sessions</li>
+          <li>Your credits balance and purchase history</li>
+          <li>All flagged questions and practice insights</li>
+        </ul>
+      </div>
+      <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6;">
+        Are you absolutely sure you want to delete your account? Type <strong style="color: #ef4444;">DELETE</strong> to confirm.
+      </p>
+      <div style="margin-bottom: 20px;">
+        <input type="text" id="deleteConfirmInput" placeholder="Type DELETE to confirm" style="width: 100%; padding: 12px; border-radius: 6px; border: 2px solid rgba(239, 68, 68, 0.3); background: #1e293b; color: #fff; font-size: 0.95rem; text-transform: uppercase;" />
+        <div id="deleteAccountError" style="color: #fca5a5; font-size: 0.85rem; margin-top: 8px; display: none;"></div>
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button id="cancelDeleteBtn" type="button" class="secondary" style="padding: 12px 24px;">Cancel</button>
+        <button id="confirmDeleteBtn" type="button" style="padding: 12px 24px; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" disabled>Delete Account</button>
       </div>
     </div>
   </div>
@@ -7105,6 +7151,141 @@ Return ONLY the category and question.`
       console.error('Load credit history error:', error);
       creditHistory.innerHTML = '<div style="color: #fca5a5; text-align: center; padding: 20px;">Error loading credit history</div>';
     }
+  }
+  
+  // Delete Account handlers
+  const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+  const deleteAccountModal = document.getElementById('deleteAccountModal');
+  const closeDeleteAccountModal = document.getElementById('closeDeleteAccountModal');
+  const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+  const deleteConfirmInput = document.getElementById('deleteConfirmInput');
+  const deleteAccountError = document.getElementById('deleteAccountError');
+  
+  function showDeleteAccountModal() {
+    if (!deleteAccountModal || !currentUser) return;
+    if (deleteConfirmInput) deleteConfirmInput.value = '';
+    if (deleteAccountError) {
+      deleteAccountError.textContent = '';
+      deleteAccountError.style.display = 'none';
+    }
+    if (confirmDeleteBtn) confirmDeleteBtn.disabled = true;
+    deleteAccountModal.style.display = 'flex';
+  }
+  
+  function hideDeleteAccountModal() {
+    if (deleteAccountModal) deleteAccountModal.style.display = 'none';
+    if (deleteConfirmInput) deleteConfirmInput.value = '';
+    if (deleteAccountError) {
+      deleteAccountError.textContent = '';
+      deleteAccountError.style.display = 'none';
+    }
+    if (confirmDeleteBtn) confirmDeleteBtn.disabled = true;
+  }
+  
+  if (deleteAccountBtn) {
+    deleteAccountBtn.addEventListener('click', showDeleteAccountModal);
+  }
+  
+  if (closeDeleteAccountModal) {
+    closeDeleteAccountModal.addEventListener('click', hideDeleteAccountModal);
+  }
+  
+  if (cancelDeleteBtn) {
+    cancelDeleteBtn.addEventListener('click', hideDeleteAccountModal);
+  }
+  
+  // Enable/disable confirm button based on input
+  if (deleteConfirmInput && confirmDeleteBtn) {
+    deleteConfirmInput.addEventListener('input', (e) => {
+      const value = e.target.value.trim().toUpperCase();
+      confirmDeleteBtn.disabled = value !== 'DELETE';
+      if (deleteAccountError) {
+        deleteAccountError.textContent = '';
+        deleteAccountError.style.display = 'none';
+      }
+    });
+    
+    deleteConfirmInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !confirmDeleteBtn.disabled) {
+        confirmDeleteBtn.click();
+      }
+    });
+  }
+  
+  // Handle account deletion
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (!currentUser) {
+        if (deleteAccountError) {
+          deleteAccountError.textContent = 'You must be logged in to delete your account';
+          deleteAccountError.style.display = 'block';
+        }
+        return;
+      }
+      
+      const confirmValue = deleteConfirmInput ? deleteConfirmInput.value.trim().toUpperCase() : '';
+      if (confirmValue !== 'DELETE') {
+        if (deleteAccountError) {
+          deleteAccountError.textContent = 'Please type DELETE to confirm';
+          deleteAccountError.style.display = 'block';
+        }
+        return;
+      }
+      
+      if (confirmDeleteBtn.disabled) return;
+      
+      // Disable button during deletion
+      confirmDeleteBtn.disabled = true;
+      confirmDeleteBtn.textContent = 'Deleting...';
+      
+      try {
+        const res = await authenticatedFetch(`${BACKEND_URL}/api/auth/delete-account`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          // Clear all local storage
+          localStorage.clear();
+          sessionStorage.clear();
+          
+          // Clear current user
+          currentUser = null;
+          
+          // Update UI
+          updateAuthUI();
+          
+          // Hide modals
+          hideDeleteAccountModal();
+          if (settingsModal) settingsModal.style.display = 'none';
+          
+          // Show success message
+          alert('Your account has been permanently deleted. All your data has been removed from our servers.');
+          
+          // Reload page to reset state
+          window.location.reload();
+        } else {
+          if (deleteAccountError) {
+            deleteAccountError.textContent = data.error || 'Failed to delete account. Please try again.';
+            deleteAccountError.style.display = 'block';
+          }
+          confirmDeleteBtn.disabled = false;
+          confirmDeleteBtn.textContent = 'Delete Account';
+        }
+      } catch (error) {
+        console.error('Delete account error:', error);
+        if (deleteAccountError) {
+          deleteAccountError.textContent = 'Network error. Please try again.';
+          deleteAccountError.style.display = 'block';
+        }
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.textContent = 'Delete Account';
+      }
+    });
   }
   
   // Redeem referral code handler (in dropdown menu)

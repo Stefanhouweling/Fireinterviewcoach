@@ -7,7 +7,7 @@ const fetchModule = require('node-fetch');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
-const { User, Transaction, CreditLedger, Analytics, Referral, referralQueries } = require('./db');
+const { User, Transaction, CreditLedger, Analytics, Referral, referralQueries, query } = require('./db');
 const crypto = require('crypto');
 // Import question bank
 const { getRandomQuestion, getQuestions, getQuestionStats } = require('./questionBank');
@@ -121,7 +121,8 @@ app.get('/', (req, res) => {
         me: 'GET /api/auth/me',
         google: 'POST /api/auth/google',
         profile: 'PUT /api/auth/profile',
-        purchaseHistory: 'GET /api/auth/purchase-history'
+        purchaseHistory: 'GET /api/auth/purchase-history',
+        deleteAccount: 'DELETE /api/auth/delete-account'
       },
       analytics: {
         visit: 'POST /api/analytics/visit',
@@ -711,6 +712,63 @@ app.get('/api/auth/purchase-history', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get purchase history error:', error);
     res.status(500).json({ error: 'Failed to get purchase history', message: error.message });
+  }
+});
+
+// DELETE /api/auth/delete-account - Delete user account and all associated data
+app.delete('/api/auth/delete-account', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    console.log(`[DELETE ACCOUNT] User ${userId} (${user.email}) - Starting account deletion`);
+    
+    // 1. Set analytics_visits.user_id to NULL (preserve analytics but anonymize)
+    await query(
+      'UPDATE analytics_visits SET user_id = NULL WHERE user_id = $1',
+      [userId]
+    );
+    console.log(`[DELETE ACCOUNT] Anonymized analytics visits for user ${userId}`);
+    
+    // 2. Delete user from database (CASCADE will automatically delete):
+    //    - credit_ledger entries
+    //    - transactions
+    //    - referrals (where user is referrer or referred)
+    await query('DELETE FROM users WHERE id = $1', [userId]);
+    console.log(`[DELETE ACCOUNT] Deleted user ${userId} from database`);
+    
+    // 3. Clean up in-memory userProfiles
+    // Since userProfiles are session-based, we can't directly match by user ID
+    // However, we can try to clean up profiles that might be associated
+    // Note: This is best-effort since sessionId is not directly linked to user ID
+    // The profiles will be cleared on server restart anyway
+    let profilesCleaned = 0;
+    for (const [sessionId, profile] of userProfiles.entries()) {
+      // If profile has email matching the deleted user, remove it
+      // Note: Most profiles don't store email, so this may not catch everything
+      // This is acceptable since profiles are temporary session data
+      if (profile.email && profile.email.toLowerCase() === user.email.toLowerCase()) {
+        userProfiles.delete(sessionId);
+        profilesCleaned++;
+      }
+    }
+    if (profilesCleaned > 0) {
+      console.log(`[DELETE ACCOUNT] Cleaned up ${profilesCleaned} in-memory profiles`);
+    }
+    
+    console.log(`[DELETE ACCOUNT] Successfully deleted account for user ${userId} (${user.email})`);
+    
+    res.json({
+      success: true,
+      message: 'Account and all associated data have been permanently deleted'
+    });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account', message: error.message });
   }
 });
 

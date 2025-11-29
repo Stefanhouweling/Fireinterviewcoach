@@ -2147,10 +2147,12 @@ app.post('/api/research-city', async (req, res) => {
 
     let verifiedFacts = {};
     
-    console.log(`\n=== Starting ${criticalSearches.length} web searches (optimized, parallel batches) ===`);
+    // Process searches in parallel batches for speed (5 at a time for maximum speed)
+    const batchSize = 5;
+    
+    console.log(`\n=== Starting ${criticalSearches.length} web searches (optimized, parallel batches of ${batchSize}) ===`);
     console.log(`Researching: ${locationString}, ${departmentName}\n`);
     
-    // Process searches in parallel batches for speed (2 at a time)
     const processSearch = async (search) => {
       try {
         let factResult = null;
@@ -2160,7 +2162,7 @@ app.post('/api/research-city', async (req, res) => {
           // Try Responses API with web_search tool for real-time information
           if (openai.responses && typeof openai.responses.create === 'function') {
             const searchResponse = await openai.responses.create({
-              model: "gpt-4o",
+              model: "gpt-4o-mini",  // Use faster model
               tools: [{ type: "web_search" }],
               input: `What is the current, verified fact for: "${search.query}"? Return ONLY the fact itself (name or number), no explanations.`
             });
@@ -2177,28 +2179,19 @@ app.post('/api/research-city', async (req, res) => {
         // Fallback to chat completions if Responses API not available
         if (!factResult) {
           const searchResponse = await openai.chat.completions.create({
-            model: "gpt-4o",  // Use gpt-4o for better web search and fact-finding capabilities
+            model: "gpt-4o-mini",  // Use faster model - still accurate for fact-finding
             messages: [
               {
                 role: "system",
-                content: `You are an expert fact-checker with access to current web information. Your job is to find the MOST CURRENT, VERIFIED information. 
-
-IMPORTANT:
-- Use web search to find current, accurate information
-- Return the fact directly (name, number, or brief answer)
-- If you find the information, return it clearly
-- Only return "NOT FOUND" if you truly cannot find any current information after searching
-- Be specific and accurate - include full names when available`
+                content: `Find current verified information. Return ONLY the fact (name/number). Return "NOT FOUND" if unavailable.`
               },
               {
                 role: "user",
-                content: `Search the web and find the current, verified information for: "${search.query}"
-
-Return the fact directly (name, number, or brief answer). Be specific and accurate. If you cannot find current information, return "NOT FOUND".`
+                content: `Current verified fact for: "${search.query}"`
               }
             ],
             temperature: 0.1,
-            max_tokens: 100  // Increased slightly to allow for full names and more complete answers
+            max_tokens: 80  // Reduced for faster responses - facts are usually short
           });
           
           factResult = searchResponse.choices[0].message.content.trim();
@@ -2237,8 +2230,7 @@ Return the fact directly (name, number, or brief answer). Be specific and accura
       }
     };
     
-    // Process in parallel batches of 2 for speed
-    const batchSize = 2;
+    // Process in parallel batches for maximum speed
     for (let i = 0; i < criticalSearches.length; i += batchSize) {
       const batch = criticalSearches.slice(i, i + batchSize);
       await Promise.all(batch.map(processSearch));

@@ -3808,6 +3808,9 @@
           questionCount++;
           isFollowupQuestion = false;
           
+          // Update button text immediately after incrementing questionCount
+          updateNextQuestionButtonText();
+          
           // Track asked questions to prevent duplicates
           const questionText = currentQuestion.template.toLowerCase().trim();
           askedQuestions.add(questionText);
@@ -3836,12 +3839,15 @@
       // Fallback to static question
       currentQuestion = questionBank[questionCount % questionBank.length];
       questionCount++;
+      // Update button text immediately after incrementing questionCount
+      updateNextQuestionButtonText();
       renderQuestion(currentQuestion);
       speakQuestionWithCaptions(currentQuestion.template);
       // Auto-start recording even when we fall back to a static question
       startAnswerRecording(true);
     } finally {
       nextQuestionBtn.disabled = false;
+      // Button text already updated above, but ensure it's correct here too
       updateNextQuestionButtonText();
     }
   });

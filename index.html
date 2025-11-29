@@ -4390,10 +4390,24 @@ Return ONLY the category and question.`
   const areasToWorkOnContent = document.getElementById('areasToWorkOnContent');
   const closeAreasToWorkOnModal = document.getElementById('closeAreasToWorkOnModal');
   
+  // Track if we've already auto-opened the modal (to avoid showing it multiple times)
+  let hasAutoOpenedAreasModal = false;
+  
   // Check if button should be shown and fetch/update areas to work on
-  async function checkAndShowAreasToWorkOnButton() {
+  async function checkAndShowAreasToWorkOnButton(autoOpen = false) {
     if (!areasToWorkOnBtn || questionCount < 5) return;
     
+    // Always show the button after 5 questions
+    areasToWorkOnBtn.style.display = 'block';
+    
+    // If this is the first time reaching 5 questions and autoOpen is true, open the modal
+    if (autoOpen && !hasAutoOpenedAreasModal && areasToWorkOnModal) {
+      hasAutoOpenedAreasModal = true;
+      areasToWorkOnModal.style.display = 'flex';
+      await loadAreasToWorkOn();
+    }
+    
+    // Try to pre-generate data in the background (non-blocking)
     try {
       const sessionId = getSessionId();
       
@@ -4401,17 +4415,16 @@ Return ONLY the category and question.`
       const response = await fetch(`${BACKEND_URL}/api/areas-to-work-on?sessionId=${sessionId}`);
       if (response.ok) {
         const data = await response.json();
-        if (data.hasData) {
-          areasToWorkOnBtn.style.display = 'block';
-          // If we have existing data, we can show it, but we'll regenerate on click
-        } else {
-          // Need to generate it first
-          await generateAreasToWorkOn();
-          areasToWorkOnBtn.style.display = 'block';
+        if (!data.hasData) {
+          // Need to generate it - do this in background, don't wait
+          generateAreasToWorkOn().catch(err => {
+            console.warn('Background generation of areas to work on failed:', err);
+          });
         }
       }
     } catch (err) {
       console.error('Error checking areas to work on:', err);
+      // Don't prevent button from showing if API fails
     }
   }
   
@@ -5454,9 +5467,11 @@ Return ONLY the category and question.`
 
         addFollowupButton();
         
-        // Show "What You Should Work On" button after 5 questions
+        // Show "What You Should Work On" button after 5 questions, and auto-open modal if it's exactly 5
         if (questionCount >= 5) {
-          checkAndShowAreasToWorkOnButton();
+          // Auto-open modal only when we first hit exactly 5 questions
+          const shouldAutoOpen = questionCount === 5;
+          checkAndShowAreasToWorkOnButton(shouldAutoOpen);
         }
       } else if (modalContentEl) {
         modalContentEl.innerHTML = `

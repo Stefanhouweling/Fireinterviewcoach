@@ -2088,7 +2088,15 @@
     if (typeof APP_CONFIG !== 'undefined') {
       // Update buttons
       const nextQuestionBtn = document.getElementById('nextQuestionBtn');
-      if (nextQuestionBtn) nextQuestionBtn.textContent = APP_CONFIG.buttons.nextQuestion;
+      if (nextQuestionBtn) {
+        // Only update if not the first question (Start Interview)
+        if (questionCount > 0) {
+          nextQuestionBtn.textContent = APP_CONFIG.buttons.nextQuestion;
+        } else {
+          // Ensure it says "Start Interview" for first question
+          nextQuestionBtn.textContent = "🎤 Start Interview";
+        }
+      }
       
       const startAnswerBtn = document.getElementById('startAnswerBtn');
       if (startAnswerBtn) startAnswerBtn.textContent = APP_CONFIG.buttons.answerQuestion;

@@ -4401,10 +4401,16 @@ Return ONLY the category and question.`
     areasToWorkOnBtn.style.display = 'block';
     
     // If this is the first time reaching 5 questions and autoOpen is true, open the modal
+    // Add a delay to ensure feedback is fully displayed first
     if (autoOpen && !hasAutoOpenedAreasModal && areasToWorkOnModal) {
       hasAutoOpenedAreasModal = true;
-      areasToWorkOnModal.style.display = 'flex';
-      await loadAreasToWorkOn();
+      // Wait a moment for feedback to be fully displayed, then open the modal
+      setTimeout(async () => {
+        if (areasToWorkOnModal) {
+          areasToWorkOnModal.style.display = 'flex';
+          await loadAreasToWorkOn();
+        }
+      }, 1500); // 1.5 second delay to let user see their feedback first
     }
     
     // Try to pre-generate data in the background (non-blocking)
@@ -5467,10 +5473,10 @@ Return ONLY the category and question.`
 
         addFollowupButton();
         
-        // Show "What You Should Work On" button after 5 questions, and auto-open modal if it's exactly 5
+        // Show "What You Should Work On" button after 5 questions
         if (questionCount >= 5) {
-          // Auto-open modal only when we first hit exactly 5 questions
-          const shouldAutoOpen = questionCount === 5;
+          // Auto-open modal only after receiving feedback for the 5th question (not before)
+          const shouldAutoOpen = questionCount === 5 && !hasAutoOpenedAreasModal;
           checkAndShowAreasToWorkOnButton(shouldAutoOpen);
         }
       } else if (modalContentEl) {

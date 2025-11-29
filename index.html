@@ -6995,9 +6995,16 @@ Return ONLY the category and question.`
     });
   }
   
-  if (closeSignupModal) closeSignupModal.addEventListener('click', () => {
-    document.getElementById('signupModal').style.display = 'none';
-  });
+  if (closeSignupModal) {
+    closeSignupModal.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const signupModal = document.getElementById('signupModal');
+      if (signupModal) {
+        signupModal.style.display = 'none';
+      }
+    });
+  }
   
   if (closePaywallModal) closePaywallModal.addEventListener('click', () => {
     const paywallModal = document.getElementById('paywallModal');

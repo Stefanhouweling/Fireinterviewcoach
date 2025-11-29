@@ -1539,7 +1539,7 @@ IMPORTANT: You MUST reference specific details from the above resume (job titles
           ? ` Reference DIFFERENT aspects of their background: ${unusedAspects.slice(0, 3).join(", ")}.`
           : " Reference different parts of their experience - vary which jobs, skills, or certifications you mention.";
         
-        questionStrategy = `Resume-based ${questionTypeToUse} question. Reference their actual experience from ALL past jobs (fire and non-fire). Connect to their background while testing general firefighter competencies.${resumeHint}${diversityHint}`;
+        questionStrategy = `RESUME-BASED ${questionTypeToUse} question. You MUST ask a SPECIFIC question that explicitly references their actual resume details (job titles, companies, certifications, skills, or specific experiences). The question should mention specific items from their resume, not just be a general question. Examples: "Tell us about your experience as [specific job]..." or "I see you have [specific certification]..." or "You worked at [specific company]..." - always include the specific detail. Connect their actual background to firefighter competencies.${resumeHint}${diversityHint}`;
       } else if (selectedCategory === "City & Department Specific") {
         // Extract what knowledge questions have already been asked
         const knowledgeQuestionsAsked = profileAskedQuestions.filter(q => {

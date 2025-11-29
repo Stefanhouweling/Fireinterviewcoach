@@ -3305,6 +3305,30 @@ app.post('/api/areas-to-work-on', async (req, res) => {
       feedback: a.feedback
     }));
     
+    // Build personalization context from onboarding data
+    let personalizationContext = "";
+    if (profile.name) {
+      personalizationContext += `Candidate Name: ${profile.name}\n`;
+    }
+    if (profile.city || profile.departmentName) {
+      const location = [profile.city, profile.departmentName].filter(Boolean).join(", ");
+      if (location) personalizationContext += `Location: ${location}\n`;
+    }
+    if (profile.jobType) {
+      personalizationContext += `Position Type: ${profile.jobType}\n`;
+    }
+    if (profile.resumeAnalysis) {
+      const analysis = profile.resumeAnalysis;
+      const experience = analysis.experience || analysis.yearsOfExperience || null;
+      if (experience) {
+        personalizationContext += `Experience Level: ${experience}\n`;
+      }
+      const certifications = analysis.certifications;
+      if (Array.isArray(certifications) && certifications.length > 0) {
+        personalizationContext += `Key Certifications: ${certifications.slice(0, 3).join(", ")}\n`;
+      }
+    }
+    
     console.log(`[AREAS TO WORK ON] Generating summary for session ${sessionId} based on ${recentAnalyses.length} analyses`);
     
     const response = await openai.chat.completions.create({
@@ -3312,13 +3336,13 @@ app.post('/api/areas-to-work-on', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert firefighter interview coach. Analyze multiple answer feedbacks and identify the most important areas a candidate should focus on improving. Be specific, actionable, and encouraging."
+          content: "You are an expert firefighter interview coach. Analyze multiple answer feedbacks and identify the most important areas a candidate should focus on improving. Be specific, actionable, and encouraging. Personalize your feedback based on their background when relevant."
         },
         {
           role: "user",
           content: `Based on the candidate's recent interview practice sessions, analyze their performance and provide 2-3 key areas they should work on.
 
-Recent Answer Analyses:
+${personalizationContext ? `Candidate Background:\n${personalizationContext}\n` : ''}Recent Answer Analyses:
 ${feedbackSummary.map((a, i) => `
 Question ${i + 1} (${a.category}): ${a.question}
 Feedback: ${a.feedback.substring(0, 500)}...
@@ -3328,6 +3352,7 @@ Instructions:
 - Identify the MOST IMPORTANT patterns across all their answers
 - Focus on areas where they consistently struggle or could improve
 - Be specific and actionable (not vague like "improve communication")
+- If you know their background (location, job type, experience level), reference it naturally when relevant
 - Write 2-3 sentences maximum
 - Be encouraging but honest
 - Update based on their recent performance (if they're improving, note it; if they're getting worse, address it)

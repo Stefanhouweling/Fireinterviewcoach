@@ -4454,7 +4454,8 @@ Return ONLY the category and question.`
     // Show followup explanation if this is a followup question
     const questionSubtitlesEl = document.getElementById('questionSubtitles');
     if (questionSubtitlesEl) {
-      if (q.isFollowup) {
+      if (q.isFollowup || isFollowupQuestion) {
+        console.log('Showing followup explanation - q.isFollowup:', q.isFollowup, 'isFollowupQuestion:', isFollowupQuestion);
         questionSubtitlesEl.style.display = 'block';
         questionSubtitlesEl.innerHTML = `
           <div style="display: flex; align-items: flex-start; gap: 8px;">
@@ -4467,6 +4468,8 @@ Return ONLY the category and question.`
       } else {
         questionSubtitlesEl.style.display = 'none';
       }
+    } else {
+      console.error('questionSubtitles element not found!');
     }
     
     // Show flag button and update its state

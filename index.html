@@ -3138,6 +3138,25 @@
       return;
     }
     
+    // If user just logged in, skip auth check to avoid clearing state
+    // The login handler already set everything up correctly
+    if (window.justLoggedIn) {
+      console.log('[AUTH] Skipping auth check - user just logged in');
+      // Still update UI with stored user data
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        try {
+          currentUser = JSON.parse(storedUser);
+          updateAuthUI();
+          await updateCreditsDisplay();
+          console.log('[AUTH] Using stored user data after login');
+        } catch (e) {
+          console.error('[AUTH] Failed to parse stored user:', e);
+        }
+      }
+      return;
+    }
+    
     try {
       const response = await authenticatedFetch(`${BACKEND_URL}/api/auth/me`);
       
@@ -3170,9 +3189,26 @@
         console.log('[AUTH] Successfully authenticated user:', currentUser.email);
       } else {
         // Only clear user state on actual auth errors (401/403), not network errors
+        // But don't clear if we have a stored user and token (might be a temporary network issue)
         if (response.status === 401 || response.status === 403) {
-          console.log('[AUTH] Token invalid or expired - clearing auth state');
-          handleAuthError();
+          // Check if we have a valid stored user and token before clearing
+          const storedUser = localStorage.getItem('currentUser');
+          const storedToken = getAuthToken();
+          if (storedUser && storedToken) {
+            // Might be a cookie issue - try to preserve state
+            console.warn('[AUTH] Auth check failed but user data exists - preserving state (might be cookie issue)');
+            try {
+              currentUser = JSON.parse(storedUser);
+              updateAuthUI();
+            } catch (e) {
+              console.error('[AUTH] Failed to parse stored user:', e);
+              console.log('[AUTH] Token invalid or expired - clearing auth state');
+              handleAuthError();
+            }
+          } else {
+            console.log('[AUTH] Token invalid or expired - clearing auth state');
+            handleAuthError();
+          }
         } else {
           // Other errors (500, network issues) - don't clear auth, just log
           console.warn('[AUTH] Auth check failed with status:', response.status, '- preserving existing auth state');
@@ -6754,10 +6790,29 @@ Return ONLY the category and question.`
               });
             }, 100);
             
-            // Clear the flag after a delay
-            setTimeout(() => {
+            // Clear the flag after a longer delay to ensure checkAuth doesn't interfere
+            // Also trigger a manual auth check after a short delay to verify token
+            setTimeout(async () => {
+              // Try to verify auth one more time
+              try {
+                const verifyResponse = await authenticatedFetch(`${BACKEND_URL}/api/auth/me`);
+                if (verifyResponse.ok) {
+                  const userData = await verifyResponse.json();
+                  currentUser = userData;
+                  localStorage.setItem('currentUser', JSON.stringify(userData));
+                  updateAuthUI();
+                  await updateCreditsDisplay();
+                  console.log('[AUTH] Verified auth after login');
+                } else {
+                  console.warn('[AUTH] Auth verification failed after login, but preserving state');
+                }
+              } catch (e) {
+                console.warn('[AUTH] Auth verification error after login:', e);
+              }
+              
+              // Clear the flag after verification attempt
               window.justLoggedIn = false;
-            }, 1000);
+            }, 2000);
           }
           
           // If coming from paywall, show credit purchase

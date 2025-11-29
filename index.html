@@ -5942,12 +5942,13 @@ Return ONLY the category and question.`
     followupBtn.onmouseover = () => followupBtn.style.background = "#dc2626";
     followupBtn.onmouseout = () => followupBtn.style.background = "#ef4444";
     
-    followupBtn.onclick = async () => {
+      followupBtn.onclick = async () => {
       followupBtn.disabled = true;
       followupBtn.textContent = "🤖 Generating followup...";
       try {
         currentQuestion = await generateFollowupQuestion();
         questionCount++;
+        isFollowupQuestion = true; // Ensure flag is set
         updateNextQuestionButtonText();
         renderQuestion(currentQuestion);
         speakQuestionWithCaptions(currentQuestion.template);
